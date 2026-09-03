@@ -1,5 +1,8 @@
 FROM php:7.3-apache
 
+# Configurar User-Agent para evitar bloqueos 403 Forbidden en repositorios Debian
+RUN echo 'Acquire::http::User-Agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";' > /etc/apt/apt.conf.d/99user-agent
+
 # Actualizar repositorios e instalar dependencias para PostgreSQL
 RUN apt-get update && apt-get install -y \
     libpq-dev \
