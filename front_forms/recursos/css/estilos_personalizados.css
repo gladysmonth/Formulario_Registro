@@ -1,0 +1,162 @@
+/**
+ * Estilos Personalizados del Sistema de Formularios
+ * Archivo: estilos_personalizados.css
+ */
+
+:root {
+    --color-primario: #0d6efd;
+    --color-primario-hover: #0b5ed7;
+    --color-fondo-suave: #f8fafc;
+    --color-borde-suave: #e2e8f0;
+    --sombra-tarjeta: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--color-fondo-suave);
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Tarjetas y Contenedores */
+.tarjeta-formulario {
+    background: #ffffff;
+    border: 1px solid var(--color-borde-suave);
+    border-radius: 14px;
+    box-shadow: var(--sombra-tarjeta);
+    transition: all 0.2s ease-in-out;
+}
+
+.tarjeta-modulo {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 14px;
+    border: 1px solid var(--color-borde-suave);
+}
+
+.tarjeta-modulo:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+}
+
+/* Encabezados de Sección con Número */
+.encabezado-seccion {
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.numero-seccion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #0d6efd, #0052cc);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    margin-right: 0.5rem;
+}
+
+.numero-seccion-tecnico {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+}
+
+/* Selector de Prioridades */
+.opcion-prioridad {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 2px solid var(--color-borde-suave);
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+}
+
+.opcion-prioridad:hover {
+    background-color: #f8fafc;
+}
+
+.form-check-input:checked + .opcion-prioridad-urgente {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.form-check-input:checked + .opcion-prioridad-alta {
+    border-color: #fd7e14;
+    background-color: #fff8f0;
+}
+
+.form-check-input:checked + .opcion-prioridad-media {
+    border-color: #ffc107;
+    background-color: #fffdf0;
+}
+
+.form-check-input:checked + .opcion-prioridad-baja {
+    border-color: #198754;
+    background-color: #f2fdf6;
+}
+
+/* Badges de Estado */
+.badge-pendiente {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.badge-en-proceso {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.badge-resuelto {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-cancelado {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+/* Indicador de pulso para estado del backend */
+.indicador-pulso {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    animation: pulso 2s infinite;
+}
+
+@keyframes pulso {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Sub-bloques y campos condicionales */
+.bloque-equipo-afectado {
+    background-color: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 1.25rem;
+}
+
+.bloque-tecnico {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+}

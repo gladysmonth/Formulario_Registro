@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------
+  # 1. CONTENEDOR DE BASE DE DATOS (PostgreSQL)
+  # ----------------------------------------------------------------
+  db:
+    image: postgres:13-alpine
+    container_name: contenedor_db_formularios
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: formularios_db
+      POSTGRES_USER: postgres_usuario
+      POSTGRES_PASSWORD: postgres_clave_secreta
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - datos_postgres:/var/lib/postgresql/data
+    networks:
+      - red_formularios
+
+  # ----------------------------------------------------------------
+  # 2. CONTENEDOR DE BACKEND (PHP 7.3 + Apache + PDO PostgreSQL)
+  # ----------------------------------------------------------------
+  back_form:
+    build:
+      context: ./back_form
+      dockerfile: Dockerfile
+    container_name: contenedor_back_form
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: formularios_db
+      DB_USER: postgres_usuario
+      DB_PASS: postgres_clave_secreta
+    volumes:
+      - ./back_form:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - red_formularios
+
+  # ----------------------------------------------------------------
+  # 3. CONTENEDOR DE FRONTEND (PHP 7.3 + Apache + Bootstrap)
+  # ----------------------------------------------------------------
+  front_forms:
+    build:
+      context: ./front_forms
+      dockerfile: Dockerfile
+    container_name: contenedor_front_forms
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      URL_BACKEND: http://localhost:8081
+    volumes:
+      - ./front_forms:/var/www/html
+    depends_on:
+      - back_form
+    networks:
+      - red_formularios
+
+volumes:
+  datos_postgres:
+    name: volumen_datos_postgres
+
+networks:
+  red_formularios:
+    name: red_formularios
+    driver: bridge

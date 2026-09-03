@@ -1,154 +1,166 @@
-# Contexto y Reglas de Desarrollo - Sistema de Gestión de Soporte Técnico (COSMOL R.L.)
+# AGENTS.md - Guía de Desarrollo y Convenciones del Proyecto
+
+Bienvenido al repositorio del **Sistema Modular de Formularios de Registro**.
+Este documento define la arquitectura, normas de codificación, estructura de directorios y directrices para agentes de IA y desarrolladores que interactúan con este código.
+
+---
 
 ## 1. Visión General del Proyecto
-El proyecto consiste en el **Sistema Web de Gestión de Soporte Técnico (Help Desk)** para **COSMOL R.L.**
-Su propósito principal es digitalizar y automatizar el flujo de trabajo de **4 formularios físicos institucionales** (cada uno compuesto por anverso y reverso), eliminando el uso de papel y centralizando la gestión de incidentes y requerimientos técnicos.
 
-* **Naturaleza del Sistema**: Aplicación Web Responsiva (Mobile-First y Desktop), accesible mediante navegador web (ej. Google Chrome) sin requerir instalación nativa en dispositivos móviles.
-* **Escalabilidad y Flexibilidad**: La arquitectura debe ser **modular y extensible**, permitiendo la integración progresiva de los formularios 2, 3 y 4 sin romper la lógica del primer formulario ya definido.
+El objetivo del sistema es gestionar múltiples formularios de registro organizacionales de manera modular. Inicialmente el sistema contempla **4 formularios**, comenzando por:
+
+1. **Formulario 1 (Activo): Soporte Técnico**
+2. **Formulario 2 (Futuro):** Registro de Permisos / Vacaciones
+3. **Formulario 3 (Futuro):** Control de Activos / Inventario
+4. **Formulario 4 (Futuro):** Requerimiento de Compras / Suministros
+
+Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo la misma infraestructura tecnológica base.
 
 ---
 
-## 2. Arquitectura del Sistema (Dockerizada y Modular)
+## 2. Pila Tecnológica (Stack)
 
-El proyecto está diseñado bajo una arquitectura de 3 contenedores independientes orquestados por `docker-compose.yml`:
+- **Backend:** PHP 7.3 con Apache (Extensión `pdo_pgsql`).
+- **Frontend:** PHP 7.3 con Apache y componentes de interfaz con **Bootstrap 5**.
+- **Base de Datos:** PostgreSQL 13+.
+- **Contenedores:** Docker & Docker Compose con 3 servicios independientes:
+  - Base de datos (`db`)
+  - Backend API (`back_form`)
+  - Frontend (`front_forms`)
 
-```
-+-------------------------------------------------------------------------+
-|                              ARQUITECTURA                               |
-|                                                                         |
-|   +-----------------------+     +-------------------+     +---------+   |
-|   |       FRONTEND        |     |      BACKEND      |     |   BD    |   |
-|   |  Nginx + HTML/CSS/JS  | <-> |  PHP 7.3 + Apache | <-> | Postgres|   |
-|   |     Bootstrap 5       |     |     API / MVC     |     |   SQL   |   |
-|   +-----------------------+     +-------------------+     +---------+   |
-+-------------------------------------------------------------------------+
-```
+---
 
-### Contenedores y Roles:
-1. **Frontend (`frontend`)**:
-   - **Stack**: Nginx, HTML5, CSS3, JavaScript (Vanilla / Modular), Bootstrap 5.
-   - **Responsabilidad**: Interfaz de usuario adaptativa a pantallas de smartphones y escritorios, captura de datos, validaciones del lado del cliente y consumo de endpoints del backend.
-2. **Backend (`backend`)**:
-   - **Stack**: PHP 7.3 con servidor Apache.
-   - **Responsabilidad**: Lógica de negocio, autenticación, control de accesos basado en roles (RBAC), validaciones del lado del servidor, gestión de estados de tickets, generación de correlativos y conexión persistente con PostgreSQL mediante PDO.
-3. **Base de Datos (`database`)**:
-   - **Stack**: PostgreSQL.
-   - **Responsabilidad**: Almacenamiento relacional estructurado.
-   - **Inicialización**: El script `database/init.sql` define esquemas, tablas, claves primarias/foráneas, índices y datos iniciales (roles, usuarios administradores, catálogos).
+## 3. Reglas Críticas de Desarrollo
 
-### Estructura de Directorios Modular Propuesta:
+### 3.1. Nombres de Archivos y Carpetas en Español
+- Todos los directorios y archivos de lógica, configuración, componentes, recursos y endpoints **deben nombrarse en español**.
+- **Excepciones exclusivas para archivos base del ecosistema:**
+  - `docker-compose.yml`
+  - `Dockerfile`
+  - `init.sql`
+  - `AGENTS.md`
+  - `index.php` (punto de entrada estándar del servidor web)
+
+### 3.2. Compatibilidad Estricta con PHP 7.3
+- **NO USAR** características de PHP 8+ como:
+  - Argumentos nombrados (`func(name: $val)`)
+  - Expresión `match` (usar `switch` o `if/else`)
+  - Tipos de unión (`int|string`)
+  - Promoción de propiedades en constructor
+  - Operador nullsafe (`?->`)
+- Usar sintaxis compatible con PHP 7.3 (`array()`, `[]`, operadores ternarios estándar, tipado simple).
+
+### 3.3. Separación Modular de Responsabilidades
+- **`front_forms/`**: No realiza consultas SQL directas. Se comunica exclusivamente con el backend mediante peticiones HTTP (Fetch API / cURL) a `back_form/`.
+- **`back_form/`**: Recibe peticiones HTTP, valida datos, procesa la lógica e interactúa con la base de datos PostgreSQL retornando respuestas JSON estandarizadas.
+- **`init.sql`**: Es el archivo físico único de inicialización de esquemas, tablas, restricciones e índices. Cualquier cambio estructural en la base de datos debe reflejarse en este script.
+
+---
+
+## 4. Estructura de Directorios
+
 ```text
 Formulario_Registro/
-├── AGENTS.md
-├── docker-compose.yml
-├── database/
-│   └── init.sql
-├── backend/
-│   ├── Dockerfile
-│   ├── config/
-│   │   ├── database.php
-│   │   └── config.php
-│   ├── core/
-│   │   ├── Router.php
-│   │   ├── Controller.php
-│   │   ├── Model.php
-│   │   └── Auth.php
-│   └── modules/
-│       ├── auth/
-│       ├── users/
-│       ├── tickets/
-│       │   ├── controllers/
-│       │   ├── models/
-│       │   └── views_or_routes/
-│       ├── form1_soporte/        # Módulo Formulario 1 (Soporte Técnico Hardware/Software/Red)
-│       └── reports/
-└── frontend/
-    ├── Dockerfile
-    ├── nginx.conf
-    ├── public/
-    │   ├── index.html
-    │   ├── assets/
-    │   │   ├── css/
-    │   │   ├── js/
-    │   │   └── img/
-    │   └── modules/
-    │       ├── auth/
-    │       ├── tickets/
-    │       └── form1/
+├── AGENTS.md                          # Este documento de reglas y arquitectura
+├── docker-compose.yml                 # Orquestador de contenedores
+├── init.sql                           # Script físico DDL para PostgreSQL
+│
+├── back_form/                         # Backend (PHP 7.3 API)
+│   ├── Dockerfile                     # Configuración del contenedor PHP 7.3 con pdo_pgsql
+│   ├── index.php                      # Estado del servicio API (Healthcheck)
+│   ├── configuracion/
+│   │   ├── conexion_bd.php            # Conexión PDO a PostgreSQL
+│   │   └── respuestas_api.php         # Respuestas JSON y cabeceras CORS
+│   └── api/
+│       └── soporte_tecnico/           # Endpoints del Módulo de Soporte
+│           ├── crear_ticket.php       # POST: Registrar ticket
+│           ├── listar_tickets.php     # GET: Listado con filtros
+│           ├── obtener_ticket.php     # GET: Detalle de un ticket
+│           └── actualizar_ticket.php  # POST: Actualizar atención/resolución
+│
+└── front_forms/                       # Frontend (PHP 7.3 + Bootstrap)
+    ├── Dockerfile                     # Configuración del contenedor PHP 7.3 Apache
+    ├── index.php                      # Portal central (Módulo 1 activo, 2-4 próximos)
+    ├── componentes/
+    │   ├── encabezado.php             # Head HTML y estilos Bootstrap
+    │   ├── barra_navegacion.php       # Barra superior de navegación
+    │   └── pie_pagina.php             # Scripts y cierre de documento
+    ├── recursos/
+    │   ├── css/
+    │   │   └── estilos_personalizados.css  # Reglas visuales y diseño
+    │   └── js/
+    │       ├── cliente_api.js         # Cliente central de comunicación API
+    │       ├── formulario_soporte.js  # Lógica del formulario de soporte
+    │       └── gestion_tickets.js     # Lógica del panel de soporte
+    └── modulos/
+        └── soporte_tecnico/
+            ├── index.php              # Punto de entrada del módulo
+            ├── formulario_soporte.php # Formulario de 6 secciones
+            └── gestion_tickets.php    # Panel de gestión y seguimiento
 ```
 
 ---
 
-## 3. Roles y Permisos
+## 5. Especificación del Formulario de Soporte Técnico
 
-1. **Solicitante (Trabajador / Usuario final)**:
-   - Registro de nuevas solicitudes/problemas.
-   - Consulta del estado de sus propios tickets.
-   - Confirmación de conformidad una vez atendido el servicio.
-2. **Técnico (Soporte de Sistemas)**:
-   - Visualización de tickets asignados.
-   - Registro de diagnóstico técnico, tareas realizadas, solución aplicada y tiempo de resolución.
-   - Cambio de estado del ticket (En Diagnóstico, En Proceso, Resuelto).
-   - Registro de observaciones y recomendaciones técnicas.
-3. **Administrador (Jefe de Sistemas / Supervisor)**:
-   - Control total de la plataforma.
-   - Gestión de usuarios, técnicos, departamentos y categorías.
-   - Asignación de tickets y definición de prioridades (Baja, Media, Alta, Urgente).
-   - Generación de reportes métricos, tiempos de respuesta y exportaciones.
+El formulario consta de las siguientes 6 secciones:
+
+1. **Datos Generales:**
+   - Nombre del solicitante (`nombre_solicitante`)
+   - Fecha de registro (`fecha_solicitud`)
+   - Departamento o área (`departamento_area`)
+2. **Tipo de Soporte Requerido (Marcar lo que corresponda):**
+   - Hardware: equipo, periférico (`soporte_hardware`)
+   - Software: aplicaciones, sistema (`soporte_software`)
+3. **Detalle del Problema / Requerimiento:**
+   - Descripción detallada (`descripcion_problema`)
+   - Equipo afectado (si aplica):
+     - Número de serie / inventario (`numero_serie`)
+     - Marca / modelo (`marca_modelo`)
+     - Sistema operativo (`sistema_operativo`)
+4. **Prioridad (A definir por el área de soporte):**
+   - Urgente (afecta operaciones críticas)
+   - Alta (afecta productividad significativa)
+   - Media (molestia operativa pero no detiene trabajo)
+   - Baja (requerimiento rutinario/menor)
+5. **Datos del Técnico (Para completar por soporte):**
+   - Fecha / hora de atención (`fecha_hora_atencion`)
+   - Técnico asignado (`tecnico_asignado`)
+   - Diagnóstico (`diagnostico`)
+   - Solución aplicada (`solucion_aplicada`)
+   - Tipo de resolución (`tipo_resolucion`)
+6. **Observaciones / Recomendaciones:**
+   - Observaciones y sugerencias (`observaciones_recomendacion`)
 
 ---
 
-## 4. Ciclo de Vida y Flujo del Ticket (Formulario 1)
+## 6. Convención de Respuestas JSON de la API
 
-```mermaid
-stateDiagram-v2
-    [*] --> Registrado : Solicitante crea ticket (Genera Código SOP-000001)
-    Registrado --> Asignado : Admin/Sistemas clasifica prioridad y asigna técnico
-    Asignado --> En_Proceso : Técnico inicia diagnóstico y trabajo
-    En_Proceso --> Resuelto : Técnico registra solución y tiempo invertido
-    Resuelto --> Cerrado : Solicitante y Sistemas confirman conformidad
-    Cerrado --> [*]
+Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
+
+```json
+{
+  "exito": true,
+  "mensaje": "Mensaje descriptivo en español",
+  "datos": { ... }
+}
 ```
 
-### Pasos Detallados:
-1. **Creación del Ticket**: El solicitante registra su problema. El sistema asigna automáticamente un correlativo único (ej: `SOP-000001`).
-2. **Revisión y Asignación**: El área de Sistemas evalúa la severidad, asigna prioridad y designa al técnico responsable.
-3. **Atención Técnica**: El técnico ingresa al sistema desde su dispositivo móvil o PC, revisa los datos del equipo y registra el diagnóstico y procedimiento.
-4. **Cierre y Conformidad**: Se registra la solución aplicada, el tiempo empleado y la conformidad digital del solicitante y del área de Sistemas.
+En caso de error:
+```json
+{
+  "exito": false,
+  "mensaje": "Descripción clara del error ocurrido",
+  "errores": [ ... ]
+}
+```
 
 ---
 
-## 5. Especificaciones de Datos del Formulario 1 (Base Inicial)
+## 7. Instrucciones para Agregar un Nuevo Formulario
 
-* **Datos Generales**: Fecha/hora, código de ticket, solicitante, departamento/área, contacto/interno.
-* **Tipo de Soporte**: Hardware, Software, Red, Telefonía / Otros.
-* **Datos del Equipo Afectado**: Número de inventario/serie, tipo de equipo, marca, modelo, sistema operativo.
-* **Descripción del Problema**: Detalle del incidente reportado por el usuario.
-* **Gestión Técnica**:
-  - Prioridad (Baja / Media / Alta / Crítica).
-  - Técnico asignado.
-  - Diagnóstico técnico.
-  - Trabajo realizado / Solución aplicada.
-  - Tiempo de resolución (horas/minutos transcurridos o fecha de inicio y fin).
-* **Cierre y Evaluación**:
-  - Observaciones y recomendaciones preventivas.
-  - Conformidad del solicitante (Aceptado / Conforme).
-  - Visto Bueno / Conformidad del responsable de Sistemas.
-
----
-
-## 6. Pautas y Buenas Prácticas para el Desarrollo
-
-1. **Compatibilidad con PHP 7.3**:
-   - Usar sintaxis compatible con PHP 7.3 (evitar características exclusivas de PHP 8+ como constructor promotion, named arguments, match expressions o tipos mixtos no soportados).
-   - Utilizar sentencias preparadas con `PDO` para prevenir inyecciones SQL en PostgreSQL.
-2. **Diseño Modular y Desacoplado**:
-   - Cada formulario debe concebirse como un módulo que comparte una base común (Ticket Core) pero con sus campos y tablas especializadas.
-   - El código debe estar preparado para incorporar los Formularios 2, 3 y 4 sin alterar la estructura fundamental del sistema.
-3. **Diseño Responsivo (Mobile-First)**:
-   - Todo formulario e interfaz debe ser 100% operable desde teléfonos móviles con pantallas táctiles, asegurando inputs accesibles, botones con área de toque adecuada y tablas con scroll responsivo.
-4. **Seguridad y Trazabilidad**:
-   - Encriptación de contraseñas (`password_hash` con BCRYPT/Argon2).
-   - Manejo de sesiones seguras o tokens de autenticación.
-   - Registro de marcas de tiempo (`created_at`, `updated_at`, `resolved_at`, `closed_at`) para auditoría.
+Cuando se implementen los formularios restantes (2, 3 o 4):
+1. **Base de Datos:** Añadir la nueva tabla en `init.sql` con prefijo descriptivo (ej. `vacaciones_permisos`).
+2. **Backend:** Crear la carpeta en `back_form/api/<nombre_modulo>/` con los scripts correspondientes (`crear_registro.php`, `listar_registros.php`, etc.).
+3. **Frontend:** Crear la carpeta en `front_forms/modulos/<nombre_modulo>/` reutilizando `componentes/encabezado.php`, `barra_navegacion.php` y `pie_pagina.php`.
+4. **Portal Principal:** Actualizar `front_forms/index.php` cambiando el estado del módulo de "En desarrollo" a "Activo".
