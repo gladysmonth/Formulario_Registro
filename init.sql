@@ -8,7 +8,7 @@
 -- Asegurar codificación UTF-8
 SET client_encoding = 'UTF8';
 
--- Crear tabla de secuencia o función para actualización automática de fecha si no existe
+-- Función para actualización automática de marca de tiempo (actualizado_en)
 CREATE OR REPLACE FUNCTION actualizar_marca_tiempo()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -18,10 +18,40 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ==========================================================
+-- TABLA DE CATÁLOGO / INVENTARIO DE EQUIPOS
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS equipos_inventario (
+    id BIGSERIAL PRIMARY KEY,
+    codigo_activo VARCHAR(100),
+    numero_serie VARCHAR(100) NOT NULL,
+    tipo_equipo VARCHAR(100) NOT NULL,
+    marca_modelo VARCHAR(150) NOT NULL,
+    sistema_operativo VARCHAR(100),
+    area_encargado VARCHAR(150),
+    centro_costo VARCHAR(100),
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_equipos_serie ON equipos_inventario (numero_serie);
+CREATE INDEX IF NOT EXISTS idx_equipos_codigo ON equipos_inventario (codigo_activo);
+CREATE INDEX IF NOT EXISTS idx_equipos_tipo ON equipos_inventario (tipo_equipo);
+CREATE INDEX IF NOT EXISTS idx_equipos_area ON equipos_inventario (area_encargado);
+
+DROP TRIGGER IF EXISTS trigger_actualizar_equipos_inventario ON equipos_inventario;
+CREATE TRIGGER trigger_actualizar_equipos_inventario
+BEFORE UPDATE ON equipos_inventario
+FOR EACH ROW
+EXECUTE FUNCTION actualizar_marca_tiempo();
+
+
+-- ==========================================================
 -- MÓDULO 1: FORMULARIO DE SOPORTE TÉCNICO
 -- ==========================================================
+
+-- 1. TABLA PRINCIPAL DE TICKETS (Solicitud del Usuario)
 CREATE TABLE IF NOT EXISTS tickets_soporte (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     codigo_ticket VARCHAR(20) UNIQUE NOT NULL,
 
     -- 1. DATOS GENERALES
@@ -35,104 +65,78 @@ CREATE TABLE IF NOT EXISTS tickets_soporte (
 
     -- 3. DETALLE DEL PROBLEMA / REQUERIMIENTO
     descripcion_problema TEXT NOT NULL,
-    -- Equipo afectado (si aplica)
-    numero_serie VARCHAR(100),
-    marca_modelo VARCHAR(100),
-    sistema_operativo VARCHAR(100),
 
-    -- 4. PRIORIDAD (A definir por el área de soporte)
+    -- Equipo afectado (vinculación a inventario y datos capturados)
+    equipo_id BIGINT REFERENCES equipos_inventario(id) ON DELETE SET NULL,
+    codigo_activo VARCHAR(100),
+    numero_serie VARCHAR(100),
+    tipo_equipo VARCHAR(100),
+    marca_modelo VARCHAR(150),
+    sistema_operativo VARCHAR(100),
+    area_encargado VARCHAR(150),
+    centro_costo VARCHAR(100),
+
+    -- 4. PRIORIDAD
     prioridad VARCHAR(20) NOT NULL DEFAULT 'media'
         CHECK (prioridad IN ('urgente', 'alta', 'media', 'baja')),
-
-    -- 5. DATOS DEL TÉCNICO (Para completar por soporte)
-    fecha_hora_atencion TIMESTAMP,
-    tecnico_asignado VARCHAR(150),
-    diagnostico TEXT,
-    solucion_aplicada TEXT,
-    tipo_resolucion VARCHAR(100),
-
-    -- 6. OBSERVACIONES / RECOMENDACIÓN
-    observaciones_recomendacion TEXT,
 
     -- CAMPOS DE CONTROL Y ESTADO
     estado VARCHAR(30) NOT NULL DEFAULT 'pendiente'
         CHECK (estado IN ('pendiente', 'en_proceso', 'resuelto', 'cancelado')),
+
+    -- FIRMAS DIGITALES
+    firma_solicitante TEXT,
+    firma_sistemas TEXT,
+
     creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Índices para optimizar búsquedas y filtrados
+-- Índices para optimizar búsquedas y filtrados en tickets_soporte
 CREATE INDEX IF NOT EXISTS idx_tickets_codigo ON tickets_soporte (codigo_ticket);
 CREATE INDEX IF NOT EXISTS idx_tickets_estado ON tickets_soporte (estado);
 CREATE INDEX IF NOT EXISTS idx_tickets_prioridad ON tickets_soporte (prioridad);
 CREATE INDEX IF NOT EXISTS idx_tickets_fecha ON tickets_soporte (fecha_solicitud);
 CREATE INDEX IF NOT EXISTS idx_tickets_depto ON tickets_soporte (departamento_area);
+CREATE INDEX IF NOT EXISTS idx_tickets_equipo_id ON tickets_soporte (equipo_id);
 
--- Trigger para actualizar campo actualizado_en automáticamente
+-- Trigger para actualizar campo actualizado_en en tickets_soporte
 DROP TRIGGER IF EXISTS trigger_actualizar_tickets_soporte ON tickets_soporte;
 CREATE TRIGGER trigger_actualizar_tickets_soporte
 BEFORE UPDATE ON tickets_soporte
 FOR EACH ROW
 EXECUTE FUNCTION actualizar_marca_tiempo();
 
--- ==========================================================
--- REGISTROS INICIALES DE PRUEBA (SEMILLAS)
--- ==========================================================
-INSERT INTO tickets_soporte (
-    codigo_ticket,
-    nombre_solicitante,
-    fecha_solicitud,
-    departamento_area,
-    soporte_hardware,
-    soporte_software,
-    descripcion_problema,
-    numero_serie,
-    marca_modelo,
-    sistema_operativo,
-    prioridad,
-    estado,
-    tecnico_asignado,
-    diagnostico,
-    solucion_aplicada,
-    tipo_resolucion,
-    observaciones_recomendacion
-) VALUES 
-(
-    'SOP-2026-0001',
-    'Carlos Mendoza Ramos',
-    CURRENT_DATE - INTERVAL '1 day',
-    'Contabilidad y Finanzas',
-    TRUE,
-    FALSE,
-    'La impresora multifuncional de red no responde a los comandos de impresión y presenta error de atasco continuo.',
-    'SN-PRN-884210',
-    'HP LaserJet Pro M404dw',
-    'Windows 10 Pro 64-bit',
-    'alta',
-    'en_proceso',
-    'Ing. Rodrigo Alarcón',
-    'Rodillo de tracción obstruido por residuos de papel y firmware desactualizado.',
-    'Limpieza profunda de rodillos y actualización de controladores en la estación de trabajo.',
-    'Mantenimiento correctivo',
-    'Se recomienda utilizar papel de gramaje recomendado (75-80g) y evitar hojas arrugadas.'
-),
-(
-    'SOP-2026-0002',
-    'Mariana Silva Morales',
-    CURRENT_DATE,
-    'Recursos Humanos',
-    FALSE,
-    TRUE,
-    'Error al intentar ingresar al sistema de planillas, la pantalla muestra advertencia de certificado vencido y bloqueo de sesión.',
-    'SN-LAP-441092',
-    'Dell Latitude 3420',
-    'Windows 11 Enterprise',
-    'urgente',
-    'pendiente',
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    'Requiere atención prioritaria para cierre de planillas mensual.'
-)
-ON CONFLICT (codigo_ticket) DO NOTHING;
+
+-- 2. TABLA DE ATENCIONES Y RESOLUCIONES TÉCNICAS (Soporte Técnico)
+CREATE TABLE IF NOT EXISTS atenciones_soporte (
+    id BIGSERIAL PRIMARY KEY,
+    ticket_id BIGINT NOT NULL REFERENCES tickets_soporte(id) ON DELETE CASCADE,
+
+    -- 5. DATOS DEL TÉCNICO
+    fecha_hora_atencion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    tecnico_asignado VARCHAR(150) NOT NULL,
+    tipo_resolucion VARCHAR(100),
+    diagnostico TEXT,
+    solucion_aplicada TEXT,
+
+    -- 6. OBSERVACIONES / RECOMENDACIÓN
+    observaciones_recomendacion TEXT,
+
+    -- FIRMA TÉCNICO DE SISTEMAS
+    firma_sistemas TEXT,
+
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para optimizar búsquedas en atenciones_soporte
+CREATE INDEX IF NOT EXISTS idx_atenciones_ticket_id ON atenciones_soporte (ticket_id);
+CREATE INDEX IF NOT EXISTS idx_atenciones_tecnico ON atenciones_soporte (tecnico_asignado);
+
+-- Trigger para actualizar campo actualizado_en en atenciones_soporte
+DROP TRIGGER IF EXISTS trigger_actualizar_atenciones_soporte ON atenciones_soporte;
+CREATE TRIGGER trigger_actualizar_atenciones_soporte
+BEFORE UPDATE ON atenciones_soporte
+FOR EACH ROW
+EXECUTE FUNCTION actualizar_marca_tiempo();

@@ -1,5 +1,7 @@
 /**
  * Lógica y Validaciones del Formulario de Soporte Técnico
+ * Incluye: Catálogo de Equipos Afectados y Doble Firma Digital
+ * Compatible con PHP 7.3
  * Archivo: formulario_soporte.js
  */
 
@@ -32,6 +34,205 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ==========================================================
+    // 1. GESTIÓN DEL CATÁLOGO DE EQUIPOS AFECTADOS
+    // ==========================================================
+    let listaEquiposCargados = [];
+    const buscadorEquipo = document.getElementById('buscador_equipo');
+    const datalistEquipos = document.getElementById('listaEquiposRegistrados');
+    const inputEquipoId = document.getElementById('equipo_id');
+    const badgeEstadoEquipo = document.getElementById('badgeEstadoEquipo');
+    const btnLimpiarEquipo = document.getElementById('btnLimpiarEquipo');
+
+    const inputCodigoActivo = document.getElementById('codigo_activo');
+    const inputNumeroSerie = document.getElementById('numero_serie');
+    const selectTipoEquipo = document.getElementById('tipo_equipo');
+    const inputMarcaModelo = document.getElementById('marca_modelo');
+    const inputSistemaOperativo = document.getElementById('sistema_operativo');
+    const inputAreaEncargado = document.getElementById('area_encargado');
+    const inputCentroCosto = document.getElementById('centro_costo');
+
+    async function cargarInventarioEquipos() {
+        try {
+            const respuesta = await clienteApi.buscarEquipos('');
+            if (respuesta.exito && Array.isArray(respuesta.datos)) {
+                listaEquiposCargados = respuesta.datos;
+                if (datalistEquipos) {
+                    datalistEquipos.innerHTML = '';
+                    listaEquiposCargados.forEach(eq => {
+                        const option = document.createElement('option');
+                        option.value = `${eq.numero_serie} | ${eq.marca_modelo} (${eq.tipo_equipo})`;
+                        option.setAttribute('data-id', eq.id);
+                        datalistEquipos.appendChild(option);
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('No se pudo precargar la lista de equipos:', e);
+        }
+    }
+
+    cargarInventarioEquipos();
+
+    if (buscadorEquipo) {
+        buscadorEquipo.addEventListener('input', () => {
+            const valor = buscadorEquipo.value.trim().toLowerCase();
+            if (!valor) return;
+
+            // Buscar coincidencia en la lista cargada
+            const equipoEncontrado = listaEquiposCargados.find(eq => {
+                const cadenaMatch = `${eq.numero_serie} | ${eq.marca_modelo} (${eq.tipo_equipo})`.toLowerCase();
+                return cadenaMatch === valor ||
+                       (eq.numero_serie && eq.numero_serie.toLowerCase() === valor) ||
+                       (eq.codigo_activo && eq.codigo_activo.toLowerCase() === valor);
+            });
+
+            if (equipoEncontrado) {
+                seleccionarEquipo(equipoEncontrado);
+            }
+        });
+    }
+
+    function seleccionarEquipo(eq) {
+        if (inputEquipoId) inputEquipoId.value = eq.id;
+        if (inputCodigoActivo) inputCodigoActivo.value = eq.codigo_activo || '';
+        if (inputNumeroSerie) inputNumeroSerie.value = eq.numero_serie || '';
+        if (selectTipoEquipo) selectTipoEquipo.value = eq.tipo_equipo || '';
+        if (inputMarcaModelo) inputMarcaModelo.value = eq.marca_modelo || '';
+        if (inputSistemaOperativo) inputSistemaOperativo.value = eq.sistema_operativo || '';
+        if (inputAreaEncargado) inputAreaEncargado.value = eq.area_encargado || '';
+        if (inputCentroCosto) inputCentroCosto.value = eq.centro_costo || '';
+
+        if (badgeEstadoEquipo) {
+            badgeEstadoEquipo.className = 'badge bg-success-subtle text-success border';
+            badgeEstadoEquipo.textContent = 'Equipo vinculado al inventario';
+        }
+        if (btnLimpiarEquipo) {
+            btnLimpiarEquipo.classList.remove('d-none');
+        }
+    }
+
+    if (btnLimpiarEquipo) {
+        btnLimpiarEquipo.addEventListener('click', () => {
+            if (inputEquipoId) inputEquipoId.value = '';
+            if (buscadorEquipo) buscadorEquipo.value = '';
+            if (badgeEstadoEquipo) {
+                badgeEstadoEquipo.className = 'badge bg-secondary-subtle text-secondary border';
+                badgeEstadoEquipo.textContent = 'Equipo nuevo';
+            }
+            btnLimpiarEquipo.classList.add('d-none');
+        });
+    }
+
+    // ==========================================================
+    // 2. LIENZOS DE FIRMA DIGITAL (SOLICITANTE Y SISTEMAS)
+    // ==========================================================
+    function inicializarLienzoFirma(canvasId, badgeId, btnLimpiarId) {
+        const canvas = document.getElementById(canvasId);
+        const badge = document.getElementById(badgeId);
+        const btnLimpiar = document.getElementById(btnLimpiarId);
+        if (!canvas) return null;
+
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
+        let tieneFirma = false;
+
+        // Ajustar resolución interna del canvas al tamaño visual real
+        function redimensionarCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width > 0) {
+                canvas.width = rect.width;
+                canvas.height = rect.height || 160;
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#0f172a';
+            }
+        }
+
+        window.addEventListener('resize', redimensionarCanvas);
+        setTimeout(redimensionarCanvas, 200);
+
+        function obtenerPosicion(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clienteX - rect.left,
+                y: clienteY - rect.top
+            };
+        }
+
+        function iniciarDibujo(e) {
+            e.preventDefault();
+            dibujando = true;
+            const pos = obtenerPosicion(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function trazar(e) {
+            if (!dibujando) return;
+            e.preventDefault();
+            const pos = obtenerPosicion(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            if (!tieneFirma) {
+                tieneFirma = true;
+                if (badge) {
+                    badge.className = 'badge bg-success-subtle text-success border';
+                    badge.textContent = 'Firmado';
+                }
+            }
+        }
+
+        function terminarDibujo() {
+            dibujando = false;
+        }
+
+        // Eventos Mouse
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        canvas.addEventListener('mousemove', trazar);
+        window.addEventListener('mouseup', terminarDibujo);
+
+        // Eventos Touch (Pantallas táctiles y celulares)
+        canvas.addEventListener('touchstart', iniciarDibujo, { passive: false });
+        canvas.addEventListener('touchmove', trazar, { passive: false });
+        canvas.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchcancel', terminarDibujo);
+
+        // Limpiar firma
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                tieneFirma = false;
+                if (badge) {
+                    badge.className = 'badge bg-danger-subtle text-danger border';
+                    badge.textContent = 'Pendiente';
+                }
+            });
+        }
+
+        return {
+            tieneFirma: () => tieneFirma,
+            obtenerBase64: () => tieneFirma ? canvas.toDataURL('image/png') : null,
+            limpiar: () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                tieneFirma = false;
+                if (badge) {
+                    badge.className = 'badge bg-danger-subtle text-danger border';
+                    badge.textContent = 'Pendiente';
+                }
+            }
+        };
+    }
+
+    const firmaSolicitante = inicializarLienzoFirma('canvasFirmaSolicitante', 'badgeFirmaSolicitante', 'btnLimpiarFirmaSolicitante');
+    const firmaSistemas = inicializarLienzoFirma('canvasFirmaSistemas', 'badgeFirmaSistemas', 'btnLimpiarFirmaSistemas');
+
+    // ==========================================================
+    // 3. ENVÍO DEL FORMULARIO
+    // ==========================================================
     if (formulario) {
         formulario.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -47,12 +248,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     alertaValidacion.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
                 return;
+            }
+
+            // Validar firma obligatoria del solicitante
+            if (!firmaSolicitante || !firmaSolicitante.tieneFirma()) {
+                if (alertaValidacion) {
+                    alertaValidacion.textContent = 'La firma digital del Solicitante es obligatoria. Por favor firme en el recuadro blanco de SOLICITANTE antes de registrar el ticket.';
+                    alertaValidacion.classList.remove('d-none');
+                    const canvasEl = document.getElementById('canvasFirmaSolicitante');
+                    if (canvasEl) canvasEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
             } else {
                 if (alertaValidacion) alertaValidacion.classList.add('d-none');
             }
 
             // Recoger datos del formulario
             const formData = new FormData(formulario);
+            const checkGuardarInv = document.getElementById('guardar_en_inventario');
+
             const datos = {
                 nombre_solicitante: formData.get('nombre_solicitante'),
                 fecha_solicitud: formData.get('fecha_solicitud'),
@@ -60,10 +274,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 soporte_hardware: tieneHardware,
                 soporte_software: tieneSoftware,
                 descripcion_problema: formData.get('descripcion_problema'),
+
+                // Campos del equipo afectado
+                equipo_id: formData.get('equipo_id') || null,
+                codigo_activo: formData.get('codigo_activo'),
                 numero_serie: formData.get('numero_serie'),
+                tipo_equipo: formData.get('tipo_equipo'),
                 marca_modelo: formData.get('marca_modelo'),
                 sistema_operativo: formData.get('sistema_operativo'),
+                area_encargado: formData.get('area_encargado'),
+                centro_costo: formData.get('centro_costo'),
+                guardar_en_inventario: checkGuardarInv ? checkGuardarInv.checked : true,
+
+                // Prioridad
                 prioridad: formData.get('prioridad') || 'media',
+
+                // Firmas digitales (Base64 PNG)
+                firma_solicitante: firmaSolicitante.obtenerBase64(),
+                firma_sistemas: firmaSistemas ? firmaSistemas.obtenerBase64() : null,
+
                 // Campos de técnico (si fueron completados)
                 tecnico_asignado: formData.get('tecnico_asignado'),
                 fecha_hora_atencion: formData.get('fecha_hora_atencion'),
@@ -92,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="text-start p-3 bg-light rounded-3 my-2 border">
                                 <p class="mb-1"><strong>Código de Ticket:</strong> <span class="badge bg-primary fs-6">${ticket.codigo_ticket}</span></p>
                                 <p class="mb-1"><strong>Estado Inicial:</strong> <span class="badge bg-warning text-dark">${ticket.estado.toUpperCase()}</span></p>
+                                <p class="mb-1 text-success"><i class="bi bi-shield-check me-1"></i> Firma del solicitante verificada</p>
                                 <p class="mb-0 text-muted small">Conserve este código para hacer seguimiento a la atención técnica.</p>
                             </div>
                         `,
@@ -106,9 +336,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             window.location.href = 'gestion_tickets.php';
                         } else {
                             formulario.reset();
+                            if (firmaSolicitante) firmaSolicitante.limpiar();
+                            if (firmaSistemas) firmaSistemas.limpiar();
                             if (inputFecha) inputFecha.value = new Date().toISOString().split('T')[0];
                             if (switchSeccionTecnica) switchSeccionTecnica.checked = false;
                             if (seccionTecnicaContenedor) seccionTecnicaContenedor.classList.add('d-none');
+                            if (badgeEstadoEquipo) {
+                                badgeEstadoEquipo.className = 'badge bg-secondary-subtle text-secondary border';
+                                badgeEstadoEquipo.textContent = 'Equipo nuevo';
+                            }
+                            if (btnLimpiarEquipo) btnLimpiarEquipo.classList.add('d-none');
+                            cargarInventarioEquipos();
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                         }
                     });

@@ -35,17 +35,17 @@ try {
     $parametros = array();
 
     if (!empty($estado) && $estado !== 'todos') {
-        $clausulas[] = "estado = :estado";
+        $clausulas[] = "t.estado = :estado";
         $parametros[':estado'] = $estado;
     }
 
     if (!empty($prioridad) && $prioridad !== 'todos') {
-        $clausulas[] = "prioridad = :prioridad";
+        $clausulas[] = "t.prioridad = :prioridad";
         $parametros[':prioridad'] = $prioridad;
     }
 
     if (!empty($buscar)) {
-        $clausulas[] = "(codigo_ticket ILIKE :buscar OR nombre_solicitante ILIKE :buscar OR departamento_area ILIKE :buscar OR descripcion_problema ILIKE :buscar)";
+        $clausulas[] = "(t.codigo_ticket ILIKE :buscar OR t.nombre_solicitante ILIKE :buscar OR t.departamento_area ILIKE :buscar OR t.descripcion_problema ILIKE :buscar OR a.tecnico_asignado ILIKE :buscar)";
         $parametros[':buscar'] = '%' . $buscar . '%';
     }
 
@@ -55,37 +55,52 @@ try {
     }
 
     // Consulta de conteo total
-    $sql_conteo = "SELECT COUNT(*) FROM tickets_soporte {$donde}";
+    $sql_conteo = "SELECT COUNT(DISTINCT t.id) 
+                   FROM tickets_soporte t 
+                   LEFT JOIN atenciones_soporte a ON a.ticket_id = t.id 
+                   {$donde}";
     $stmt_conteo = $conexion->prepare($sql_conteo);
     $stmt_conteo->execute($parametros);
     $total_registros = (int)$stmt_conteo->fetchColumn();
 
     // Consulta de registros ordenados por fecha de creación descendente
     $sql = "SELECT 
-                id,
-                codigo_ticket,
-                nombre_solicitante,
-                fecha_solicitud,
-                departamento_area,
-                soporte_hardware,
-                soporte_software,
-                descripcion_problema,
-                numero_serie,
-                marca_modelo,
-                sistema_operativo,
-                prioridad,
-                estado,
-                fecha_hora_atencion,
-                tecnico_asignado,
-                diagnostico,
-                solucion_aplicada,
-                tipo_resolucion,
-                observaciones_recomendacion,
-                creado_en,
-                actualizado_en
-            FROM tickets_soporte
+                t.id,
+                t.codigo_ticket,
+                t.nombre_solicitante,
+                t.fecha_solicitud,
+                t.departamento_area,
+                t.soporte_hardware,
+                t.soporte_software,
+                t.descripcion_problema,
+                t.equipo_id,
+                t.codigo_activo,
+                t.numero_serie,
+                t.tipo_equipo,
+                t.marca_modelo,
+                t.sistema_operativo,
+                t.area_encargado,
+                t.centro_costo,
+                t.prioridad,
+                t.estado,
+                t.firma_solicitante,
+                COALESCE(a.firma_sistemas, t.firma_sistemas) AS firma_sistemas,
+                t.creado_en,
+                t.actualizado_en,
+                a.fecha_hora_atencion,
+                a.tecnico_asignado,
+                a.diagnostico,
+                a.solucion_aplicada,
+                a.tipo_resolucion,
+                a.observaciones_recomendacion
+            FROM tickets_soporte t
+            LEFT JOIN (
+                SELECT DISTINCT ON (ticket_id) *
+                FROM atenciones_soporte
+                ORDER BY ticket_id, id DESC
+            ) a ON a.ticket_id = t.id
             {$donde}
-            ORDER BY creado_en DESC
+            ORDER BY t.creado_en DESC
             LIMIT :limite OFFSET :offset";
 
     $stmt = $conexion->prepare($sql);

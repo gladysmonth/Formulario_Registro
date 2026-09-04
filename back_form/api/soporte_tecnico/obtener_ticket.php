@@ -25,12 +25,45 @@ if (empty($id) && empty($codigo)) {
 try {
     $conexion = obtener_conexion_bd();
 
+    $sql_base = "SELECT 
+                    t.id,
+                    t.codigo_ticket,
+                    t.nombre_solicitante,
+                    t.fecha_solicitud,
+                    t.departamento_area,
+                    t.soporte_hardware,
+                    t.soporte_software,
+                    t.descripcion_problema,
+                    t.equipo_id,
+                    t.codigo_activo,
+                    t.numero_serie,
+                    t.tipo_equipo,
+                    t.marca_modelo,
+                    t.sistema_operativo,
+                    t.area_encargado,
+                    t.centro_costo,
+                    t.prioridad,
+                    t.estado,
+                    t.firma_solicitante,
+                    COALESCE(a.firma_sistemas, t.firma_sistemas) AS firma_sistemas,
+                    t.creado_en,
+                    t.actualizado_en,
+                    a.id AS atencion_id,
+                    a.fecha_hora_atencion,
+                    a.tecnico_asignado,
+                    a.tipo_resolucion,
+                    a.diagnostico,
+                    a.solucion_aplicada,
+                    a.observaciones_recomendacion
+                FROM tickets_soporte t
+                LEFT JOIN atenciones_soporte a ON a.ticket_id = t.id";
+
     if (!empty($id)) {
-        $sql = "SELECT * FROM tickets_soporte WHERE id = :id LIMIT 1";
+        $sql = "{$sql_base} WHERE t.id = :id ORDER BY a.id DESC LIMIT 1";
         $stmt = $conexion->prepare($sql);
         $stmt->execute(array(':id' => $id));
     } else {
-        $sql = "SELECT * FROM tickets_soporte WHERE codigo_ticket = :codigo LIMIT 1";
+        $sql = "{$sql_base} WHERE t.codigo_ticket = :codigo ORDER BY a.id DESC LIMIT 1";
         $stmt = $conexion->prepare($sql);
         $stmt->execute(array(':codigo' => $codigo));
     }

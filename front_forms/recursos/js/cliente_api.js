@@ -78,6 +78,13 @@ const clienteApi = {
     },
 
     // --- Módulo: Soporte Técnico ---
+    async buscarEquipos(termino = '') {
+        const query = termino ? `?q=${encodeURIComponent(termino)}` : '';
+        return await this.peticion(`/api/soporte_tecnico/buscar_equipos.php${query}`, {
+            method: 'GET'
+        });
+    },
+
     async crearTicketSoporte(datos) {
         return await this.peticion('/api/soporte_tecnico/crear_ticket.php', {
             method: 'POST',

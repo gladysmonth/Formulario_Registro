@@ -25,80 +25,143 @@ if (empty($id)) {
 
 try {
     $conexion = obtener_conexion_bd();
+    $conexion->beginTransaction();
 
-    // Comprobar existencia previa
-    $stmt_existe = $conexion->prepare("SELECT id, estado FROM tickets_soporte WHERE id = :id");
+    // Comprobar existencia previa del ticket
+    $stmt_existe = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad FROM tickets_soporte WHERE id = :id");
     $stmt_existe->execute(array(':id' => $id));
     $ticket_actual = $stmt_existe->fetch();
 
     if (!$ticket_actual) {
+        $conexion->rollBack();
         responder_error('El ticket especificado no existe', 404);
     }
 
-    $actualizaciones = array();
-    $parametros = array(':id' => $id);
+    // 1. Actualizaciones en tickets_soporte (prioridad y estado)
+    $actualizaciones_ticket = array();
+    $parametros_ticket = array(':id' => $id);
 
-    // 4. Prioridad
     if (isset($datos['prioridad'])) {
         $prioridades_validas = array('urgente', 'alta', 'media', 'baja');
         if (in_array(strtolower($datos['prioridad']), $prioridades_validas)) {
-            $actualizaciones[] = "prioridad = :prioridad";
-            $parametros[':prioridad'] = strtolower($datos['prioridad']);
+            $actualizaciones_ticket[] = "prioridad = :prioridad";
+            $parametros_ticket[':prioridad'] = strtolower($datos['prioridad']);
         }
     }
 
-    // 5. Datos del Técnico
-    if (isset($datos['fecha_hora_atencion'])) {
-        $actualizaciones[] = "fecha_hora_atencion = :fecha_hora_atencion";
-        $parametros[':fecha_hora_atencion'] = !empty($datos['fecha_hora_atencion']) ? $datos['fecha_hora_atencion'] : null;
-    }
-
-    if (isset($datos['tecnico_asignado'])) {
-        $actualizaciones[] = "tecnico_asignado = :tecnico_asignado";
-        $parametros[':tecnico_asignado'] = !empty(trim($datos['tecnico_asignado'])) ? trim($datos['tecnico_asignado']) : null;
-    }
-
-    if (isset($datos['diagnostico'])) {
-        $actualizaciones[] = "diagnostico = :diagnostico";
-        $parametros[':diagnostico'] = !empty(trim($datos['diagnostico'])) ? trim($datos['diagnostico']) : null;
-    }
-
-    if (isset($datos['solucion_aplicada'])) {
-        $actualizaciones[] = "solucion_aplicada = :solucion_aplicada";
-        $parametros[':solucion_aplicada'] = !empty(trim($datos['solucion_aplicada'])) ? trim($datos['solucion_aplicada']) : null;
-    }
-
-    if (isset($datos['tipo_resolucion'])) {
-        $actualizaciones[] = "tipo_resolucion = :tipo_resolucion";
-        $parametros[':tipo_resolucion'] = !empty(trim($datos['tipo_resolucion'])) ? trim($datos['tipo_resolucion']) : null;
-    }
-
-    // 6. Observaciones
-    if (isset($datos['observaciones_recomendacion'])) {
-        $actualizaciones[] = "observaciones_recomendacion = :observaciones_recomendacion";
-        $parametros[':observaciones_recomendacion'] = !empty(trim($datos['observaciones_recomendacion'])) ? trim($datos['observaciones_recomendacion']) : null;
-    }
-
-    // Estado del ticket
     if (isset($datos['estado'])) {
         $estados_validos = array('pendiente', 'en_proceso', 'resuelto', 'cancelado');
         if (in_array(strtolower($datos['estado']), $estados_validos)) {
-            $actualizaciones[] = "estado = :estado";
-            $parametros[':estado'] = strtolower($datos['estado']);
+            $actualizaciones_ticket[] = "estado = :estado";
+            $parametros_ticket[':estado'] = strtolower($datos['estado']);
         }
     }
 
-    if (empty($actualizaciones)) {
+    if (!empty($datos['firma_sistemas'])) {
+        $actualizaciones_ticket[] = "firma_sistemas = :firma_sistemas";
+        $parametros_ticket[':firma_sistemas'] = $datos['firma_sistemas'];
+    }
+
+    if (!empty($actualizaciones_ticket)) {
+        $sql_ticket = "UPDATE tickets_soporte SET " . implode(', ', $actualizaciones_ticket) . " WHERE id = :id";
+        $stmt_up_ticket = $conexion->prepare($sql_ticket);
+        $stmt_up_ticket->execute($parametros_ticket);
+    }
+
+    // 2. Comprobar y actualizar / registrar en atenciones_soporte
+    $hay_datos_atencion = isset($datos['fecha_hora_atencion']) || 
+                           isset($datos['tecnico_asignado']) || 
+                           isset($datos['diagnostico']) || 
+                           isset($datos['solucion_aplicada']) || 
+                           isset($datos['tipo_resolucion']) || 
+                           isset($datos['observaciones_recomendacion']) ||
+                           !empty($datos['firma_sistemas']);
+
+    if ($hay_datos_atencion) {
+        $stmt_atencion_existe = $conexion->prepare("SELECT id FROM atenciones_soporte WHERE ticket_id = :ticket_id ORDER BY id DESC LIMIT 1");
+        $stmt_atencion_existe->execute(array(':ticket_id' => $id));
+        $atencion_existente = $stmt_atencion_existe->fetch();
+
+        $fecha_hora_atencion = !empty($datos['fecha_hora_atencion']) ? $datos['fecha_hora_atencion'] : date('Y-m-d H:i:s');
+        $tecnico_asignado    = !empty(trim($datos['tecnico_asignado'] ?? '')) ? trim($datos['tecnico_asignado']) : 'Área de Soporte Técnico';
+        $diagnostico         = !empty(trim($datos['diagnostico'] ?? '')) ? trim($datos['diagnostico']) : null;
+        $solucion_aplicada   = !empty(trim($datos['solucion_aplicada'] ?? '')) ? trim($datos['solucion_aplicada']) : null;
+        $tipo_resolucion     = !empty(trim($datos['tipo_resolucion'] ?? '')) ? trim($datos['tipo_resolucion']) : null;
+        $observaciones       = !empty(trim($datos['observaciones_recomendacion'] ?? '')) ? trim($datos['observaciones_recomendacion']) : null;
+        $firma_sistemas      = !empty($datos['firma_sistemas']) ? $datos['firma_sistemas'] : null;
+
+        if ($atencion_existente) {
+            $sql_up_atencion = "UPDATE atenciones_soporte SET 
+                                    fecha_hora_atencion = :fecha_hora_atencion,
+                                    tecnico_asignado = :tecnico_asignado,
+                                    tipo_resolucion = :tipo_resolucion,
+                                    diagnostico = :diagnostico,
+                                    solucion_aplicada = :solucion_aplicada,
+                                    observaciones_recomendacion = :observaciones_recomendacion,
+                                    firma_sistemas = COALESCE(:firma_sistemas, firma_sistemas)
+                                WHERE id = :atencion_id";
+            $stmt_up_at = $conexion->prepare($sql_up_atencion);
+            $stmt_up_at->execute(array(
+                ':atencion_id'                => $atencion_existente['id'],
+                ':fecha_hora_atencion'        => $fecha_hora_atencion,
+                ':tecnico_asignado'           => $tecnico_asignado,
+                ':tipo_resolucion'            => $tipo_resolucion,
+                ':diagnostico'                => $diagnostico,
+                ':solucion_aplicada'          => $solucion_aplicada,
+                ':observaciones_recomendacion'=> $observaciones,
+                ':firma_sistemas'             => $firma_sistemas
+            ));
+        } else {
+            $sql_in_atencion = "INSERT INTO atenciones_soporte (
+                                    ticket_id,
+                                    fecha_hora_atencion,
+                                    tecnico_asignado,
+                                    tipo_resolucion,
+                                    diagnostico,
+                                    solucion_aplicada,
+                                    observaciones_recomendacion,
+                                    firma_sistemas
+                                ) VALUES (
+                                    :ticket_id,
+                                    :fecha_hora_atencion,
+                                    :tecnico_asignado,
+                                    :tipo_resolucion,
+                                    :diagnostico,
+                                    :solucion_aplicada,
+                                    :observaciones_recomendacion,
+                                    :firma_sistemas
+                                )";
+            $stmt_in_at = $conexion->prepare($sql_in_atencion);
+            $stmt_in_at->execute(array(
+                ':ticket_id'                  => $id,
+                ':fecha_hora_atencion'        => $fecha_hora_atencion,
+                ':tecnico_asignado'           => $tecnico_asignado,
+                ':tipo_resolucion'            => $tipo_resolucion,
+                ':diagnostico'                => $diagnostico,
+                ':solucion_aplicada'          => $solucion_aplicada,
+                ':observaciones_recomendacion'=> $observaciones,
+                ':firma_sistemas'             => $firma_sistemas
+            ));
+        }
+    }
+
+    if (empty($actualizaciones_ticket) && !$hay_datos_atencion) {
+        $conexion->rollBack();
         responder_error('No se enviaron campos válidos para actualizar', 400);
     }
 
-    $sql = "UPDATE tickets_soporte SET " . implode(', ', $actualizaciones) . " WHERE id = :id RETURNING id, codigo_ticket, estado, actualizado_en";
-    $stmt = $conexion->prepare($sql);
-    $stmt->execute($parametros);
-    $resultado = $stmt->fetch();
+    // Obtener estado final
+    $stmt_final = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad, actualizado_en FROM tickets_soporte WHERE id = :id");
+    $stmt_final->execute(array(':id' => $id));
+    $resultado = $stmt_final->fetch();
+
+    $conexion->commit();
 
     responder_exito('Ticket actualizado exitosamente', $resultado);
 
 } catch (Exception $e) {
+    if (isset($conexion) && $conexion->inTransaction()) {
+        $conexion->rollBack();
+    }
     responder_error('Error al actualizar el ticket: ' . $e->getMessage(), 500);
 }

@@ -91,6 +91,9 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                 </div>
             </div>
 
+            <!-- SECCIÓN: FIRMAS DIGITALES (SOLICITANTE Y DPTO. DE SISTEMAS) -->
+            <?php include __DIR__ . '/secciones/seccion_firmas.php'; ?>
+
             <!-- BOTONES DE ACCIÓN -->
             <div class="col-12">
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 p-3 bg-white border rounded-3">

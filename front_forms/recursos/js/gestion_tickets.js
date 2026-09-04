@@ -147,9 +147,102 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ==========================================================
+    // LIENZO DE FIRMA PARA EL MODAL DE ATENCIÓN (DPTO. SISTEMAS)
+    // ==========================================================
+    const canvasFirmaAtencion = document.getElementById('canvasFirmaAtencion');
+    const btnLimpiarFirmaAtencion = document.getElementById('btnLimpiarFirmaAtencion');
+    const btnCambiarFirmaSistemas = document.getElementById('btnCambiarFirmaSistemas');
+    const contFirmaSistemasPrevia = document.getElementById('contenedorFirmaSistemasPrevia');
+    const imgFirmaSistemasPrevia = document.getElementById('imgFirmaSistemasPrevia');
+
+    let ticketEnEdicion = null;
+    let tieneFirmaAtencion = false;
+    let ctxAtencion = null;
+
+    if (canvasFirmaAtencion) {
+        ctxAtencion = canvasFirmaAtencion.getContext('2d');
+        let dibujando = false;
+
+        function redimensionarCanvasAtencion() {
+            const rect = canvasFirmaAtencion.getBoundingClientRect();
+            if (rect.width > 0) {
+                canvasFirmaAtencion.width = rect.width;
+                canvasFirmaAtencion.height = 130;
+                ctxAtencion.lineWidth = 2.5;
+                ctxAtencion.lineCap = 'round';
+                ctxAtencion.lineJoin = 'round';
+                ctxAtencion.strokeStyle = '#0f172a';
+            }
+        }
+
+        // Redimensionar cuando el modal de Bootstrap termine de abrirse
+        if (modalElemento) {
+            modalElemento.addEventListener('shown.bs.modal', () => {
+                redimensionarCanvasAtencion();
+            });
+        }
+        window.addEventListener('resize', redimensionarCanvasAtencion);
+
+        function obtenerPos(e) {
+            const rect = canvasFirmaAtencion.getBoundingClientRect();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: cx - rect.left, y: cy - rect.top };
+        }
+
+        function iniciarDibujo(e) {
+            e.preventDefault();
+            dibujando = true;
+            const pos = obtenerPos(e);
+            ctxAtencion.beginPath();
+            ctxAtencion.moveTo(pos.x, pos.y);
+        }
+
+        function trazar(e) {
+            if (!dibujando) return;
+            e.preventDefault();
+            const pos = obtenerPos(e);
+            ctxAtencion.lineTo(pos.x, pos.y);
+            ctxAtencion.stroke();
+            tieneFirmaAtencion = true;
+        }
+
+        function terminarDibujo() {
+            dibujando = false;
+        }
+
+        canvasFirmaAtencion.addEventListener('mousedown', iniciarDibujo);
+        canvasFirmaAtencion.addEventListener('mousemove', trazar);
+        window.addEventListener('mouseup', terminarDibujo);
+
+        canvasFirmaAtencion.addEventListener('touchstart', iniciarDibujo, { passive: false });
+        canvasFirmaAtencion.addEventListener('touchmove', trazar, { passive: false });
+        canvasFirmaAtencion.addEventListener('touchend', terminarDibujo);
+        canvasFirmaAtencion.addEventListener('touchcancel', terminarDibujo);
+
+        if (btnLimpiarFirmaAtencion) {
+            btnLimpiarFirmaAtencion.addEventListener('click', () => {
+                ctxAtencion.clearRect(0, 0, canvasFirmaAtencion.width, canvasFirmaAtencion.height);
+                tieneFirmaAtencion = false;
+            });
+        }
+
+        if (btnCambiarFirmaSistemas) {
+            btnCambiarFirmaSistemas.addEventListener('click', () => {
+                if (contFirmaSistemasPrevia) contFirmaSistemasPrevia.classList.add('d-none');
+                ctxAtencion.clearRect(0, 0, canvasFirmaAtencion.width, canvasFirmaAtencion.height);
+                tieneFirmaAtencion = false;
+                canvasFirmaAtencion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        }
+    }
+
     function abrirModalAtencion(id) {
         const ticket = ticketsActuales.find(t => String(t.id) === String(id));
         if (!ticket || !modalAtencion) return;
+
+        ticketEnEdicion = ticket;
 
         // Llenar información de cabecera en el modal
         document.getElementById('modalTicketCodigo').textContent = ticket.codigo_ticket;
@@ -157,12 +250,54 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modalTicketArea').textContent = ticket.departamento_area;
         document.getElementById('modalTicketDescripcion').textContent = ticket.descripcion_problema;
 
-        // Equipo afectado
-        const equipoInfo = [];
-        if (ticket.numero_serie) equipoInfo.push(`N° Serie: ${ticket.numero_serie}`);
-        if (ticket.marca_modelo) equipoInfo.push(`Marca/Modelo: ${ticket.marca_modelo}`);
-        if (ticket.sistema_operativo) equipoInfo.push(`S.O.: ${ticket.sistema_operativo}`);
-        document.getElementById('modalTicketEquipo').textContent = equipoInfo.length > 0 ? equipoInfo.join(' | ') : 'No especificado / No aplica';
+        // Desglose de Equipo afectado con los 7 campos estructurados
+        const contEquipoDetalles = document.getElementById('modalTicketEquipoDetalles');
+        if (contEquipoDetalles) {
+            const detalles = [];
+            if (ticket.codigo_activo) detalles.push(`<span><strong>Cód. Activo:</strong> <span class="badge bg-primary-subtle text-primary">${escapeHtml(ticket.codigo_activo)}</span></span>`);
+            if (ticket.numero_serie) detalles.push(`<span><strong>N° Serie:</strong> ${escapeHtml(ticket.numero_serie)}</span>`);
+            if (ticket.tipo_equipo) detalles.push(`<span><strong>Tipo:</strong> ${escapeHtml(ticket.tipo_equipo)}</span>`);
+            if (ticket.marca_modelo) detalles.push(`<span><strong>Marca/Modelo:</strong> ${escapeHtml(ticket.marca_modelo)}</span>`);
+            if (ticket.sistema_operativo) detalles.push(`<span><strong>S.O.:</strong> ${escapeHtml(ticket.sistema_operativo)}</span>`);
+            if (ticket.area_encargado) detalles.push(`<span><strong>Área/Encargado:</strong> ${escapeHtml(ticket.area_encargado)}</span>`);
+            if (ticket.centro_costo) detalles.push(`<span><strong>Centro de Costo:</strong> ${escapeHtml(ticket.centro_costo)}</span>`);
+
+            if (detalles.length > 0) {
+                contEquipoDetalles.innerHTML = `<div class="d-flex flex-wrap gap-2 align-items-center">${detalles.join(' <span class="text-muted opacity-50">&bull;</span> ')}</div>`;
+            } else {
+                contEquipoDetalles.innerHTML = '<span class="text-muted fst-italic">No especificado / No aplica</span>';
+            }
+        }
+
+        // Mostrar firma del solicitante
+        const imgFirmaSol = document.getElementById('modalFirmaSolicitante');
+        const spanSinFirmaSol = document.getElementById('modalSinFirmaSolicitante');
+        if (imgFirmaSol && spanSinFirmaSol) {
+            if (ticket.firma_solicitante) {
+                imgFirmaSol.src = ticket.firma_solicitante;
+                imgFirmaSol.style.display = 'block';
+                spanSinFirmaSol.classList.add('d-none');
+            } else {
+                imgFirmaSol.src = '';
+                imgFirmaSol.style.display = 'none';
+                spanSinFirmaSol.classList.remove('d-none');
+            }
+        }
+
+        // Firma previa de Sistemas (si ya existía)
+        tieneFirmaAtencion = false;
+        if (ctxAtencion && canvasFirmaAtencion) {
+            ctxAtencion.clearRect(0, 0, canvasFirmaAtencion.width, canvasFirmaAtencion.height);
+        }
+        if (contFirmaSistemasPrevia && imgFirmaSistemasPrevia) {
+            if (ticket.firma_sistemas) {
+                imgFirmaSistemasPrevia.src = ticket.firma_sistemas;
+                contFirmaSistemasPrevia.classList.remove('d-none');
+            } else {
+                imgFirmaSistemasPrevia.src = '';
+                contFirmaSistemasPrevia.classList.add('d-none');
+            }
+        }
 
         // Llenar campos editables
         document.getElementById('atencion_ticket_id').value = ticket.id;
@@ -195,6 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
         formAtencion.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Determinar firma de sistemas (nueva trazada o mantener la previa si no se modificó)
+            let firmaSistemasFinal = null;
+            if (canvasFirmaAtencion && tieneFirmaAtencion) {
+                firmaSistemasFinal = canvasFirmaAtencion.toDataURL('image/png');
+            } else if (ticketEnEdicion && ticketEnEdicion.firma_sistemas && contFirmaSistemasPrevia && !contFirmaSistemasPrevia.classList.contains('d-none')) {
+                firmaSistemasFinal = ticketEnEdicion.firma_sistemas;
+            }
+
             const datosActualizados = {
                 id: document.getElementById('atencion_ticket_id').value,
                 prioridad: document.getElementById('atencion_prioridad').value,
@@ -204,7 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 diagnostico: document.getElementById('atencion_diagnostico').value,
                 solucion_aplicada: document.getElementById('atencion_solucion').value,
                 tipo_resolucion: document.getElementById('atencion_tipo_resolucion').value,
-                observaciones_recomendacion: document.getElementById('atencion_observaciones').value
+                observaciones_recomendacion: document.getElementById('atencion_observaciones').value,
+                firma_sistemas: firmaSistemasFinal
             };
 
             const textoOriginal = btnGuardarAtencion ? btnGuardarAtencion.innerHTML : 'Guardar';

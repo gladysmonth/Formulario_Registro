@@ -162,7 +162,8 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
 <!-- MODAL DE ATENCIÓN Y CIERRE TÉCNICO (SECCIONES 4, 5 Y 6) -->
 <div class="modal fade" id="modalAtencionTicket" tabindex="-1" aria-labelledby="modalTitulo" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
+        <!-- FORMULARIO PRINCIPAL DEL MODAL (Es el modal-content para respetar el scroll de Bootstrap 5) -->
+        <form id="formAtencionTicket" class="modal-content">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title fw-bold" id="modalTitulo">
                     <i class="bi bi-tools text-warning me-2"></i> Atención de Ticket: <span id="modalTicketCodigo" class="text-warning"></span>
@@ -170,25 +171,34 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             
-            <form id="formAtencionTicket">
-                <input type="hidden" id="atencion_ticket_id">
+            <input type="hidden" id="atencion_ticket_id">
 
-                <div class="modal-body p-4">
+            <div class="modal-body p-4">
                     <!-- Resumen del requerimiento original del solicitante -->
                     <div class="bg-light p-3 rounded-3 border mb-4">
                         <div class="row g-2 small">
                             <div class="col-md-6">
-                                <strong>Solicitante:</strong> <span id="modalTicketSolicitante"></span>
+                                <strong>Solicitante:</strong> <span id="modalTicketSolicitante" class="text-dark fw-semibold"></span>
                             </div>
                             <div class="col-md-6">
-                                <strong>Departamento / Área:</strong> <span id="modalTicketArea"></span>
+                                <strong>Departamento / Área:</strong> <span id="modalTicketArea" class="text-dark fw-semibold"></span>
                             </div>
                             <div class="col-12 mt-2">
-                                <strong>Equipo Afectado:</strong> <span id="modalTicketEquipo" class="text-secondary"></span>
+                                <strong>Equipo Afectado:</strong>
+                                <div id="modalTicketEquipoDetalles" class="mt-1 p-2 bg-white rounded border text-secondary">
+                                    <!-- Dinámico vía JS con los 7 campos de inventario -->
+                                </div>
                             </div>
                             <div class="col-12 mt-2">
                                 <strong>Descripción del Problema:</strong>
                                 <p id="modalTicketDescripcion" class="mb-0 text-secondary bg-white p-2 rounded border mt-1"></p>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <strong>Firma del Solicitante:</strong>
+                                <div class="mt-1">
+                                    <img id="modalFirmaSolicitante" src="" alt="Firma del Solicitante" class="img-fluid border rounded bg-white p-2 shadow-sm" style="max-height: 90px; display: none;">
+                                    <span id="modalSinFirmaSolicitante" class="text-muted fst-italic small d-none"><i class="bi bi-info-circle me-1"></i>No registrada</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -262,7 +272,7 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                     </div>
 
                     <!-- SECCIÓN 6: OBSERVACIONES / RECOMENDACIONES -->
-                    <div>
+                    <div class="mb-4">
                         <div class="d-flex align-items-center mb-3">
                             <span class="numero-seccion numero-seccion-tecnico">6</span>
                             <h6 class="fw-bold mb-0">Observaciones y Recomendaciones</h6>
@@ -270,6 +280,46 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
 
                         <div>
                             <textarea class="form-control" id="atencion_observaciones" rows="3" placeholder="Observaciones adicionales, sugerencias preventivas..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN FIRMA: DPTO. DE SISTEMAS -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="numero-seccion numero-seccion-tecnico"><i class="bi bi-pen"></i></span>
+                            <h6 class="fw-bold mb-0">Firma de Conformidad Técnica (Dpto. de Sistemas)</h6>
+                        </div>
+                        <p class="text-muted small mb-2">
+                            Firma digital del personal del Departamento de Sistemas para validar la atención o cierre del ticket.
+                        </p>
+                        
+                        <!-- Si ya existía firma previa -->
+                        <div id="contenedorFirmaSistemasPrevia" class="mb-3 p-2 bg-light rounded border d-none">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="small fw-semibold text-secondary"><i class="bi bi-check-circle-fill text-success me-1"></i>Firma previamente registrada:</span>
+                                <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2" id="btnCambiarFirmaSistemas" style="font-size: 0.75rem;">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Cambiar Firma
+                                </button>
+                            </div>
+                            <div class="text-center">
+                                <img id="imgFirmaSistemasPrevia" src="" alt="Firma Sistemas Registrada" class="img-fluid border rounded bg-white p-1" style="max-height: 80px;">
+                            </div>
+                        </div>
+
+                        <!-- Lienzo de dibujo de firma -->
+                        <div id="contenedorLienzoFirmaSistemas" class="tarjeta-firma">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-secondary-subtle text-dark border">
+                                    <i class="bi bi-shield-check me-1"></i>DPTO. DE SISTEMAS
+                                </span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" id="btnLimpiarFirmaAtencion" style="font-size: 0.75rem;">
+                                    <i class="bi bi-eraser me-1"></i>Limpiar
+                                </button>
+                            </div>
+                            <div class="contenedor-lienzo">
+                                <canvas id="canvasFirmaAtencion" class="lienzo-firma" style="height: 130px;"></canvas>
+                                <div class="linea-guia-firma">Firme aquí (Dpto. de Sistemas)</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -283,7 +333,6 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
             </form>
         </div>
     </div>
-</div>
 
 <?php
 $scripts_adicionales = array(

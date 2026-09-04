@@ -160,3 +160,80 @@ body {
     border: 1px solid #bbf7d0;
     border-radius: 12px;
 }
+
+/* Modal de Atención: Asegurar scroll interno fluido y pie fijo visible */
+#modalAtencionTicket .modal-dialog {
+    max-height: 90vh;
+}
+
+#modalAtencionTicket .modal-body {
+    max-height: calc(85vh - 130px);
+    overflow-y: auto;
+}
+
+#modalAtencionTicket .modal-body::-webkit-scrollbar {
+    width: 7px;
+}
+
+#modalAtencionTicket .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+#modalAtencionTicket .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+#modalAtencionTicket .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Lienzos de Firma Digital */
+.tarjeta-firma {
+    border: 1px solid var(--color-borde-suave);
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-firma:hover {
+    border-color: #94a3b8;
+}
+
+.contenedor-lienzo {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.lienzo-firma {
+    display: block;
+    cursor: crosshair;
+    touch-action: none;
+    background-color: #ffffff;
+}
+
+.linea-guia-firma {
+    position: absolute;
+    bottom: 30px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    border-bottom: 1px dashed #cbd5e1;
+    pointer-events: none;
+}
+
+.texto-guia-firma {
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    pointer-events: none;
+    user-select: none;
+}
+
+

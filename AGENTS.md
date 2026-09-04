@@ -140,6 +140,10 @@ El formulario consta de las siguientes 6 secciones:
 6. **Observaciones / Recomendaciones:**
    - Observaciones y sugerencias (`observaciones_recomendacion`)
 
+> **Estructura en Base de Datos (Modelo Relacional):**
+> - **Tabla `tickets_soporte`:** Almacena las Secciones 1 a 4 (solicitud, prioridad, estado y auditoría).
+> - **Tabla `atenciones_soporte`:** Almacena las Secciones 5 y 6 (datos del técnico, resolución y observaciones) vinculada por `ticket_id` (FK).
+
 ---
 
 ## 6. Convención de Respuestas JSON de la API
