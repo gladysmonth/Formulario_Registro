@@ -55,6 +55,14 @@ Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo
 - **`back_form/`**: Recibe peticiones HTTP, valida datos, procesa la lógica e interactúa con la base de datos PostgreSQL retornando respuestas JSON estandarizadas.
 - **`init.sql`**: Es el archivo físico único de inicialización de esquemas, tablas, restricciones e índices. Cualquier cambio estructural en la base de datos debe reflejarse en este script.
 
+### 3.4. Regla Estricta de Modificación Modular por Secciones (Vistas de Formulario)
+Cada vez que se modifique o estructure código en `formulario_soporte.php` o en cualquier vista de formulario:
+1. **No generar código monolítico ni archivos gigantes:** Prohibido crear bloques masivos e interminables de código de una sola vez.
+2. **Respetar la modularidad por secciones:** El formulario debe mantenerse dividido lógicamente en sus secciones ordenadas (Datos Generales, Tipo de Soporte, Detalle, Prioridad, Datos del Técnico y Observaciones).
+3. **Modificaciones quirúrgicas:** Cuando se solicite un cambio, editar **únicamente** la sección o el bloque específico solicitado, sin tocar, reescribir ni alterar el resto del archivo funcional.
+4. **Proteger el entorno:** Mantener siempre la compatibilidad estricta con PHP 7.3, la estructura de Bootstrap 5 y la arquitectura definida en el proyecto.
+5. **Aislamiento de componentes extensos:** Si la lógica de una sección o bloque requiere crecer demasiado, aislarla de forma limpia manteniendo la separación estricta para evitar archivos robustos y facilitar futuros cambios.
+
 ---
 
 ## 4. Estructura de Directorios
