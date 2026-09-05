@@ -10,7 +10,7 @@ Este documento define la arquitectura, normas de codificación, estructura de di
 El objetivo del sistema es gestionar múltiples formularios de registro organizacionales de manera modular. Inicialmente el sistema contempla **4 formularios**, comenzando por:
 
 1. **Formulario 1 (Activo): Soporte Técnico**
-2. **Formulario 2 (Futuro):** Registro de Permisos / Vacaciones
+2. **Formulario 2 (Activo): Mantenimiento Preventivo (Equipos: PC / Laptop)**
 3. **Formulario 3 (Futuro):** Control de Activos / Inventario
 4. **Formulario 4 (Futuro):** Requerimiento de Compras / Suministros
 
@@ -80,15 +80,29 @@ Formulario_Registro/
 │   │   ├── conexion_bd.php            # Conexión PDO a PostgreSQL
 │   │   └── respuestas_api.php         # Respuestas JSON y cabeceras CORS
 │   └── api/
-│       └── soporte_tecnico/           # Endpoints del Módulo de Soporte
-│           ├── crear_ticket.php       # POST: Registrar ticket
-│           ├── listar_tickets.php     # GET: Listado con filtros
-│           ├── obtener_ticket.php     # GET: Detalle de un ticket
-│           └── actualizar_ticket.php  # POST: Actualizar atención/resolución
+│       ├── soporte_tecnico/           # Endpoints del Módulo de Soporte
+│       │   ├── crear_ticket.php       # POST: Orquestador registrar ticket
+│       │   ├── listar_tickets.php     # GET: Listado con filtros
+│       │   ├── obtener_ticket.php     # GET: Detalle de un ticket
+│       │   ├── actualizar_ticket.php  # POST: Actualizar atención/resolución
+│       │   ├── buscar_equipos.php     # GET: Búsqueda de equipos en catálogo
+│       │   └── servicios/             # Submódulos de negocio especializados
+│       │       ├── servicio_equipos.php   # Lógica de búsqueda y alta en inventario
+│       │       ├── servicio_firmas.php    # Validación de firmas manuscritas (Base64)
+│       │       └── servicio_atencion.php  # Registro de atención técnica y cierre
+│       │
+│       └── mantenimiento_preventivo/  # Endpoints del Módulo de Mantenimiento (PC/Laptop)
+│           ├── crear_mantenimiento.php  # POST: Registrar mantenimiento
+│           ├── listar_mantenimientos.php# GET: Listado con filtros y métricas
+│           ├── obtener_mantenimiento.php# GET: Detalle completo de ficha técnica
+│           └── servicios/             # Submódulos de negocio
+│               ├── servicio_equipo_mp.php    # Validación y procesamiento de equipo
+│               ├── servicio_checklist_mp.php # Normalización de checklists
+│               └── servicio_firmas_mp.php    # Validación de doble firma digital
 │
 └── front_forms/                       # Frontend (PHP 7.3 + Bootstrap)
     ├── Dockerfile                     # Configuración del contenedor PHP 7.3 Apache
-    ├── index.php                      # Portal central (Módulo 1 activo, 2-4 próximos)
+    ├── index.php                      # Portal central (Módulos 1 y 2 activos, 3-4 próximos)
     ├── componentes/
     │   ├── encabezado.php             # Head HTML y estilos Bootstrap
     │   ├── barra_navegacion.php       # Barra superior de navegación
@@ -97,14 +111,37 @@ Formulario_Registro/
     │   ├── css/
     │   │   └── estilos_personalizados.css  # Reglas visuales y diseño
     │   └── js/
-    │       ├── cliente_api.js         # Cliente central de comunicación API
-    │       ├── formulario_soporte.js  # Lógica del formulario de soporte
-    │       └── gestion_tickets.js     # Lógica del panel de soporte
+    │       ├── cliente_api.js                 # Cliente central de comunicación API
+    │       ├── formulario_soporte.js          # Lógica del formulario de soporte
+    │       ├── gestion_tickets.js             # Lógica del panel de soporte
+    │       ├── formulario_mantenimiento.js    # Lógica de mantenimiento preventivo
+    │       └── gestion_mantenimientos.js      # Lógica del panel de mantenimiento
     └── modulos/
-        └── soporte_tecnico/
-            ├── index.php              # Punto de entrada del módulo
-            ├── formulario_soporte.php # Formulario de 6 secciones
-            └── gestion_tickets.php    # Panel de gestión y seguimiento
+        ├── soporte_tecnico/
+        │   ├── index.php              # Punto de entrada del módulo
+        │   ├── formulario_soporte.php # Formulario orquestador
+        │   ├── gestion_tickets.php    # Panel orquestador maestro
+        │   ├── secciones/             # Subcomponentes del formulario de registro
+        │   └── componentes_gestion/   # Subcomponentes del panel de gestión
+        │
+        └── mantenimiento_preventivo/
+            ├── index.php                       # Redirección a formulario
+            ├── formulario_mantenimiento.php    # Formulario orquestador limpio
+            ├── gestion_mantenimientos.php      # Panel orquestador maestro
+            ├── secciones/                      # Subcomponentes (6 secciones + firmas)
+            │   ├── seccion_1_datos_generales.php
+            │   ├── seccion_2_informacion_equipo.php
+            │   ├── seccion_3_mantenimiento_externo.php
+            │   ├── seccion_4_mantenimiento_interno.php
+            │   ├── seccion_5_verificacion_funcionamiento.php
+            │   ├── seccion_6_observaciones.php
+            │   └── seccion_firmas.php
+            └── componentes_gestion/            # Subcomponentes del panel de gestión
+                ├── panel_encabezado.php        # Cabecera y botón nuevo
+                ├── panel_metricas.php          # 4 tarjetas de indicadores KPI
+                ├── panel_filtros.php           # Buscador y filtro por tipo
+                ├── panel_tabla.php             # Tabla responsiva
+                └── modal_detalle.php           # Ficha técnica imprimible y firmas
 ```
 
 ---
@@ -150,6 +187,61 @@ El formulario consta de las siguientes 6 secciones:
 
 Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
 
+---
+
+## 6. Especificación del Formulario de Mantenimiento Preventivo (PC / Laptop)
+
+El formulario consta de las siguientes 6 secciones y firmas:
+
+1. **Datos Generales:**
+   - Técnico responsable (`tecnico_responsable`)
+   - Fecha de mantenimiento (`fecha_mantenimiento`)
+   - Ubicación del equipo (`ubicacion_equipo`)
+2. **Información del Equipo:**
+   - Tipo de equipo: PC o LAPTOP (`tipo_equipo`)
+   - Nombre de equipo / hostname (`nombre_equipo`)
+   - Código de activo (`codigo_activo`)
+   - Memoria RAM (`memoria_ram`)
+   - Tipo de red: LAN o WIFI (`tipo_red`)
+   - Marca / modelo (`marca_modelo`)
+   - Sistema operativo (`sistema_operativo`)
+   - Procesador (`procesador`)
+   - Almacenamiento (`almacenamiento`)
+   - Dirección IP (`direccion_ip`)
+   - Vinculación opcional a catálogo (`equipo_id` -> `equipos_inventario`)
+3. **Mantenimiento Externo (Limpieza Física):**
+   - Limpieza de carcasa, ventiladores y componentes (`limpieza_carcasa_componentes`)
+   - Limpieza de pantalla, teclado y touchpad (`limpieza_pantalla_teclado`)
+   - Verificación de conectores USB/HDMI (`verificacion_conectores`)
+   - Otros aspectos físicos (`limpieza_otros`)
+4. **Mantenimiento Interno (Software / Configuración):**
+   - Actualización del sistema operativo (`actualizacion_so`)
+   - Eliminación de archivos temporales/caché (`eliminacion_temporales`)
+   - Desfragmentación / optimización de unidades (`desfragmentacion_optimizacion`)
+   - Escaneo antivirus/anti-malware (`escaneo_antivirus`)
+   - Verificación de drivers y actualizaciones (`verificacion_drivers`)
+   - Copia de seguridad de datos críticos (`copia_seguridad`)
+   - Otros aspectos lógicos (`mantenimiento_interno_otros`)
+5. **Verificación de Funcionamiento:**
+   - Encendido / apagado correcto (`verificacion_encendido_apagado`)
+   - Rendimiento general fluido (`verificacion_rendimiento`)
+   - Conectividad Wi-Fi / red funcional (`verificacion_red`)
+   - Periféricos operativos (`verificacion_perifericos`)
+   - Sin sobrecalentamiento / anomalías térmicas (`verificacion_temperatura_anomalias`)
+6. **Observaciones / Incidencias:**
+   - Notas y recomendaciones preventivas (`observaciones_incidencias`)
+7. **Firmas Digitales (Lienzos Canvas):**
+   - Firma del responsable del equipo (`firma_responsable_equipo`)
+   - Firma del Dpto. de Sistemas (`firma_sistemas`)
+
+> **Estructura en Base de Datos:** Tabla única `mantenimientos_preventivos` con campos booleanos para cada chequeo e imágenes Base64 de firmas.
+
+---
+
+## 7. Convención de Respuestas JSON de la API
+
+Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
+
 ```json
 {
   "exito": true,
@@ -169,10 +261,11 @@ En caso de error:
 
 ---
 
-## 7. Instrucciones para Agregar un Nuevo Formulario
+## 8. Instrucciones para Agregar un Nuevo Formulario
 
-Cuando se implementen los formularios restantes (2, 3 o 4):
-1. **Base de Datos:** Añadir la nueva tabla en `init.sql` con prefijo descriptivo (ej. `vacaciones_permisos`).
+Cuando se implementen los formularios restantes (3 o 4):
+1. **Base de Datos:** Añadir la nueva tabla en `init.sql` con prefijo descriptivo (ej. `activos_inventario`).
 2. **Backend:** Crear la carpeta en `back_form/api/<nombre_modulo>/` con los scripts correspondientes (`crear_registro.php`, `listar_registros.php`, etc.).
 3. **Frontend:** Crear la carpeta en `front_forms/modulos/<nombre_modulo>/` reutilizando `componentes/encabezado.php`, `barra_navegacion.php` y `pie_pagina.php`.
 4. **Portal Principal:** Actualizar `front_forms/index.php` cambiando el estado del módulo de "En desarrollo" a "Activo".
+

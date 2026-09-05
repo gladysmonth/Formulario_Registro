@@ -1,12 +1,12 @@
 <?php
 /**
- * Vista: Panel de Gestión y Seguimiento de Tickets de Soporte Técnico (Orquestador Maestro)
+ * Vista: Panel de Gestión y Seguimiento de Mantenimientos Preventivos (Orquestador Maestro)
  * Compatible con PHP 7.3
- * Archivo: gestion_tickets.php
+ * Archivo: gestion_mantenimientos.php
  */
 
-$titulo_pagina = 'Panel de Gestión - Soporte Técnico';
-$pagina_activa = 'soporte_gestion';
+$titulo_pagina = 'Bandeja de Mantenimientos Preventivos (PC / Laptop)';
+$pagina_activa = 'mantenimiento_preventivo';
 $nivel_ruta = '../../';
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
@@ -18,8 +18,8 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
             <li class="breadcrumb-item"><a href="../../index.php" class="text-decoration-none">Inicio</a></li>
-            <li class="breadcrumb-item text-muted">Soporte Técnico</li>
-            <li class="breadcrumb-item active" aria-current="page">Bandeja de Gestión de Tickets</li>
+            <li class="breadcrumb-item text-muted">Mantenimiento Preventivo</li>
+            <li class="breadcrumb-item active" aria-current="page">Bandeja de Control</li>
         </ol>
     </nav>
 
@@ -36,12 +36,12 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
     <?php require_once __DIR__ . '/componentes_gestion/panel_tabla.php'; ?>
 </main>
 
-<!-- 5. Modal de Atención y Cierre Técnico (Secciones 4, 5, 6 y Firma) -->
-<?php require_once __DIR__ . '/componentes_gestion/modal_atencion.php'; ?>
+<!-- 5. Modal de Ficha Técnica Completa y Firmas -->
+<?php require_once __DIR__ . '/componentes_gestion/modal_detalle.php'; ?>
 
 <?php
 $scripts_adicionales = array(
-    'recursos/js/gestion_tickets.js'
+    'recursos/js/gestion_mantenimientos.js'
 );
 require_once __DIR__ . '/../../componentes/pie_pagina.php';
 ?>

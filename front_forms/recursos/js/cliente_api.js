@@ -118,6 +118,33 @@ const clienteApi = {
         });
     },
 
+    // --- Módulo: Mantenimiento Preventivo (PC / Laptop) ---
+    async crearMantenimientoPreventivo(datos) {
+        return await this.peticion('/api/mantenimiento_preventivo/crear_mantenimiento.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+    },
+
+    async listarMantenimientosPreventivos(filtros = {}) {
+        const params = new URLSearchParams();
+        if (filtros.tipo_equipo) params.append('tipo_equipo', filtros.tipo_equipo);
+        if (filtros.buscar) params.append('buscar', filtros.buscar);
+        if (filtros.limite) params.append('limite', filtros.limite);
+        if (filtros.offset) params.append('offset', filtros.offset);
+
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return await this.peticion(`/api/mantenimiento_preventivo/listar_mantenimientos.php${query}`, {
+            method: 'GET'
+        });
+    },
+
+    async obtenerMantenimientoPreventivo(id) {
+        return await this.peticion(`/api/mantenimiento_preventivo/obtener_mantenimiento.php?id=${encodeURIComponent(id)}`, {
+            method: 'GET'
+        });
+    },
+
     /**
      * Muestra una notificación Toast flotante
      */

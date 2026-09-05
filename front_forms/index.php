@@ -45,7 +45,7 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
     <!-- Catálogo de los 4 Formularios del Sistema -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h4 fw-bold mb-0">Módulos del Sistema (4 Formularios)</h2>
-        <span class="badge bg-secondary-subtle text-dark border">1 Activo &bull; 3 en Planificación</span>
+        <span class="badge bg-secondary-subtle text-dark border">2 Activos &bull; 2 en Planificación</span>
     </div>
 
     <div class="row g-4">
@@ -71,8 +71,8 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
                         <div class="row g-2 text-secondary">
                             <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> 6 Secciones completas</div>
                             <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Generación de Ticket</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Clasificación Prioridad</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Resolución Técnica</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Catálogo de Equipos</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Doble Firma Digital</div>
                         </div>
                     </div>
 
@@ -88,31 +88,41 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
             </div>
         </div>
 
-        <!-- FORMULARIO 2: PRÓXIMO -->
+        <!-- FORMULARIO 2: ACTIVO (MANTENIMIENTO PREVENTIVO PC / LAPTOP) -->
         <div class="col-md-6 col-lg-6">
-            <div class="card h-100 tarjeta-modulo opacity-75 bg-white border">
+            <div class="card h-100 tarjeta-modulo border-success shadow-sm bg-white">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="p-3 bg-secondary-subtle text-secondary rounded-3">
-                            <i class="bi bi-calendar-check fs-2"></i>
+                        <div class="p-3 bg-success-subtle text-success rounded-3">
+                            <i class="bi bi-shield-check fs-2"></i>
                         </div>
-                        <span class="badge bg-secondary px-3 py-2 rounded-pill">
-                            <i class="bi bi-hourglass-split me-1"></i> En Desarrollo
+                        <span class="badge bg-success px-3 py-2 rounded-pill">
+                            <i class="bi bi-check-circle-fill me-1"></i> Activo y Disponible
                         </span>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-2">2. Permisos y Vacaciones</h3>
+                    <h3 class="h5 fw-bold text-dark mb-2">2. Mantenimiento Preventivo (PC / Laptop)</h3>
                     <p class="text-muted small flex-grow-1">
-                        Gestión y autorización de solicitudes de vacaciones, permisos remunerados, licencias médicas y justificaciones de ausencia laboral para el departamento de Recursos Humanos.
+                        Registro de rutinas de limpieza física externa, optimización lógica interna de software y verificación operativa de funcionamiento en estaciones de trabajo con doble firma digital.
                     </p>
 
-                    <div class="bg-light p-3 rounded-3 mb-3 small border text-muted">
-                        <i class="bi bi-lock me-1"></i> Módulo planificado en la siguiente fase de desarrollo.
+                    <div class="bg-light p-3 rounded-3 mb-3 small border">
+                        <div class="row g-2 text-secondary">
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> 6 Secciones técnicas</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Control PC y Laptop</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Checklists completos</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Ficha Imprimible</div>
+                        </div>
                     </div>
 
-                    <button class="btn btn-secondary disabled mt-auto" disabled>
-                        <i class="bi bi-clock me-1"></i> Próximamente
-                    </button>
+                    <div class="d-flex gap-2 mt-auto pt-2">
+                        <a href="modulos/mantenimiento_preventivo/formulario_mantenimiento.php" class="btn btn-success text-white flex-grow-1">
+                            <i class="bi bi-pencil-square me-1"></i> Registrar Mantenimiento
+                        </a>
+                        <a href="modulos/mantenimiento_preventivo/gestion_mantenimientos.php" class="btn btn-outline-success" title="Bandeja de Mantenimientos">
+                            <i class="bi bi-card-checklist"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

@@ -44,10 +44,22 @@ $pagina_activa = isset($pagina_activa) ? $pagina_activa : 'inicio';
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <span class="nav-link text-muted disabled">
-                        <i class="bi bi-lock me-1"></i> 2. Permisos y Vacaciones <span class="badge bg-secondary text-light">Pronto</span>
-                    </span>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle <?php echo (in_array($pagina_activa, array('mantenimiento_preventivo', 'mantenimiento_gestion'))) ? 'active fw-semibold' : ''; ?>" href="#" id="dropMantenimiento" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-shield-check me-1 text-success"></i> 2. Mantenimiento Preventivo
+                    </a>
+                    <ul class="dropdown-menu shadow-sm" aria-labelledby="dropMantenimiento">
+                        <li>
+                            <a class="dropdown-item <?php echo ($pagina_activa === 'mantenimiento_preventivo') ? 'active' : ''; ?>" href="<?php echo $ruta_base; ?>modulos/mantenimiento_preventivo/formulario_mantenimiento.php">
+                                <i class="bi bi-plus-circle me-2 text-primary"></i> Registrar Mantenimiento
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item <?php echo ($pagina_activa === 'mantenimiento_gestion') ? 'active' : ''; ?>" href="<?php echo $ruta_base; ?>modulos/mantenimiento_preventivo/gestion_mantenimientos.php">
+                                <i class="bi bi-card-checklist me-2 text-success"></i> Bandeja de Mantenimientos
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <span class="nav-link text-muted disabled">

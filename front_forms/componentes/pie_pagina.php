@@ -36,12 +36,20 @@ $ruta_base = isset($nivel_ruta) ? $nivel_ruta : '';
 <!-- SweetAlert2 para Modales de Éxito y Confirmación -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Cliente API Centralizado -->
-<script src="<?php echo $ruta_base; ?>recursos/js/cliente_api.js"></script>
+<!-- Cliente API Centralizado con control de versión de caché -->
+<?php 
+$version_api = file_exists(__DIR__ . '/../recursos/js/cliente_api.js') 
+    ? filemtime(__DIR__ . '/../recursos/js/cliente_api.js') 
+    : time(); 
+?>
+<script src="<?php echo $ruta_base; ?>recursos/js/cliente_api.js?v=<?php echo $version_api; ?>"></script>
 
 <?php if (isset($scripts_adicionales) && is_array($scripts_adicionales)): ?>
-    <?php foreach ($scripts_adicionales as $script): ?>
-        <script src="<?php echo $ruta_base . $script; ?>"></script>
+    <?php foreach ($scripts_adicionales as $script): 
+        $ruta_fisica = __DIR__ . '/../' . $script;
+        $version_script = file_exists($ruta_fisica) ? filemtime($ruta_fisica) : time();
+    ?>
+        <script src="<?php echo $ruta_base . $script; ?>?v=<?php echo $version_script; ?>"></script>
     <?php endforeach; ?>
 <?php endif; ?>
 

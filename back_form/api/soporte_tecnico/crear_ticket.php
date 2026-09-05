@@ -1,6 +1,6 @@
 <?php
 /**
- * Endpoint: Crear Ticket de Soporte Técnico
+ * Endpoint: Crear Ticket de Soporte Técnico (Orquestador Principal)
  * Método: POST
  * Compatible con PHP 7.3
  * Archivo: crear_ticket.php
@@ -8,6 +8,11 @@
 
 require_once __DIR__ . '/../../configuracion/respuestas_api.php';
 require_once __DIR__ . '/../../configuracion/conexion_bd.php';
+
+// Inclusión de submódulos de servicios especializados
+require_once __DIR__ . '/servicios/servicio_equipos.php';
+require_once __DIR__ . '/servicios/servicio_firmas.php';
+require_once __DIR__ . '/servicios/servicio_atencion.php';
 
 configurar_cors();
 
@@ -17,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $datos = obtener_cuerpo_json();
 
-// 1. Validaciones básicas de campos obligatorios
+// 1. Validar requerimientos obligatorios generales
 $errores = array();
 
 if (empty(trim($datos['nombre_solicitante'] ?? ''))) {
@@ -39,54 +44,32 @@ if (!$soporte_hardware && !$soporte_software) {
     $errores[] = 'Debe seleccionar al menos un tipo de soporte (Hardware o Software).';
 }
 
-if (empty($datos['firma_solicitante'])) {
-    $errores[] = 'La firma digital del Solicitante es obligatoria para registrar el ticket.';
+// 2. Validar firmas digitales mediante submódulo especializado
+$resultado_firmas = validar_y_procesar_firmas($datos);
+if (!$resultado_firmas['valido']) {
+    $errores = array_merge($errores, $resultado_firmas['errores']);
 }
 
 if (!empty($errores)) {
     responder_error('Datos incompletos o inválidos', 422, $errores);
 }
 
-// 2. Extraer y sanear valores
-$nombre_solicitante = trim($datos['nombre_solicitante']);
-$fecha_solicitud    = !empty($datos['fecha_solicitud']) ? $datos['fecha_solicitud'] : date('Y-m-d');
-$departamento_area  = trim($datos['departamento_area']);
-
+// 3. Extraer y sanear valores
+$nombre_solicitante   = trim($datos['nombre_solicitante']);
+$fecha_solicitud      = !empty($datos['fecha_solicitud']) ? $datos['fecha_solicitud'] : date('Y-m-d');
+$departamento_area    = trim($datos['departamento_area']);
 $descripcion_problema = trim($datos['descripcion_problema']);
 
-// Campos del Equipo Afectado
-$equipo_id          = !empty($datos['equipo_id']) ? (int)$datos['equipo_id'] : null;
-$codigo_activo      = !empty($datos['codigo_activo']) ? trim($datos['codigo_activo']) : null;
-$numero_serie       = !empty($datos['numero_serie']) ? trim($datos['numero_serie']) : null;
-$tipo_equipo        = !empty($datos['tipo_equipo']) ? trim($datos['tipo_equipo']) : null;
-$marca_modelo       = !empty($datos['marca_modelo']) ? trim($datos['marca_modelo']) : null;
-$sistema_operativo  = !empty($datos['sistema_operativo']) ? trim($datos['sistema_operativo']) : null;
-$area_encargado     = !empty($datos['area_encargado']) ? trim($datos['area_encargado']) : null;
-$centro_costo       = !empty($datos['centro_costo']) ? trim($datos['centro_costo']) : null;
-$guardar_inventario = !empty($datos['guardar_en_inventario']) ? true : false;
-
-// Firmas Digitales
-$firma_solicitante  = !empty($datos['firma_solicitante']) ? $datos['firma_solicitante'] : null;
-$firma_sistemas     = !empty($datos['firma_sistemas']) ? $datos['firma_sistemas'] : null;
-
-$prioridades_validas = array('urgente', 'alta', 'media', 'baja');
-$prioridad = !empty($datos['prioridad']) && in_array(strtolower($datos['prioridad']), $prioridades_validas) 
+$prioridades_validas  = array('urgente', 'alta', 'media', 'baja');
+$prioridad            = !empty($datos['prioridad']) && in_array(strtolower($datos['prioridad']), $prioridades_validas) 
     ? strtolower($datos['prioridad']) 
     : 'media';
 
-// Campos de soporte técnico (opcionales al registrar)
-$tecnico_asignado    = !empty($datos['tecnico_asignado']) ? trim($datos['tecnico_asignado']) : null;
-$fecha_hora_atencion = !empty($datos['fecha_hora_atencion']) ? $datos['fecha_hora_atencion'] : null;
-$diagnostico         = !empty($datos['diagnostico']) ? trim($datos['diagnostico']) : null;
-$solucion_aplicada   = !empty($datos['solucion_aplicada']) ? trim($datos['solucion_aplicada']) : null;
-$tipo_resolucion     = !empty($datos['tipo_resolucion']) ? trim($datos['tipo_resolucion']) : null;
-$observaciones       = !empty($datos['observaciones_recomendacion']) ? trim($datos['observaciones_recomendacion']) : null;
-
 // Determinar estado inicial
 $estado = 'pendiente';
-if (!empty($solucion_aplicada)) {
+if (!empty($datos['solucion_aplicada'])) {
     $estado = 'resuelto';
-} elseif (!empty($tecnico_asignado) || !empty($diagnostico)) {
+} elseif (!empty($datos['tecnico_asignado']) || !empty($datos['diagnostico'])) {
     $estado = 'en_proceso';
 }
 
@@ -94,58 +77,15 @@ try {
     $conexion = obtener_conexion_bd();
     $conexion->beginTransaction();
 
-    // 0. Si se solicita registrar el equipo en el inventario o no existía equipo_id pero hay datos
-    if ($guardar_inventario || (empty($equipo_id) && (!empty($numero_serie) || !empty($codigo_activo)) && !empty($tipo_equipo))) {
-        // Verificar si ya existe registrado
-        $stmt_check = $conexion->prepare("SELECT id FROM equipos_inventario WHERE (numero_serie = :serie AND :serie != '') OR (codigo_activo = :cod AND :cod != '') LIMIT 1");
-        $stmt_check->execute(array(
-            ':serie' => $numero_serie ?? '',
-            ':cod'   => $codigo_activo ?? ''
-        ));
-        $eq_previo = $stmt_check->fetch();
+    // 4. Submódulo de Equipos: Verificar o registrar en inventario
+    $equipo = procesar_equipo_en_inventario($conexion, $datos);
 
-        if ($eq_previo) {
-            $equipo_id = $eq_previo['id'];
-        } else if (!empty($tipo_equipo)) {
-            $sql_eq = "INSERT INTO equipos_inventario (
-                        codigo_activo,
-                        numero_serie,
-                        tipo_equipo,
-                        marca_modelo,
-                        sistema_operativo,
-                        area_encargado,
-                        centro_costo
-                    ) VALUES (
-                        :codigo_activo,
-                        :numero_serie,
-                        :tipo_equipo,
-                        :marca_modelo,
-                        :sistema_operativo,
-                        :area_encargado,
-                        :centro_costo
-                    ) RETURNING id";
-            $stmt_eq = $conexion->prepare($sql_eq);
-            $stmt_eq->execute(array(
-                ':codigo_activo'    => $codigo_activo,
-                ':numero_serie'     => $numero_serie ?? 'S/N',
-                ':tipo_equipo'      => $tipo_equipo,
-                ':marca_modelo'     => $marca_modelo ?? 'No especificado',
-                ':sistema_operativo'=> $sistema_operativo,
-                ':area_encargado'   => $area_encargado ?? $departamento_area,
-                ':centro_costo'     => $centro_costo
-            ));
-            $res_eq = $stmt_eq->fetch();
-            $equipo_id = $res_eq['id'];
-        }
-    }
+    // 5. Generar código correlativo de ticket (ej: SOP-2026-0001)
+    $stmt_sec = $conexion->query("SELECT COALESCE(MAX(id), 0) + 1 AS siguiente FROM tickets_soporte");
+    $fila_sec = $stmt_sec->fetch();
+    $codigo_ticket = sprintf('SOP-%s-%04d', date('Y'), $fila_sec['siguiente']);
 
-    // Generar código de ticket único (ej: SOP-2026-0001)
-    $stmt_secuencia = $conexion->query("SELECT COALESCE(MAX(id), 0) + 1 AS siguiente FROM tickets_soporte");
-    $fila_secuencia = $stmt_secuencia->fetch();
-    $consecutivo = $fila_secuencia['siguiente'];
-    $codigo_ticket = sprintf('SOP-%s-%04d', date('Y'), $consecutivo);
-
-    // 1. Insertar requerimiento principal en tickets_soporte
+    // 6. Insertar ticket principal en tickets_soporte
     $sql_ticket = "INSERT INTO tickets_soporte (
                 codigo_ticket,
                 nombre_solicitante,
@@ -197,59 +137,25 @@ try {
         ':soporte_hardware'     => $soporte_hardware ? 'true' : 'false',
         ':soporte_software'     => $soporte_software ? 'true' : 'false',
         ':descripcion_problema' => $descripcion_problema,
-        ':equipo_id'            => $equipo_id,
-        ':codigo_activo'        => $codigo_activo,
-        ':numero_serie'         => $numero_serie,
-        ':tipo_equipo'          => $tipo_equipo,
-        ':marca_modelo'         => $marca_modelo,
-        ':sistema_operativo'    => $sistema_operativo,
-        ':area_encargado'       => $area_encargado,
-        ':centro_costo'         => $centro_costo,
+        ':equipo_id'            => $equipo['equipo_id'],
+        ':codigo_activo'        => $equipo['codigo_activo'],
+        ':numero_serie'         => $equipo['numero_serie'],
+        ':tipo_equipo'          => $equipo['tipo_equipo'],
+        ':marca_modelo'         => $equipo['marca_modelo'],
+        ':sistema_operativo'    => $equipo['sistema_operativo'],
+        ':area_encargado'       => $equipo['area_encargado'],
+        ':centro_costo'         => $equipo['centro_costo'],
         ':prioridad'            => $prioridad,
         ':estado'               => $estado,
-        ':firma_solicitante'    => $firma_solicitante,
-        ':firma_sistemas'       => $firma_sistemas
+        ':firma_solicitante'    => $resultado_firmas['firma_solicitante'],
+        ':firma_sistemas'       => $resultado_firmas['firma_sistemas']
     ));
 
     $resultado = $stmt_ticket->fetch();
-    $ticket_id = $resultado['id'];
+    $ticket_id = (int)$resultado['id'];
 
-    // 2. Si se ingresaron datos de soporte técnico, registrar atención en atenciones_soporte
-    $tiene_datos_tecnicos = !empty($tecnico_asignado) || !empty($diagnostico) || !empty($solucion_aplicada) || !empty($observaciones) || !empty($tipo_resolucion) || !empty($firma_sistemas);
-    
-    if ($tiene_datos_tecnicos) {
-        $sql_atencion = "INSERT INTO atenciones_soporte (
-                    ticket_id,
-                    fecha_hora_atencion,
-                    tecnico_asignado,
-                    tipo_resolucion,
-                    diagnostico,
-                    solucion_aplicada,
-                    observaciones_recomendacion,
-                    firma_sistemas
-                ) VALUES (
-                    :ticket_id,
-                    :fecha_hora_atencion,
-                    :tecnico_asignado,
-                    :tipo_resolucion,
-                    :diagnostico,
-                    :solucion_aplicada,
-                    :observaciones_recomendacion,
-                    :firma_sistemas
-                )";
-
-        $stmt_atencion = $conexion->prepare($sql_atencion);
-        $stmt_atencion->execute(array(
-            ':ticket_id'                  => $ticket_id,
-            ':fecha_hora_atencion'        => !empty($fecha_hora_atencion) ? $fecha_hora_atencion : date('Y-m-d H:i:s'),
-            ':tecnico_asignado'           => !empty($tecnico_asignado) ? $tecnico_asignado : 'Área de Soporte Técnico',
-            ':tipo_resolucion'            => $tipo_resolucion,
-            ':diagnostico'                => $diagnostico,
-            ':solucion_aplicada'          => $solucion_aplicada,
-            ':observaciones_recomendacion'=> $observaciones,
-            ':firma_sistemas'             => $firma_sistemas
-        ));
-    }
+    // 7. Submódulo de Atención: Registrar atención técnica si se proporcionaron datos
+    registrar_atencion_tecnica($conexion, $ticket_id, $datos, $resultado_firmas['firma_sistemas']);
 
     $conexion->commit();
 

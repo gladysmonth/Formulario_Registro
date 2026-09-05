@@ -140,3 +140,78 @@ CREATE TRIGGER trigger_actualizar_atenciones_soporte
 BEFORE UPDATE ON atenciones_soporte
 FOR EACH ROW
 EXECUTE FUNCTION actualizar_marca_tiempo();
+
+-- ================================================================
+-- TABLA 4: REGISTRO DE MANTENIMIENTO PREVENTIVO (PC / LAPTOP)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS mantenimientos_preventivos (
+    id BIGSERIAL PRIMARY KEY,
+    codigo_mantenimiento VARCHAR(20) UNIQUE NOT NULL, -- Ej: MP-2026-0001
+    
+    -- 1. DATOS GENERALES
+    tecnico_responsable VARCHAR(150) NOT NULL,
+    fecha_mantenimiento DATE NOT NULL DEFAULT CURRENT_DATE,
+    ubicacion_equipo VARCHAR(150) NOT NULL,
+
+    -- 2. INFORMACIÓN DEL EQUIPO
+    equipo_id BIGINT REFERENCES equipos_inventario(id) ON DELETE SET NULL,
+    tipo_equipo VARCHAR(20) NOT NULL, -- 'PC' o 'LAPTOP'
+    nombre_equipo VARCHAR(100),
+    codigo_activo VARCHAR(50),
+    memoria_ram VARCHAR(50),
+    tipo_red VARCHAR(20), -- 'LAN' o 'WIFI'
+    marca_modelo VARCHAR(150),
+    sistema_operativo VARCHAR(100),
+    procesador VARCHAR(100),
+    almacenamiento VARCHAR(100),
+    direccion_ip VARCHAR(50),
+
+    -- 3. MANTENIMIENTO EXTERNO (LIMPIEZA FÍSICA)
+    limpieza_carcasa_componentes BOOLEAN NOT NULL DEFAULT FALSE,
+    limpieza_pantalla_teclado BOOLEAN NOT NULL DEFAULT FALSE,
+    verificacion_conectores BOOLEAN NOT NULL DEFAULT FALSE,
+    limpieza_otros TEXT,
+
+    -- 4. MANTENIMIENTO INTERNO (SOFTWARE / CONFIGURACIÓN)
+    actualizacion_so BOOLEAN NOT NULL DEFAULT FALSE,
+    eliminacion_temporales BOOLEAN NOT NULL DEFAULT FALSE,
+    desfragmentacion_optimizacion BOOLEAN NOT NULL DEFAULT FALSE,
+    escaneo_antivirus BOOLEAN NOT NULL DEFAULT FALSE,
+    verificacion_drivers BOOLEAN NOT NULL DEFAULT FALSE,
+    copia_seguridad BOOLEAN NOT NULL DEFAULT FALSE,
+    mantenimiento_interno_otros TEXT,
+
+    -- 5. VERIFICACIÓN DE FUNCIONAMIENTO
+    verificacion_encendido_apagado BOOLEAN NOT NULL DEFAULT FALSE,
+    verificacion_rendimiento BOOLEAN NOT NULL DEFAULT FALSE,
+    verificacion_red BOOLEAN NOT NULL DEFAULT FALSE,
+    verificacion_perifericos BOOLEAN NOT NULL DEFAULT FALSE,
+    verificacion_temperatura_anomalias BOOLEAN NOT NULL DEFAULT FALSE,
+
+    -- 6. OBSERVACIONES / INCIDENCIAS
+    observaciones_incidencias TEXT,
+
+    -- 7. FIRMAS DIGITALES
+    firma_responsable_equipo TEXT NOT NULL,
+    firma_sistemas TEXT NOT NULL,
+
+    -- Auditoría
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para optimizar búsquedas en mantenimientos_preventivos
+CREATE INDEX IF NOT EXISTS idx_mp_codigo ON mantenimientos_preventivos (codigo_mantenimiento);
+CREATE INDEX IF NOT EXISTS idx_mp_tecnico ON mantenimientos_preventivos (tecnico_responsable);
+CREATE INDEX IF NOT EXISTS idx_mp_fecha ON mantenimientos_preventivos (fecha_mantenimiento);
+CREATE INDEX IF NOT EXISTS idx_mp_tipo_equipo ON mantenimientos_preventivos (tipo_equipo);
+CREATE INDEX IF NOT EXISTS idx_mp_codigo_activo ON mantenimientos_preventivos (codigo_activo);
+CREATE INDEX IF NOT EXISTS idx_mp_equipo_id ON mantenimientos_preventivos (equipo_id);
+
+-- Trigger para actualizar campo actualizado_en en mantenimientos_preventivos
+DROP TRIGGER IF EXISTS trigger_actualizar_mantenimientos_preventivos ON mantenimientos_preventivos;
+CREATE TRIGGER trigger_actualizar_mantenimientos_preventivos
+BEFORE UPDATE ON mantenimientos_preventivos
+FOR EACH ROW
+EXECUTE FUNCTION actualizar_marca_tiempo();
+
