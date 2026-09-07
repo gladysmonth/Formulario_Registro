@@ -173,8 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inputCodActivo) inputCodActivo.value = eq.codigo_activo || '';
         if (inputMarcaMod) inputMarcaMod.value = eq.marca_modelo || '';
         if (inputSO) inputSO.value = eq.sistema_operativo || '';
-        if (inputUbicacion && eq.area_encargado && !inputUbicacion.value) {
-            inputUbicacion.value = eq.area_encargado;
+        const ubicacionVal = eq.area || eq.area_encargado || '';
+        if (inputUbicacion && ubicacionVal && !inputUbicacion.value) {
+            inputUbicacion.value = ubicacionVal;
         }
 
         // Seleccionar tipo de equipo (PC o LAPTOP)

@@ -94,9 +94,9 @@
                 </div>
 
                 <!-- 5. Sistema Operativo -->
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-3 col-sm-6">
                     <label for="sistema_operativo" class="form-label small fw-semibold">Sistema Operativo</label>
-                    <input type="text" class="form-control form-control-sm" id="sistema_operativo" name="sistema_operativo" list="listaSistemas" placeholder="Ej: Windows 11 Pro / No aplica">
+                    <input type="text" class="form-control form-control-sm" id="sistema_operativo" name="sistema_operativo" list="listaSistemas" placeholder="Ej: Windows 11 Pro">
                     <datalist id="listaSistemas">
                         <option value="Windows 11 Pro">
                         <option value="Windows 10 Pro">
@@ -107,16 +107,22 @@
                     </datalist>
                 </div>
 
-                <!-- 6. Área y Encargado -->
-                <div class="col-md-4 col-sm-6">
-                    <label for="area_encargado" class="form-label small fw-semibold">Área y Encargado</label>
-                    <input type="text" class="form-control form-control-sm" id="area_encargado" name="area_encargado" placeholder="Ej: Contabilidad - Lic. Juan Pérez">
+                <!-- 6. Área del Equipo -->
+                <div class="col-md-3 col-sm-6">
+                    <label for="area_equipo" class="form-label small fw-semibold">Área del Equipo</label>
+                    <input type="text" class="form-control form-control-sm" id="area_equipo" name="area" placeholder="Ej: Contabilidad / Almacén">
                 </div>
 
-                <!-- 7. Centro de Costo -->
-                <div class="col-md-4 col-sm-12">
+                <!-- 7. Encargado del Equipo -->
+                <div class="col-md-3 col-sm-6">
+                    <label for="encargado_equipo" class="form-label small fw-semibold">Encargado del Equipo</label>
+                    <input type="text" class="form-control form-control-sm" id="encargado_equipo" name="encargado" placeholder="Ej: Lic. Juan Pérez (libre edición)">
+                </div>
+
+                <!-- 8. Centro de Costo -->
+                <div class="col-md-3 col-sm-6">
                     <label for="centro_costo" class="form-label small fw-semibold">Centro de Costo</label>
-                    <input type="text" class="form-control form-control-sm" id="centro_costo" name="centro_costo" placeholder="Ej: CC-102 Finanzas / CC-204 Operaciones">
+                    <input type="text" class="form-control form-control-sm" id="centro_costo" name="centro_costo" placeholder="Ej: CC-102 Finanzas">
                 </div>
             </div>
 

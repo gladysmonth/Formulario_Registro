@@ -28,7 +28,7 @@ try {
     $conexion->beginTransaction();
 
     // Comprobar existencia previa del ticket
-    $stmt_existe = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad FROM tickets_soporte WHERE id = :id");
+    $stmt_existe = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad, firma_sistemas FROM tickets_soporte WHERE id = :id");
     $stmt_existe->execute(array(':id' => $id));
     $ticket_actual = $stmt_existe->fetch();
 
@@ -37,7 +37,18 @@ try {
         responder_error('El ticket especificado no existe', 404);
     }
 
-    // 1. Actualizaciones en tickets_soporte (prioridad y estado)
+    // 1. Validar obligatoriedad de firma de sistemas al resolver
+    $nuevo_estado = isset($datos['estado']) ? strtolower($datos['estado']) : null;
+    $firma_sistemas_enviada = !empty($datos['firma_sistemas']) ? $datos['firma_sistemas'] : null;
+
+    if ($nuevo_estado === 'resuelto') {
+        if (empty($firma_sistemas_enviada) && empty($ticket_actual['firma_sistemas'])) {
+            $conexion->rollBack();
+            responder_error('La firma digital del Dpto. de Sistemas es obligatoria para resolver y cerrar el ticket', 422);
+        }
+    }
+
+    // 2. Actualizaciones en tickets_soporte (prioridad y estado)
     $actualizaciones_ticket = array();
     $parametros_ticket = array(':id' => $id);
 
@@ -49,17 +60,17 @@ try {
         }
     }
 
-    if (isset($datos['estado'])) {
+    if ($nuevo_estado !== null) {
         $estados_validos = array('pendiente', 'en_proceso', 'resuelto', 'cancelado');
-        if (in_array(strtolower($datos['estado']), $estados_validos)) {
+        if (in_array($nuevo_estado, $estados_validos)) {
             $actualizaciones_ticket[] = "estado = :estado";
-            $parametros_ticket[':estado'] = strtolower($datos['estado']);
+            $parametros_ticket[':estado'] = $nuevo_estado;
         }
     }
 
-    if (!empty($datos['firma_sistemas'])) {
+    if (!empty($firma_sistemas_enviada)) {
         $actualizaciones_ticket[] = "firma_sistemas = :firma_sistemas";
-        $parametros_ticket[':firma_sistemas'] = $datos['firma_sistemas'];
+        $parametros_ticket[':firma_sistemas'] = $firma_sistemas_enviada;
     }
 
     if (!empty($actualizaciones_ticket)) {

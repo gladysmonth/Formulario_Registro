@@ -25,11 +25,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (switchSeccionTecnica && seccionTecnicaContenedor) {
         switchSeccionTecnica.addEventListener('change', (e) => {
+            const badgeFirmaSistemas = document.getElementById('badgeFirmaSistemas');
             if (e.target.checked) {
                 seccionTecnicaContenedor.classList.remove('d-none');
                 seccionTecnicaContenedor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (badgeFirmaSistemas) {
+                    badgeFirmaSistemas.textContent = 'Obligatoria al resolver';
+                    badgeFirmaSistemas.className = 'badge bg-warning-subtle text-warning border';
+                }
             } else {
                 seccionTecnicaContenedor.classList.add('d-none');
+                if (badgeFirmaSistemas) {
+                    badgeFirmaSistemas.textContent = 'Opcional al registrar';
+                    badgeFirmaSistemas.className = 'badge bg-secondary-subtle text-secondary border';
+                }
             }
         });
     }
@@ -49,7 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectTipoEquipo = document.getElementById('tipo_equipo');
     const inputMarcaModelo = document.getElementById('marca_modelo');
     const inputSistemaOperativo = document.getElementById('sistema_operativo');
-    const inputAreaEncargado = document.getElementById('area_encargado');
+    const inputAreaEquipo = document.getElementById('area_equipo');
+    const inputEncargadoEquipo = document.getElementById('encargado_equipo');
     const inputCentroCosto = document.getElementById('centro_costo');
 
     async function cargarInventarioEquipos() {
@@ -100,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectTipoEquipo) selectTipoEquipo.value = eq.tipo_equipo || '';
         if (inputMarcaModelo) inputMarcaModelo.value = eq.marca_modelo || '';
         if (inputSistemaOperativo) inputSistemaOperativo.value = eq.sistema_operativo || '';
-        if (inputAreaEncargado) inputAreaEncargado.value = eq.area_encargado || '';
+        if (inputAreaEquipo) inputAreaEquipo.value = eq.area || eq.area_encargado || '';
+        if (inputEncargadoEquipo) inputEncargadoEquipo.value = eq.encargado || '';
         if (inputCentroCosto) inputCentroCosto.value = eq.centro_costo || '';
 
         if (badgeEstadoEquipo) {
@@ -267,6 +278,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(formulario);
             const checkGuardarInv = document.getElementById('guardar_en_inventario');
 
+            // Validar firma obligatoria del Dpto. de Sistemas si se marca solución inmediata
+            const solucionAplicada = formData.get('solucion_aplicada');
+            const esResolucionInmediata = (switchSeccionTecnica && switchSeccionTecnica.checked && solucionAplicada && solucionAplicada.trim() !== '');
+
+            if (esResolucionInmediata && (!firmaSistemas || !firmaSistemas.tieneFirma())) {
+                if (alertaValidacion) {
+                    alertaValidacion.textContent = 'La firma digital del Dpto. de Sistemas es obligatoria al registrar la solución inmediata del ticket.';
+                    alertaValidacion.classList.remove('d-none');
+                    const canvasSis = document.getElementById('canvasFirmaSistemas');
+                    if (canvasSis) canvasSis.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+
+            const valorArea = formData.get('area') ? formData.get('area').trim() : '';
+            const valorEncargado = formData.get('encargado') ? formData.get('encargado').trim() : '';
+            const areaEncargadoCompuesto = valorArea ? (valorArea + (valorEncargado ? ' - ' + valorEncargado : '')) : valorEncargado;
+
             const datos = {
                 nombre_solicitante: formData.get('nombre_solicitante'),
                 fecha_solicitud: formData.get('fecha_solicitud'),
@@ -275,14 +304,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 soporte_software: tieneSoftware,
                 descripcion_problema: formData.get('descripcion_problema'),
 
-                // Campos del equipo afectado
+                // Campos del equipo afectado (separados y compatibles)
                 equipo_id: formData.get('equipo_id') || null,
                 codigo_activo: formData.get('codigo_activo'),
                 numero_serie: formData.get('numero_serie'),
                 tipo_equipo: formData.get('tipo_equipo'),
                 marca_modelo: formData.get('marca_modelo'),
                 sistema_operativo: formData.get('sistema_operativo'),
-                area_encargado: formData.get('area_encargado'),
+                area: valorArea,
+                encargado: valorEncargado,
+                area_encargado: areaEncargadoCompuesto,
                 centro_costo: formData.get('centro_costo'),
                 guardar_en_inventario: checkGuardarInv ? checkGuardarInv.checked : true,
 
@@ -291,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Firmas digitales (Base64 PNG)
                 firma_solicitante: firmaSolicitante.obtenerBase64(),
-                firma_sistemas: firmaSistemas ? firmaSistemas.obtenerBase64() : null,
+                firma_sistemas: firmaSistemas && firmaSistemas.tieneFirma() ? firmaSistemas.obtenerBase64() : null,
 
                 // Campos de técnico (si fueron completados)
                 tecnico_asignado: formData.get('tecnico_asignado'),

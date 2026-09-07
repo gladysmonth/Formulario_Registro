@@ -22,17 +22,9 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
                     <i class="bi bi-layers-fill me-1"></i> Plataforma Modular de Registro
                 </span>
                 <h1 class="display-6 fw-bold text-dark mt-2 mb-3">Formularios de Registro Institucional</h1>
-                <p class="lead text-muted fs-6 mb-4">
+                <p class="lead text-muted fs-6 mb-0">
                     Bienvenido al sistema unificado de gestión de solicitudes y registros. Selecciona el formulario correspondiente para iniciar tu requerimiento o acceder a la bandeja de gestión y seguimiento.
                 </p>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="modulos/soporte_tecnico/formulario_soporte.php" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
-                        <i class="bi bi-tools me-1"></i> Formulario de Soporte Técnico
-                    </a>
-                    <a href="modulos/soporte_tecnico/gestion_tickets.php" class="btn btn-outline-secondary px-4 py-2 rounded-3">
-                        <i class="bi bi-kanban me-1"></i> Panel de Tickets
-                    </a>
-                </div>
             </div>
             <div class="col-lg-4 text-center d-none d-lg-block">
                 <div class="p-4 bg-light rounded-circle d-inline-flex shadow-sm border">
@@ -69,10 +61,10 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> 6 Secciones completas</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Proceso guiado en 6 pasos</div>
                             <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Generación de Ticket</div>
                             <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Catálogo de Equipos</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Doble Firma Digital</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Validación de Conformidad</div>
                         </div>
                     </div>
 
@@ -108,9 +100,9 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> 6 Secciones técnicas</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Verificación paso a paso</div>
                             <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Control PC y Laptop</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Checklists completos</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Puntos de revisión claros</div>
                             <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Ficha Imprimible</div>
                         </div>
                     </div>

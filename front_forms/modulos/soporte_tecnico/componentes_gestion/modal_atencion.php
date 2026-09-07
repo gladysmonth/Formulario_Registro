@@ -11,8 +11,12 @@
         <!-- FORMULARIO PRINCIPAL DEL MODAL (Es el modal-content para respetar el scroll de Bootstrap 5) -->
         <form id="formAtencionTicket" class="modal-content">
             <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title fw-bold" id="modalTitulo">
-                    <i class="bi bi-tools text-warning me-2"></i> Atención de Ticket: <span id="modalTicketCodigo" class="text-warning"></span>
+                <h5 class="modal-title fw-bold d-flex align-items-center flex-wrap gap-2" id="modalTitulo">
+                    <span><i class="bi bi-tools text-warning me-2"></i><span id="modalTituloAccion">Atención de Ticket:</span></span>
+                    <span id="modalTicketCodigo" class="text-warning"></span>
+                    <span id="badgeModoLectura" class="badge bg-secondary-subtle text-secondary border fs-6 fw-normal d-none">
+                        <i class="bi bi-eye-fill me-1"></i>Modo Vista
+                    </span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
@@ -32,7 +36,7 @@
                         <div class="col-12 mt-2">
                             <strong>Equipo Afectado:</strong>
                             <div id="modalTicketEquipoDetalles" class="mt-1 p-2 bg-white rounded border text-secondary">
-                                <!-- Dinámico vía JS con los 7 campos de inventario -->
+                                <!-- Dinámico vía JS con los campos de inventario -->
                             </div>
                         </div>
                         <div class="col-12 mt-2">
@@ -138,8 +142,19 @@
                     <p class="text-muted small mb-2">
                         Firma digital del personal del Departamento de Sistemas para validar la atención o cierre del ticket.
                     </p>
+
+                    <!-- Vista fija de Firma en Modo Lectura -->
+                    <div id="contenedorFirmaSistemasLectura" class="mb-3 p-3 bg-light rounded-3 border text-center d-none">
+                        <span class="small fw-semibold text-secondary d-block mb-2">
+                            <i class="bi bi-shield-check text-success me-1"></i>Firma Registrada del Dpto. de Sistemas:
+                        </span>
+                        <img id="imgFirmaSistemasLectura" src="" alt="Firma Sistemas" class="img-fluid border rounded bg-white p-2 shadow-sm" style="max-height: 90px; display: none;">
+                        <span id="sinFirmaSistemasLectura" class="text-muted fst-italic small d-none">
+                            <i class="bi bi-info-circle me-1"></i>Sin firma registrada
+                        </span>
+                    </div>
                     
-                    <!-- Si ya existía firma previa -->
+                    <!-- Si ya existía firma previa (Modo Edición) -->
                     <div id="contenedorFirmaSistemasPrevia" class="mb-3 p-2 bg-light rounded border d-none">
                         <div class="d-flex align-items-center justify-content-between mb-1">
                             <span class="small fw-semibold text-secondary"><i class="bi bi-check-circle-fill text-success me-1"></i>Firma previamente registrada:</span>
@@ -152,7 +167,7 @@
                         </div>
                     </div>
 
-                    <!-- Lienzo de dibujo de firma -->
+                    <!-- Lienzo de dibujo de firma (Modo Edición) -->
                     <div id="contenedorLienzoFirmaSistemas" class="tarjeta-firma">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="badge bg-secondary-subtle text-dark border">
@@ -170,11 +185,18 @@
                 </div>
             </div>
 
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="submit" id="btnGuardarAtencion" class="btn btn-primary">
-                    <i class="bi bi-save me-1"></i> Guardar Cambios
-                </button>
+            <div class="modal-footer bg-light d-flex justify-content-between align-items-center">
+                <div>
+                    <button type="button" id="btnHabilitarEdicion" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil-square me-1"></i> Modificar Atención
+                    </button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" id="btnGuardarAtencion" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Guardar Cambios
+                    </button>
+                </div>
             </div>
         </form>
     </div>

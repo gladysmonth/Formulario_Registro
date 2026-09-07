@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS equipos_inventario (
     tipo_equipo VARCHAR(100) NOT NULL,
     marca_modelo VARCHAR(150) NOT NULL,
     sistema_operativo VARCHAR(100),
-    area_encargado VARCHAR(150),
+    area VARCHAR(100),
+    encargado VARCHAR(150),
     centro_costo VARCHAR(100),
     creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS equipos_inventario (
 CREATE INDEX IF NOT EXISTS idx_equipos_serie ON equipos_inventario (numero_serie);
 CREATE INDEX IF NOT EXISTS idx_equipos_codigo ON equipos_inventario (codigo_activo);
 CREATE INDEX IF NOT EXISTS idx_equipos_tipo ON equipos_inventario (tipo_equipo);
-CREATE INDEX IF NOT EXISTS idx_equipos_area ON equipos_inventario (area_encargado);
+CREATE INDEX IF NOT EXISTS idx_equipos_area ON equipos_inventario (area);
 
 DROP TRIGGER IF EXISTS trigger_actualizar_equipos_inventario ON equipos_inventario;
 CREATE TRIGGER trigger_actualizar_equipos_inventario
@@ -73,7 +74,8 @@ CREATE TABLE IF NOT EXISTS tickets_soporte (
     tipo_equipo VARCHAR(100),
     marca_modelo VARCHAR(150),
     sistema_operativo VARCHAR(100),
-    area_encargado VARCHAR(150),
+    area VARCHAR(100),
+    encargado VARCHAR(150),
     centro_costo VARCHAR(100),
 
     -- 4. PRIORIDAD

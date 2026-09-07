@@ -19,7 +19,8 @@ function procesar_equipo_en_inventario($conexion, $datos) {
     $tipo_equipo        = !empty($datos['tipo_equipo']) ? trim($datos['tipo_equipo']) : null;
     $marca_modelo       = !empty($datos['marca_modelo']) ? trim($datos['marca_modelo']) : null;
     $sistema_operativo  = !empty($datos['sistema_operativo']) ? trim($datos['sistema_operativo']) : null;
-    $area_encargado     = !empty($datos['area_encargado']) ? trim($datos['area_encargado']) : null;
+    $area               = !empty($datos['area']) ? trim($datos['area']) : (!empty($datos['area_encargado']) ? trim($datos['area_encargado']) : null);
+    $encargado          = !empty($datos['encargado']) ? trim($datos['encargado']) : null;
     $centro_costo       = !empty($datos['centro_costo']) ? trim($datos['centro_costo']) : null;
     $guardar_inventario = !empty($datos['guardar_en_inventario']) ? true : false;
 
@@ -42,7 +43,8 @@ function procesar_equipo_en_inventario($conexion, $datos) {
                         tipo_equipo,
                         marca_modelo,
                         sistema_operativo,
-                        area_encargado,
+                        area,
+                        encargado,
                         centro_costo
                     ) VALUES (
                         :codigo_activo,
@@ -50,7 +52,8 @@ function procesar_equipo_en_inventario($conexion, $datos) {
                         :tipo_equipo,
                         :marca_modelo,
                         :sistema_operativo,
-                        :area_encargado,
+                        :area,
+                        :encargado,
                         :centro_costo
                     ) RETURNING id";
             $stmt_eq = $conexion->prepare($sql_eq);
@@ -60,7 +63,8 @@ function procesar_equipo_en_inventario($conexion, $datos) {
                 ':tipo_equipo'      => $tipo_equipo,
                 ':marca_modelo'     => $marca_modelo !== null ? $marca_modelo : 'No especificado',
                 ':sistema_operativo'=> $sistema_operativo,
-                ':area_encargado'   => $area_encargado !== null ? $area_encargado : (!empty($datos['departamento_area']) ? trim($datos['departamento_area']) : null),
+                ':area'             => $area !== null ? $area : (!empty($datos['departamento_area']) ? trim($datos['departamento_area']) : null),
+                ':encargado'        => $encargado,
                 ':centro_costo'     => $centro_costo
             ));
             $res_eq = $stmt_eq->fetch();
@@ -75,7 +79,8 @@ function procesar_equipo_en_inventario($conexion, $datos) {
         'tipo_equipo'       => $tipo_equipo,
         'marca_modelo'      => $marca_modelo,
         'sistema_operativo' => $sistema_operativo,
-        'area_encargado'    => $area_encargado,
+        'area'              => $area,
+        'encargado'         => $encargado,
         'centro_costo'      => $centro_costo
     );
 }

@@ -11,7 +11,7 @@
  * @param array $datos
  * @return array ['valido' => bool, 'errores' => array, 'firma_solicitante' => string, 'firma_sistemas' => string|null]
  */
-function validar_y_procesar_firmas($datos) {
+function validar_y_procesar_firmas($datos, $exigir_firma_sistemas = false) {
     $errores = array();
     $firma_solicitante = !empty($datos['firma_solicitante']) ? $datos['firma_solicitante'] : null;
     $firma_sistemas    = !empty($datos['firma_sistemas']) ? $datos['firma_sistemas'] : null;
@@ -22,7 +22,9 @@ function validar_y_procesar_firmas($datos) {
         $errores[] = 'El formato de la firma del Solicitante no corresponde a una imagen digital válida.';
     }
 
-    if (!empty($firma_sistemas) && strpos($firma_sistemas, 'data:image/') !== 0) {
+    if ($exigir_firma_sistemas && empty($firma_sistemas)) {
+        $errores[] = 'La firma digital del Dpto. de Sistemas es obligatoria para resolver o cerrar el ticket.';
+    } else if (!empty($firma_sistemas) && strpos($firma_sistemas, 'data:image/') !== 0) {
         $errores[] = 'El formato de la firma del Dpto. de Sistemas no corresponde a una imagen digital válida.';
     }
 

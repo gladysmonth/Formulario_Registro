@@ -128,9 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         <small class="text-secondary">${ticket.tecnico_asignado ? escapeHtml(ticket.tecnico_asignado) : '<em class="text-muted">Sin asignar</em>'}</small>
                     </td>
                     <td class="text-end text-nowrap">
-                        <button class="btn btn-sm btn-outline-primary btn-atender" data-id="${ticket.id}">
-                            <i class="bi bi-pencil-square me-1"></i> Atender
-                        </button>
+                        ${ticket.estado === 'resuelto' ? `
+                            <button class="btn btn-sm btn-outline-secondary btn-atender" data-id="${ticket.id}" data-modo="lectura" title="Ver ficha técnica completa del ticket">
+                                <i class="bi bi-eye me-1"></i> Ver Ficha
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-outline-primary btn-atender" data-id="${ticket.id}" data-modo="edicion" title="Atender o diagnosticar ticket">
+                                <i class="bi bi-tools me-1"></i> Atender
+                            </button>
+                        `}
                     </td>
                 </tr>
             `;
@@ -138,11 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tablaCuerpo.innerHTML = html;
 
-        // Asignar eventos de clic a los botones "Atender"
+        // Asignar eventos de clic a los botones de acción
         document.querySelectorAll('.btn-atender').forEach(boton => {
             boton.addEventListener('click', () => {
                 const id = boton.getAttribute('data-id');
-                abrirModalAtencion(id);
+                const modo = boton.getAttribute('data-modo') || 'edicion';
+                abrirModalAtencion(id, modo);
             });
         });
     }
@@ -238,7 +245,98 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function abrirModalAtencion(id) {
+    // ==========================================================
+    // CONTROL DE MODO DEL MODAL: LECTURA / VISTA vs EDICIÓN
+    // ==========================================================
+    const badgeModoLectura = document.getElementById('badgeModoLectura');
+    const modalTituloAccion = document.getElementById('modalTituloAccion');
+    const btnHabilitarEdicion = document.getElementById('btnHabilitarEdicion');
+    const contFirmaSistemasLectura = document.getElementById('contenedorFirmaSistemasLectura');
+    const imgFirmaSistemasLectura = document.getElementById('imgFirmaSistemasLectura');
+    const sinFirmaSistemasLectura = document.getElementById('sinFirmaSistemasLectura');
+    const contLienzoFirmaSistemas = document.getElementById('contenedorLienzoFirmaSistemas');
+
+    const camposEditables = [
+        'atencion_prioridad',
+        'atencion_estado',
+        'atencion_fecha_hora',
+        'atencion_tecnico',
+        'atencion_tipo_resolucion',
+        'atencion_diagnostico',
+        'atencion_solucion',
+        'atencion_observaciones'
+    ];
+
+    function configurarModoModal(modo) {
+        const esLectura = (modo === 'lectura');
+
+        if (badgeModoLectura) {
+            if (esLectura) badgeModoLectura.classList.remove('d-none');
+            else badgeModoLectura.classList.add('d-none');
+        }
+
+        if (modalTituloAccion) {
+            modalTituloAccion.textContent = esLectura ? 'Ficha de Ticket:' : 'Atención de Ticket:';
+        }
+
+        camposEditables.forEach(campoId => {
+            const el = document.getElementById(campoId);
+            if (el) el.disabled = esLectura;
+        });
+
+        if (esLectura) {
+            // Modo Lectura: firmas como imágenes fijas, canvas y botón guardar ocultos
+            if (contFirmaSistemasLectura) {
+                contFirmaSistemasLectura.classList.remove('d-none');
+                if (ticketEnEdicion && ticketEnEdicion.firma_sistemas) {
+                    if (imgFirmaSistemasLectura) {
+                        imgFirmaSistemasLectura.src = ticketEnEdicion.firma_sistemas;
+                        imgFirmaSistemasLectura.style.display = 'inline-block';
+                    }
+                    if (sinFirmaSistemasLectura) sinFirmaSistemasLectura.classList.add('d-none');
+                } else {
+                    if (imgFirmaSistemasLectura) imgFirmaSistemasLectura.style.display = 'none';
+                    if (sinFirmaSistemasLectura) sinFirmaSistemasLectura.classList.remove('d-none');
+                }
+            }
+            if (contFirmaSistemasPrevia) contFirmaSistemasPrevia.classList.add('d-none');
+            if (contLienzoFirmaSistemas) contLienzoFirmaSistemas.classList.add('d-none');
+
+            if (btnGuardarAtencion) btnGuardarAtencion.classList.add('d-none');
+            if (btnHabilitarEdicion) btnHabilitarEdicion.classList.remove('d-none');
+        } else {
+            // Modo Edición: habilitar campos y botón de guardar
+            if (contFirmaSistemasLectura) contFirmaSistemasLectura.classList.add('d-none');
+            if (btnGuardarAtencion) btnGuardarAtencion.classList.remove('d-none');
+            if (btnHabilitarEdicion) btnHabilitarEdicion.classList.add('d-none');
+
+            if (ticketEnEdicion && ticketEnEdicion.firma_sistemas && contFirmaSistemasPrevia) {
+                contFirmaSistemasPrevia.classList.remove('d-none');
+                if (contLienzoFirmaSistemas) contLienzoFirmaSistemas.classList.add('d-none');
+            } else {
+                if (contFirmaSistemasPrevia) contFirmaSistemasPrevia.classList.add('d-none');
+                if (contLienzoFirmaSistemas) contLienzoFirmaSistemas.classList.remove('d-none');
+            }
+        }
+    }
+
+    if (btnHabilitarEdicion) {
+        btnHabilitarEdicion.addEventListener('click', () => {
+            configurarModoModal('edicion');
+            if (canvasFirmaAtencion && ctxAtencion) {
+                const rect = canvasFirmaAtencion.getBoundingClientRect();
+                if (rect.width > 0) {
+                    canvasFirmaAtencion.width = rect.width;
+                    ctxAtencion.lineWidth = 2.5;
+                    ctxAtencion.lineCap = 'round';
+                    ctxAtencion.lineJoin = 'round';
+                    ctxAtencion.strokeStyle = '#0f172a';
+                }
+            }
+        });
+    }
+
+    function abrirModalAtencion(id, modo = 'edicion') {
         const ticket = ticketsActuales.find(t => String(t.id) === String(id));
         if (!ticket || !modalAtencion) return;
 
@@ -250,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modalTicketArea').textContent = ticket.departamento_area;
         document.getElementById('modalTicketDescripcion').textContent = ticket.descripcion_problema;
 
-        // Desglose de Equipo afectado con los 7 campos estructurados
+        // Desglose de Equipo afectado con los campos separados
         const contEquipoDetalles = document.getElementById('modalTicketEquipoDetalles');
         if (contEquipoDetalles) {
             const detalles = [];
@@ -259,7 +357,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ticket.tipo_equipo) detalles.push(`<span><strong>Tipo:</strong> ${escapeHtml(ticket.tipo_equipo)}</span>`);
             if (ticket.marca_modelo) detalles.push(`<span><strong>Marca/Modelo:</strong> ${escapeHtml(ticket.marca_modelo)}</span>`);
             if (ticket.sistema_operativo) detalles.push(`<span><strong>S.O.:</strong> ${escapeHtml(ticket.sistema_operativo)}</span>`);
-            if (ticket.area_encargado) detalles.push(`<span><strong>Área/Encargado:</strong> ${escapeHtml(ticket.area_encargado)}</span>`);
+            if (ticket.area) detalles.push(`<span><strong>Área:</strong> ${escapeHtml(ticket.area)}</span>`);
+            if (ticket.encargado) detalles.push(`<span><strong>Encargado:</strong> ${escapeHtml(ticket.encargado)}</span>`);
+            else if (ticket.area_encargado && !ticket.area) detalles.push(`<span><strong>Área/Encargado:</strong> ${escapeHtml(ticket.area_encargado)}</span>`);
             if (ticket.centro_costo) detalles.push(`<span><strong>Centro de Costo:</strong> ${escapeHtml(ticket.centro_costo)}</span>`);
 
             if (detalles.length > 0) {
@@ -323,6 +423,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('atencion_tipo_resolucion').value = ticket.tipo_resolucion || '';
         document.getElementById('atencion_observaciones').value = ticket.observaciones_recomendacion || '';
 
+        // Configurar modo (Lectura si fue solicitado o si el ticket está resuelto por defecto)
+        const modoFinal = modo || (ticket.estado === 'resuelto' ? 'lectura' : 'edicion');
+        configurarModoModal(modoFinal);
+
         modalAtencion.show();
     }
 
@@ -338,10 +442,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 firmaSistemasFinal = ticketEnEdicion.firma_sistemas;
             }
 
+            const estadoSeleccionado = document.getElementById('atencion_estado').value;
+
+            // Validar obligatoriedad de firma de sistemas al resolver
+            if (estadoSeleccionado === 'resuelto' && !firmaSistemasFinal) {
+                Swal.fire({
+                    title: 'Firma de Sistemas Obligatoria',
+                    text: 'La firma del Dpto. de Sistemas es obligatoria para resolver y cerrar el ticket.',
+                    icon: 'warning',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return;
+            }
+
             const datosActualizados = {
                 id: document.getElementById('atencion_ticket_id').value,
                 prioridad: document.getElementById('atencion_prioridad').value,
-                estado: document.getElementById('atencion_estado').value,
+                estado: estadoSeleccionado,
                 tecnico_asignado: document.getElementById('atencion_tecnico').value,
                 fecha_hora_atencion: document.getElementById('atencion_fecha_hora').value,
                 diagnostico: document.getElementById('atencion_diagnostico').value,

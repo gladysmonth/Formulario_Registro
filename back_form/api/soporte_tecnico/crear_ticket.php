@@ -44,8 +44,9 @@ if (!$soporte_hardware && !$soporte_software) {
     $errores[] = 'Debe seleccionar al menos un tipo de soporte (Hardware o Software).';
 }
 
-// 2. Validar firmas digitales mediante submódulo especializado
-$resultado_firmas = validar_y_procesar_firmas($datos);
+// 2. Determinar si se está resolviendo en el registro y validar firmas digitales
+$es_resolucion = !empty($datos['solucion_aplicada']) || (!empty($datos['estado']) && strtolower($datos['estado']) === 'resuelto');
+$resultado_firmas = validar_y_procesar_firmas($datos, $es_resolucion);
 if (!$resultado_firmas['valido']) {
     $errores = array_merge($errores, $resultado_firmas['errores']);
 }
@@ -67,7 +68,7 @@ $prioridad            = !empty($datos['prioridad']) && in_array(strtolower($dato
 
 // Determinar estado inicial
 $estado = 'pendiente';
-if (!empty($datos['solucion_aplicada'])) {
+if ($es_resolucion) {
     $estado = 'resuelto';
 } elseif (!empty($datos['tecnico_asignado']) || !empty($datos['diagnostico'])) {
     $estado = 'en_proceso';
@@ -100,7 +101,8 @@ try {
                 tipo_equipo,
                 marca_modelo,
                 sistema_operativo,
-                area_encargado,
+                area,
+                encargado,
                 centro_costo,
                 prioridad,
                 estado,
@@ -120,7 +122,8 @@ try {
                 :tipo_equipo,
                 :marca_modelo,
                 :sistema_operativo,
-                :area_encargado,
+                :area,
+                :encargado,
                 :centro_costo,
                 :prioridad,
                 :estado,
@@ -143,7 +146,8 @@ try {
         ':tipo_equipo'          => $equipo['tipo_equipo'],
         ':marca_modelo'         => $equipo['marca_modelo'],
         ':sistema_operativo'    => $equipo['sistema_operativo'],
-        ':area_encargado'       => $equipo['area_encargado'],
+        ':area'                 => $equipo['area'],
+        ':encargado'            => $equipo['encargado'],
         ':centro_costo'         => $equipo['centro_costo'],
         ':prioridad'            => $prioridad,
         ':estado'               => $estado,

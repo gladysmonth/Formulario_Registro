@@ -33,14 +33,17 @@ try {
                     tipo_equipo,
                     marca_modelo,
                     sistema_operativo,
-                    area_encargado,
+                    area,
+                    encargado,
+                    COALESCE(area, area_encargado) AS area_encargado,
                     centro_costo,
                     creado_en
                 FROM equipos_inventario
                 WHERE numero_serie ILIKE :buscar 
                    OR codigo_activo ILIKE :buscar 
                    OR marca_modelo ILIKE :buscar 
-                   OR area_encargado ILIKE :buscar
+                   OR area ILIKE :buscar
+                   OR encargado ILIKE :buscar
                    OR tipo_equipo ILIKE :buscar
                 ORDER BY marca_modelo ASC
                 LIMIT :limite";
@@ -56,7 +59,9 @@ try {
                     tipo_equipo,
                     marca_modelo,
                     sistema_operativo,
-                    area_encargado,
+                    area,
+                    encargado,
+                    COALESCE(area, area_encargado) AS area_encargado,
                     centro_costo,
                     creado_en
                 FROM equipos_inventario
