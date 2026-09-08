@@ -4,8 +4,8 @@
  */
 
 const CONFIGURACION_API = {
-    // Si se accede desde navegador, el backend responde en el puerto 8081 mapeado por Docker
-    urlBase: window.URL_BACKEND || 'http://localhost:8081'
+    // Si se accede desde navegador, el backend responde en el puerto 83 mapeado por Docker
+    urlBase: window.URL_BACKEND || 'http://localhost:83'
 };
 
 const clienteApi = {

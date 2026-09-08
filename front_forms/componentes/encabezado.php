@@ -36,5 +36,9 @@ $ruta_base = isset($nivel_ruta) ? $nivel_ruta : '';
     $version_css = file_exists($ruta_css_fisica) ? filemtime($ruta_css_fisica) : time();
     ?>
     <link rel="stylesheet" href="<?php echo $ruta_base; ?>recursos/css/estilos_personalizados.css?v=<?php echo $version_css; ?>">
+    <!-- Inyección dinámica de configuración de API Backend -->
+    <script>
+        window.URL_BACKEND = <?php echo json_encode(getenv('URL_BACKEND') ?: 'http://localhost:83'); ?>;
+    </script>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
