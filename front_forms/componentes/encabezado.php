@@ -30,7 +30,11 @@ $ruta_base = isset($nivel_ruta) ? $nivel_ruta : '';
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Estilos Personalizados del Sistema -->
-    <link rel="stylesheet" href="<?php echo $ruta_base; ?>recursos/css/estilos_personalizados.css">
+    <!-- Estilos Personalizados del Sistema con control de caché -->
+    <?php 
+    $ruta_css_fisica = __DIR__ . '/../recursos/css/estilos_personalizados.css';
+    $version_css = file_exists($ruta_css_fisica) ? filemtime($ruta_css_fisica) : time();
+    ?>
+    <link rel="stylesheet" href="<?php echo $ruta_base; ?>recursos/css/estilos_personalizados.css?v=<?php echo $version_css; ?>">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">

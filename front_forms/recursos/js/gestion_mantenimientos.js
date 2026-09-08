@@ -152,6 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Encabezado
             document.getElementById('modalCodigoMP').textContent = mp.codigo_mantenimiento;
+            const elPrintCod = document.getElementById('mdlCodigoPrint');
+            if (elPrintCod) elPrintCod.textContent = mp.codigo_mantenimiento;
 
             // Sección 1: Datos Generales
             document.getElementById('mdlTecnico').textContent = mp.tecnico_responsable || '-';
@@ -238,8 +240,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (estado) {
             return `<li class="text-success mb-1"><i class="bi bi-check-circle-fill me-1"></i> <strong>${label}</strong></li>`;
         } else {
-            return `<li class="text-muted mb-1 opacity-75"><i class="bi bi-dash-circle me-1"></i> <span class="text-decoration-line-through">${label}</span></li>`;
+            return `<li class="text-muted mb-1 opacity-75"><i class="bi bi-dash-circle me-1"></i> <span>${label}</span></li>`;
         }
+    }
+
+    const btnImprimirFichaMP = document.getElementById('btnImprimirFichaMP');
+    if (btnImprimirFichaMP) {
+        btnImprimirFichaMP.addEventListener('click', () => {
+            window.print();
+        });
     }
 
     function escapeHtml(str) {

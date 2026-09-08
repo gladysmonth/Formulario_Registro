@@ -17,6 +17,19 @@
             </div>
 
             <div class="modal-body p-4" id="imprimibleFichaMP">
+                <!-- Cabecera Institucional para Impresión Oficial (solo visible al imprimir) -->
+                <div class="cabecera-impresion-ficha d-none mb-2 pb-2 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold fs-6 text-uppercase text-dark">COSMOL R.L. &bull; DEPARTAMENTO DE SISTEMAS</div>
+                            <div class="text-secondary small fw-semibold">FICHA TÉCNICA DE MANTENIMIENTO PREVENTIVO (PC / LAPTOP)</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border fs-6 px-3 py-1 fw-bold" id="mdlCodigoPrint"></span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 1. Datos Generales -->
                 <div class="bg-light p-3 rounded-3 border mb-3">
                     <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">
@@ -89,7 +102,7 @@
                 </div>
 
                 <!-- 7. Firmas de Conformidad -->
-                <div class="bg-light p-3 rounded-3 border">
+                <div class="bg-light p-3 rounded-3 border bloque-firmas-ficha">
                     <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
                         <i class="bi bi-pen text-dark me-1"></i> 7. Firmas Digitales de Conformidad
                     </h6>
@@ -115,7 +128,7 @@
             </div>
 
             <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-outline-secondary" onclick="window.print();">
+                <button type="button" class="btn btn-outline-primary" id="btnImprimirFichaMP">
                     <i class="bi bi-printer me-1"></i> Imprimir Ficha
                 </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
