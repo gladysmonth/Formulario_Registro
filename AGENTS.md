@@ -11,8 +11,9 @@ El objetivo del sistema es gestionar múltiples formularios de registro organiza
 
 1. **Formulario 1 (Activo): Soporte Técnico**
 2. **Formulario 2 (Activo): Mantenimiento Preventivo (Equipos: PC / Laptop)**
-3. **Formulario 3 (Futuro):** Control de Activos / Inventario
-4. **Formulario 4 (Futuro):** Requerimiento de Compras / Suministros
+3. **Formulario 3 (Activo): Registro de Incidencias de Sistemas**
+4. **Formulario 4 (Futuro):** Control de Activos / Inventario
+5. **Formulario 5 (Futuro):** Requerimiento de Compras / Suministros
 
 Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo la misma infraestructura tecnológica base.
 
@@ -238,7 +239,44 @@ El formulario consta de las siguientes 6 secciones y firmas:
 
 ---
 
-## 7. Convención de Respuestas JSON de la API
+## 7. Especificación del Formulario de Registro de Incidencias de Sistemas
+
+El formulario consta de las siguientes 7 secciones y doble firma digital:
+
+1. **Datos Generales de la Incidencia:**
+   - Nro. de Incidencia (`nro_incidencia`) -> Ej: `INC-YYYY-XXXX`
+   - Fecha y hora del Reporte (`fecha_hora_reporte`)
+   - Responsable del Reporte (`responsable_reporte`)
+2. **Plataforma / Sistema Afectado:**
+   - SISTEMA ERP - SAI (`sistema_erp_sai`)
+   - SISTEMA DE COBRANZAS - NETCOB (`sistema_cobranzas_netcob`)
+   - OTROS SISTEMAS / COMPLEMENTOS (`sistema_otros` y `sistema_otros_detalle`)
+3. **Naturaleza Técnica del Fallo (Marcar y rellenar al marcado):**
+   - Base de Datos (`fallo_base_datos` y `detalle_base_datos`)
+   - Infraestructura / Servidor (`fallo_infraestructura_servidor` y `detalle_infraestructura_servidor`)
+   - Enlaces / Conectividad (`fallo_enlaces_conectividad` y `detalle_enlaces_conectividad`)
+4. **Nivel de Criticidad Institucional (A definir por Sistemas):**
+   - Crítica (Nivel 1): Paralización del ciclo de facturación (`critica_nivel_1`)
+   - Alta (Nivel 2): Falla en un módulo importante pero permite trabajar (`alta_nivel_2`)
+   - Media / Baja (Nivel 3): Error estético, lentitud o cambios menores (`media_baja_nivel_3`)
+5. **Descripción Técnica y Logs de Error:**
+   - Trazas de logs, excepciones o detalle del comportamiento anómalo (`descripcion_tecnica_logs`)
+6. **Solución Aplicada y Tiempos:**
+   - Acción Realizada (`accion_realizada`)
+   - Detalle Técnico (`detalle_tecnico`)
+   - Fecha y Hora de Cierre (`fecha_hora_cierre`)
+   - Estado de la Incidencia (`estado`: 'abierta', 'en_atencion', 'resuelta', 'cerrada')
+7. **Seguimiento y Recomendaciones:**
+   - Medidas preventivas post-incidente (`observaciones_recomendaciones`)
+8. **Firmas Digitales (Lienzos Canvas):**
+   - Firma del Responsable del Reporte (`firma_responsable_reporte`)
+   - Firma del Dpto. de Sistemas (`firma_sistemas`)
+
+> **Estructura en Base de Datos:** Tabla `incidencias_sistemas` en `init.sql` con índices en código, criticidad, estado, fecha y responsable.
+
+---
+
+## 8. Convención de Respuestas JSON de la API
 
 Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
 

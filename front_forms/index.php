@@ -34,10 +34,10 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
         </div>
     </div>
 
-    <!-- Catálogo de los 4 Formularios del Sistema -->
+    <!-- Catálogo de Formularios del Sistema -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h4 fw-bold mb-0">Módulos del Sistema (4 Formularios)</h2>
-        <span class="badge bg-secondary-subtle text-dark border">2 Activos &bull; 2 en Planificación</span>
+        <h2 class="h4 fw-bold mb-0">Módulos del Sistema</h2>
+        <span class="badge bg-secondary-subtle text-dark border">3 Activos &bull; 1 en Planificación</span>
     </div>
 
     <div class="row g-4">
@@ -119,31 +119,41 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
             </div>
         </div>
 
-        <!-- FORMULARIO 3: PRÓXIMO -->
+        <!-- FORMULARIO 3: ACTIVO (REGISTRO DE INCIDENCIAS DE SISTEMAS) -->
         <div class="col-md-6 col-lg-6">
-            <div class="card h-100 tarjeta-modulo opacity-75 bg-white border">
+            <div class="card h-100 tarjeta-modulo border-danger shadow-sm bg-white">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="p-3 bg-secondary-subtle text-secondary rounded-3">
-                            <i class="bi bi-box-seam fs-2"></i>
+                        <div class="p-3 bg-danger-subtle text-danger rounded-3">
+                            <i class="bi bi-shield-exclamation fs-2"></i>
                         </div>
-                        <span class="badge bg-secondary px-3 py-2 rounded-pill">
-                            <i class="bi bi-hourglass-split me-1"></i> En Desarrollo
+                        <span class="badge bg-success px-3 py-2 rounded-pill">
+                            <i class="bi bi-check-circle-fill me-1"></i> Activo y Disponible
                         </span>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-2">3. Control de Activos e Inventario</h3>
+                    <h3 class="h5 fw-bold text-dark mb-2">3. Registro de Incidencias de Sistemas</h3>
                     <p class="text-muted small flex-grow-1">
-                        Asignación, devolución y custodia de equipos informáticos, dispositivos móviles, licencias de software y herramientas corporativas asignadas al personal.
+                        Reporte de fallos técnicos en plataformas (ERP SAI, NETCOB), servidores, base de datos y enlaces con clasificación por criticidad, logs de error, solución aplicada y firmas digitales.
                     </p>
 
-                    <div class="bg-light p-3 rounded-3 mb-3 small border text-muted">
-                        <i class="bi bi-lock me-1"></i> Módulo planificado en la siguiente fase de desarrollo.
+                    <div class="bg-light p-3 rounded-3 mb-3 small border">
+                        <div class="row g-2 text-secondary">
+                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Control de Fallas</div>
+                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Marcar y rellenar fallo</div>
+                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Criticidad en 3 Niveles</div>
+                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Ficha Técnica Oficial</div>
+                        </div>
                     </div>
 
-                    <button class="btn btn-secondary disabled mt-auto" disabled>
-                        <i class="bi bi-clock me-1"></i> Próximamente
-                    </button>
+                    <div class="d-flex gap-2 mt-auto pt-2">
+                        <a href="modulos/registro_incidencias/formulario_incidencias.php" class="btn btn-danger flex-grow-1 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Reportar Incidencia
+                        </a>
+                        <a href="modulos/registro_incidencias/gestion_incidencias.php" class="btn btn-outline-danger" title="Bandeja de Incidencias">
+                            <i class="bi bi-card-checklist"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

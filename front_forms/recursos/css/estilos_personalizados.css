@@ -311,7 +311,8 @@ body {
     }
 
     .modal-body,
-    #imprimibleFichaMP {
+    #imprimibleFichaMP,
+    #areaImprimibleIncidencia {
         position: static !important;
         display: block !important;
         padding: 0 !important;
@@ -322,7 +323,8 @@ body {
     }
 
     /* 3. Cabecera institucional imprimible */
-    .cabecera-impresion-ficha {
+    .cabecera-impresion-ficha,
+    .encabezado-impresion-mp {
         display: block !important;
         margin-bottom: 10px !important;
         padding-bottom: 6px !important;
@@ -331,7 +333,10 @@ body {
 
     /* 4. Estilo de bloques y secciones */
     #imprimibleFichaMP .bg-light,
-    #imprimibleFichaMP .bg-white {
+    #imprimibleFichaMP .bg-white,
+    #areaImprimibleIncidencia .card,
+    #areaImprimibleIncidencia .bg-light,
+    #areaImprimibleIncidencia .bg-white {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 4px !important;
@@ -340,51 +345,66 @@ body {
         padding: 6px 10px !important;
     }
 
-    #imprimibleFichaMP h6 {
-        font-size: 9.5pt !important;
+    #imprimibleFichaMP h6,
+    #areaImprimibleIncidencia .card-header,
+    #areaImprimibleIncidencia h6 {
+        font-size: 9pt !important;
         font-weight: 700 !important;
         margin-bottom: 4px !important;
         padding-bottom: 3px !important;
         border-bottom: 1px solid #cbd5e1 !important;
         color: #0f172a !important;
+        background-color: #f8fafc !important;
     }
 
     #imprimibleFichaMP .small,
     #imprimibleFichaMP small,
     #imprimibleFichaMP span,
-    #imprimibleFichaMP p {
+    #imprimibleFichaMP p,
+    #areaImprimibleIncidencia .small,
+    #areaImprimibleIncidencia small,
+    #areaImprimibleIncidencia span,
+    #areaImprimibleIncidencia p,
+    #areaImprimibleIncidencia pre {
         font-size: 8.5pt !important;
     }
 
     /* 5. Forzar cuadrícula de columnas alineadas en papel (sin colapso vertical) */
-    #imprimibleFichaMP .row {
+    #imprimibleFichaMP .row,
+    #areaImprimibleIncidencia .row {
         display: flex !important;
         flex-wrap: wrap !important;
         margin-right: -4px !important;
         margin-left: -4px !important;
     }
 
-    #imprimibleFichaMP .row > * {
+    #imprimibleFichaMP .row > *,
+    #areaImprimibleIncidencia .row > * {
         padding-right: 4px !important;
         padding-left: 4px !important;
     }
 
-    #imprimibleFichaMP .col-md-3 {
+    #imprimibleFichaMP .col-md-3,
+    #areaImprimibleIncidencia .col-md-3 {
         width: 25% !important;
         flex: 0 0 25% !important;
     }
 
-    #imprimibleFichaMP .col-md-4 {
+    #imprimibleFichaMP .col-md-4,
+    #areaImprimibleIncidencia .col-md-4 {
         width: 33.333333% !important;
         flex: 0 0 33.333333% !important;
     }
 
-    #imprimibleFichaMP .col-md-5 {
+    #imprimibleFichaMP .col-md-5,
+    #areaImprimibleIncidencia .col-md-5 {
         width: 41.666667% !important;
         flex: 0 0 41.666667% !important;
     }
 
-    #imprimibleFichaMP .col-md-6 {
+    #imprimibleFichaMP .col-md-6,
+    #areaImprimibleIncidencia .col-md-6,
+    #areaImprimibleIncidencia .col-6 {
         width: 50% !important;
         flex: 0 0 50% !important;
     }

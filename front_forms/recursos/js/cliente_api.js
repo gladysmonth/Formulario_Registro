@@ -145,6 +145,42 @@ const clienteApi = {
         });
     },
 
+    // ==========================================================
+    // 4. MÓDULO: REGISTRO DE INCIDENCIAS DE SISTEMAS (FOR_RIS_001)
+    // ==========================================================
+    async crearIncidencia(datos) {
+        return await this.peticion('/api/registro_incidencias/crear_incidencia.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+    },
+
+    async listarIncidencias(filtros = {}) {
+        const query = new URLSearchParams();
+        if (filtros.buscar) query.append('buscar', filtros.buscar);
+        if (filtros.criticidad) query.append('criticidad', filtros.criticidad);
+        if (filtros.estado) query.append('estado', filtros.estado);
+        if (filtros.sistema) query.append('sistema', filtros.sistema);
+
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        return await this.peticion(`/api/registro_incidencias/listar_incidencias.php${qs}`, {
+            method: 'GET'
+        });
+    },
+
+    async obtenerIncidencia(id) {
+        return await this.peticion(`/api/registro_incidencias/obtener_incidencia.php?id=${encodeURIComponent(id)}`, {
+            method: 'GET'
+        });
+    },
+
+    async actualizarIncidencia(datos) {
+        return await this.peticion('/api/registro_incidencias/actualizar_incidencia.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+    },
+
     /**
      * Muestra una notificación Toast flotante
      */

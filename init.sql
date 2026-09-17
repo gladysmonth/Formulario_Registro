@@ -217,3 +217,76 @@ BEFORE UPDATE ON mantenimientos_preventivos
 FOR EACH ROW
 EXECUTE FUNCTION actualizar_marca_tiempo();
 
+
+-- ================================================================
+-- MÓDULO 3: REGISTRO DE INCIDENCIAS DE SISTEMAS (FOR_RIS_001, V-1)
+-- ================================================================
+CREATE TABLE IF NOT EXISTS incidencias_sistemas (
+    id BIGSERIAL PRIMARY KEY,
+    
+    -- Identificadores Oficiales
+    codigo_documento VARCHAR(20) NOT NULL DEFAULT 'FOR_RIS_001',
+    version_documento VARCHAR(10) NOT NULL DEFAULT 'V-1',
+    nro_incidencia VARCHAR(30) UNIQUE NOT NULL, -- Ej: INC-2026-0001
+    
+    -- 1. DATOS GENERALES DE LA INCIDENCIA
+    fecha_hora_reporte TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    responsable_reporte VARCHAR(150) NOT NULL,
+    
+    -- 2. PLATAFORMA / SISTEMA
+    sistema_erp_sai BOOLEAN NOT NULL DEFAULT FALSE,
+    sistema_cobranzas_netcob BOOLEAN NOT NULL DEFAULT FALSE,
+    sistema_otros BOOLEAN NOT NULL DEFAULT FALSE,
+    sistema_otros_detalle VARCHAR(255),
+    
+    -- 3. NATURALEZA TÉCNICA DEL FALLO (Marcar y rellenar al marcado)
+    fallo_base_datos BOOLEAN NOT NULL DEFAULT FALSE,
+    detalle_base_datos TEXT,
+    fallo_infraestructura_servidor BOOLEAN NOT NULL DEFAULT FALSE,
+    detalle_infraestructura_servidor TEXT,
+    fallo_enlaces_conectividad BOOLEAN NOT NULL DEFAULT FALSE,
+    detalle_enlaces_conectividad TEXT,
+    
+    -- 4. NIVEL DE CRITICIDAD INSTITUCIONAL (A definir por Sistemas)
+    nivel_criticidad VARCHAR(30) NOT NULL
+        CHECK (nivel_criticidad IN ('critica_nivel_1', 'alta_nivel_2', 'media_baja_nivel_3')),
+        
+    -- ESTADO OPERATIVO DEL REGISTRO
+    estado VARCHAR(30) NOT NULL DEFAULT 'abierta'
+        CHECK (estado IN ('abierta', 'en_atencion', 'resuelta', 'cerrada')),
+    
+    -- 5. DESCRIPCIÓN TÉCNICA Y LOGS DE ERROR
+    descripcion_tecnica_logs TEXT NOT NULL,
+    
+    -- 6. SOLUCIÓN APLICADA Y TIEMPOS
+    accion_realizada TEXT,
+    detalle_tecnico TEXT,
+    fecha_hora_cierre TIMESTAMP,
+    
+    -- 7. SEGUIMIENTO Y RECOMENDACIONES
+    observaciones_recomendaciones TEXT,
+    
+    -- 8. FIRMAS DIGITALES (PNG en Base64)
+    firma_responsable_reporte TEXT,
+    firma_sistemas TEXT,
+    
+    -- Auditoría
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices de alto rendimiento para búsqueda y tableros
+CREATE INDEX IF NOT EXISTS idx_incidencias_codigo ON incidencias_sistemas (nro_incidencia);
+CREATE INDEX IF NOT EXISTS idx_incidencias_criticidad ON incidencias_sistemas (nivel_criticidad);
+CREATE INDEX IF NOT EXISTS idx_incidencias_estado ON incidencias_sistemas (estado);
+CREATE INDEX IF NOT EXISTS idx_incidencias_fecha ON incidencias_sistemas (fecha_hora_reporte);
+CREATE INDEX IF NOT EXISTS idx_incidencias_responsable ON incidencias_sistemas (responsable_reporte);
+
+-- Trigger de auditoría para incidencias_sistemas
+DROP TRIGGER IF EXISTS trigger_actualizar_incidencias_sistemas ON incidencias_sistemas;
+CREATE TRIGGER trigger_actualizar_incidencias_sistemas
+BEFORE UPDATE ON incidencias_sistemas
+FOR EACH ROW
+EXECUTE FUNCTION actualizar_marca_tiempo();
+
+
