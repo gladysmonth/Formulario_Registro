@@ -54,7 +54,7 @@ services:
     ports:
       - "82:80"
     environment:
-      URL_BACKEND: http://localhost:83
+      URL_BACKEND: http://192.168.11.70:83
     volumes:
       - ./front_forms:/var/www/html
     depends_on:

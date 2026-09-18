@@ -37,8 +37,16 @@ $ruta_base = isset($nivel_ruta) ? $nivel_ruta : '';
     ?>
     <link rel="stylesheet" href="<?php echo $ruta_base; ?>recursos/css/estilos_personalizados.css?v=<?php echo $version_css; ?>">
     <!-- Inyección dinámica de configuración de API Backend -->
+    <?php
+    $host_cliente = isset($_SERVER['HTTP_HOST']) ? explode(':', $_SERVER['HTTP_HOST'])[0] : '';
+    if (!empty($host_cliente)) {
+        $url_backend_final = 'http://' . $host_cliente . ':83';
+    } else {
+        $url_backend_final = getenv('URL_BACKEND') ?: 'http://192.168.11.70:83';
+    }
+    ?>
     <script>
-        window.URL_BACKEND = <?php echo json_encode(getenv('URL_BACKEND') ?: 'http://localhost:83'); ?>;
+        window.URL_BACKEND = <?php echo json_encode($url_backend_final); ?>;
     </script>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
