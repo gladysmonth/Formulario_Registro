@@ -37,7 +37,7 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
     <!-- Catálogo de Formularios del Sistema -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h4 fw-bold mb-0">Módulos del Sistema</h2>
-        <span class="badge bg-secondary-subtle text-dark border">3 Activos &bull; 1 en Planificación</span>
+        <span class="badge bg-secondary-subtle text-dark border">4 Activos &bull; 1 en Planificación</span>
     </div>
 
     <div class="row g-4">
@@ -61,18 +61,18 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Proceso guiado en 6 pasos</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Generación de Ticket</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Datos del Solicitante</div>
                             <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Catálogo de Equipos</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Validación de Conformidad</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Diagnóstico Técnico</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Doble Firma Digital</div>
                         </div>
                     </div>
 
                     <div class="d-flex gap-2 mt-auto pt-2">
-                        <a href="modulos/soporte_tecnico/formulario_soporte.php" class="btn btn-primary flex-grow-1">
-                            <i class="bi bi-pencil-square me-1"></i> Llenar Solicitud
+                        <a href="modulos/soporte_tecnico/formulario_soporte.php" class="btn btn-primary flex-grow-1 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Llenar Formulario
                         </a>
-                        <a href="modulos/soporte_tecnico/gestion_tickets.php" class="btn btn-outline-primary" title="Panel de Gestión">
+                        <a href="modulos/soporte_tecnico/gestion_tickets.php" class="btn btn-outline-primary" title="Bandeja de Gestión">
                             <i class="bi bi-kanban"></i>
                         </a>
                     </div>
@@ -86,29 +86,29 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-success-subtle text-success rounded-3">
-                            <i class="bi bi-shield-check fs-2"></i>
+                            <i class="bi bi-tools fs-2"></i>
                         </div>
                         <span class="badge bg-success px-3 py-2 rounded-pill">
                             <i class="bi bi-check-circle-fill me-1"></i> Activo y Disponible
                         </span>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-2">2. Mantenimiento Preventivo (PC / Laptop)</h3>
+                    <h3 class="h5 fw-bold text-dark mb-2">2. Mantenimiento Preventivo (Equipos)</h3>
                     <p class="text-muted small flex-grow-1">
-                        Registro de rutinas de limpieza física externa, optimización lógica interna de software y verificación operativa de funcionamiento en estaciones de trabajo con doble firma digital.
+                        Ficha técnica de inspección, limpieza física interna/externa, verificación operativa de hardware, software y periféricos de equipos PC y Laptops institucionales.
                     </p>
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Verificación paso a paso</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Control PC y Laptop</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Puntos de revisión claros</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Ficha Imprimible</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Ficha Técnica PC/Laptop</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Limpieza Física y Lógica</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Test de Rendimiento</div>
+                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Doble Firma Digital</div>
                         </div>
                     </div>
 
                     <div class="d-flex gap-2 mt-auto pt-2">
-                        <a href="modulos/mantenimiento_preventivo/formulario_mantenimiento.php" class="btn btn-success text-white flex-grow-1">
+                        <a href="modulos/mantenimiento_preventivo/formulario_mantenimiento.php" class="btn btn-success text-white flex-grow-1 fw-semibold">
                             <i class="bi bi-pencil-square me-1"></i> Registrar Mantenimiento
                         </a>
                         <a href="modulos/mantenimiento_preventivo/gestion_mantenimientos.php" class="btn btn-outline-success" title="Bandeja de Mantenimientos">
@@ -134,7 +134,7 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
 
                     <h3 class="h5 fw-bold text-dark mb-2">3. Registro de Incidencias de Sistemas</h3>
                     <p class="text-muted small flex-grow-1">
-                        Reporte de fallos técnicos en plataformas (ERP SAI, NETCOB), servidores, base de datos y enlaces con clasificación por criticidad, logs de error, solución aplicada y firmas digitales.
+                        Reporte de fallas técnicas en plataformas (ERP SAI, NETCOB), servidores, base de datos y enlaces con clasificación por criticidad, logs de error, solución aplicada y firmas digitales.
                     </p>
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
@@ -158,7 +158,46 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
             </div>
         </div>
 
-        <!-- FORMULARIO 4: PRÓXIMO -->
+        <!-- FORMULARIO 4: ACTIVO (CREACIÓN Y ASIGNACIÓN DE ACCESOS) -->
+        <div class="col-md-6 col-lg-6">
+            <div class="card h-100 tarjeta-modulo border-primary shadow-sm bg-white">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                            <i class="bi bi-shield-lock fs-2"></i>
+                        </div>
+                        <span class="badge bg-success px-3 py-2 rounded-pill">
+                            <i class="bi bi-check-circle-fill me-1"></i> Activo y Disponible
+                        </span>
+                    </div>
+
+                    <h3 class="h5 fw-bold text-dark mb-2">4. Asignación de Accesos</h3>
+                    <p class="text-muted small flex-grow-1">
+                        Creación y asignación formal de usuarios, perfiles y permisos en plataformas ERP SAI, NETCOB y sistemas corporativos con validación jerárquica y triple firma digital.
+                    </p>
+
+                    <div class="bg-light p-3 rounded-3 mb-3 small border">
+                        <div class="row g-2 text-secondary">
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> ERP SAI y NETCOB</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Cuentas Nuevas / Existentes</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Perfiles Extendidos</div>
+                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Triple Firma Digital</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-auto pt-2">
+                        <a href="modulos/asignacion_accesos/formulario_accesos.php" class="btn btn-primary flex-grow-1 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Solicitar Acceso
+                        </a>
+                        <a href="modulos/asignacion_accesos/gestion_accesos.php" class="btn btn-outline-primary" title="Bandeja de Accesos">
+                            <i class="bi bi-card-checklist"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMULARIO 5: PRÓXIMO -->
         <div class="col-md-6 col-lg-6">
             <div class="card h-100 tarjeta-modulo opacity-75 bg-white border">
                 <div class="card-body p-4 d-flex flex-column">
@@ -171,7 +210,7 @@ require_once __DIR__ . '/componentes/barra_navegacion.php';
                         </span>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-2">4. Compras y Suministros</h3>
+                    <h3 class="h5 fw-bold text-dark mb-2">5. Compras y Suministros</h3>
                     <p class="text-muted small flex-grow-1">
                         Requerimiento formal de materiales de oficina, consumibles, repuestos o adquisición de nuevos suministros para aprobación por el área administrativa.
                     </p>

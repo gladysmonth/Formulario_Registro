@@ -454,5 +454,34 @@ body {
     }
 }
 
+/* ==========================================================
+ * MENÚ LATERAL OFFCANVAS DE MÓDULOS (BOTÓN 3 RAYAS)
+ * ========================================================== */
+.offcanvas-modulos {
+    background-color: #0f172a !important; /* Slate 900 corporativo */
+    color: #f8fafc;
+    width: 340px !important;
+}
+
+.tarjeta-modulo-offcanvas {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.tarjeta-modulo-offcanvas:hover {
+    background-color: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tarjeta-modulo-offcanvas.modulo-activo {
+    border-color: #3b82f6;
+    background-color: rgba(13, 110, 253, 0.15);
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.25);
+}
+
+
 
 

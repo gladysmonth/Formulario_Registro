@@ -12,7 +12,7 @@ El objetivo del sistema es gestionar múltiples formularios de registro organiza
 1. **Formulario 1 (Activo): Soporte Técnico**
 2. **Formulario 2 (Activo): Mantenimiento Preventivo (Equipos: PC / Laptop)**
 3. **Formulario 3 (Activo): Registro de Incidencias de Sistemas**
-4. **Formulario 4 (Futuro):** Control de Activos / Inventario
+4. **Formulario 4 (Activo): Creación y Asignación de Accesos**
 5. **Formulario 5 (Futuro):** Requerimiento de Compras / Suministros
 
 Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo la misma infraestructura tecnológica base.
@@ -276,7 +276,40 @@ El formulario consta de las siguientes 7 secciones y doble firma digital:
 
 ---
 
-## 8. Convención de Respuestas JSON de la API
+## 8. Especificación del Formulario de Creación y Asignación de Accesos
+
+El formulario consta de las siguientes 6 secciones y triple firma digital:
+
+1. **Datos Generales:**
+   - Nro. de Solicitud (`nro_solicitud`) -> Ej: `ACC-YYYY-XXXX`
+   - Fecha de Solicitud (`fecha_solicitud`)
+   - Nombre del Solicitante (`nombre_solicitante`)
+   - Cargo del Solicitante (`cargo_solicitante`)
+   - Área / Departamento (`area_departamento`)
+2. **Plataforma / Sistema Afectado:**
+   - SISTEMA ERP - SAI (`sistema_erp_sai`)
+   - SISTEMA DE COBRANZAS - NETCOB (`sistema_cobranzas_netcob`)
+   - OTROS SISTEMAS / COMPLEMENTOS (`sistema_otros` y `sistema_otros_detalle`)
+3. **Datos del Usuario:**
+   - Usuario Nuevo (`es_usuario_nuevo`: boolean)
+   - Username / Detalles de cuenta (`nombre_usuario_detalles`)
+4. **Requerimientos de Accesos:**
+   - Detalle amplio de perfiles, permisos específicos o módulos solicitados (`requerimientos_accesos`: text)
+5. **Departamento de Sistemas (Atención y Comentarios):**
+   - Atendido por: Técnico responsable (`atendido_por`)
+   - Fecha y Hora de Atención (`fecha_hora_atencion`)
+   - Estado de la Solicitud (`estado`: 'pendiente', 'en_proceso', 'atendido', 'rechazado')
+   - Comentarios técnicos / Restricciones (`comentarios_sistemas`)
+6. **Firmas / Validaciones Institucionales (Lienzos Canvas):**
+   - Firma del Solicitante (`firma_solicitante`)
+   - Nombre y Firma de Autorización / Jefatura (`nombre_autoriza`, `firma_autoriza`)
+   - Firma del Dpto. de Sistemas (`firma_sistemas`)
+
+> **Estructura en Base de Datos:** Tabla `solicitudes_accesos` en `init.sql` con índices en nro_solicitud, estado, fecha, área y solicitante.
+
+---
+
+## 9. Convención de Respuestas JSON de la API
 
 Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
 
@@ -299,10 +332,10 @@ En caso de error:
 
 ---
 
-## 8. Instrucciones para Agregar un Nuevo Formulario
+## 10. Instrucciones para Agregar un Nuevo Formulario
 
-Cuando se implementen los formularios restantes (3 o 4):
-1. **Base de Datos:** Añadir la nueva tabla en `init.sql` con prefijo descriptivo (ej. `activos_inventario`).
+Cuando se implementen los formularios restantes (5 o futuro):
+1. **Base de Datos:** Añadir la nueva tabla en `init.sql` con prefijo descriptivo (ej. `compras_suministros`).
 2. **Backend:** Crear la carpeta en `back_form/api/<nombre_modulo>/` con los scripts correspondientes (`crear_registro.php`, `listar_registros.php`, etc.).
 3. **Frontend:** Crear la carpeta en `front_forms/modulos/<nombre_modulo>/` reutilizando `componentes/encabezado.php`, `barra_navegacion.php` y `pie_pagina.php`.
 4. **Portal Principal:** Actualizar `front_forms/index.php` cambiando el estado del módulo de "En desarrollo" a "Activo".

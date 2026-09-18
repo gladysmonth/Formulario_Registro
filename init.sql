@@ -290,3 +290,64 @@ FOR EACH ROW
 EXECUTE FUNCTION actualizar_marca_tiempo();
 
 
+-- ================================================================
+-- MÓDULO 4: CREACIÓN Y ASIGNACIÓN DE ACCESOS DE USUARIOS DE SISTEMAS
+-- ================================================================
+CREATE TABLE IF NOT EXISTS solicitudes_accesos (
+    id BIGSERIAL PRIMARY KEY,
+    nro_solicitud VARCHAR(30) UNIQUE NOT NULL, -- Ej: ACC-2026-0001
+    fecha_solicitud TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- 1. DATOS GENERALES
+    nombre_solicitante VARCHAR(150) NOT NULL,
+    cargo_solicitante VARCHAR(150) NOT NULL,
+    area_departamento VARCHAR(150) NOT NULL,
+    
+    -- 2. PLATAFORMA / SISTEMA
+    sistema_erp_sai BOOLEAN NOT NULL DEFAULT FALSE,
+    sistema_cobranzas_netcob BOOLEAN NOT NULL DEFAULT FALSE,
+    sistema_otros BOOLEAN NOT NULL DEFAULT FALSE,
+    sistema_otros_detalle VARCHAR(255),
+    
+    -- 3. DATOS DEL USUARIO
+    es_usuario_nuevo BOOLEAN NOT NULL DEFAULT TRUE,
+    nombre_usuario_detalles VARCHAR(150),
+    
+    -- 4. REQUERIMIENTOS DE ACCESOS
+    requerimientos_accesos TEXT NOT NULL,
+    
+    -- 5. DEPARTAMENTO DE SISTEMAS (Atención y Estado)
+    estado VARCHAR(30) NOT NULL DEFAULT 'pendiente'
+        CHECK (estado IN ('pendiente', 'en_proceso', 'atendido', 'rechazado')),
+    atendido_por VARCHAR(150),
+    fecha_hora_atencion TIMESTAMP,
+    
+    -- 6. COMENTARIOS Y OBSERVACIONES TÉCNICAS
+    comentarios_sistemas TEXT,
+    
+    -- 7. FIRMAS INSTITUCIONALES (PNG en Base64)
+    firma_solicitante TEXT,
+    nombre_autoriza VARCHAR(150),
+    firma_autoriza TEXT,
+    firma_sistemas TEXT,
+    
+    -- Auditoría
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices de alto rendimiento para búsqueda y tableros
+CREATE INDEX IF NOT EXISTS idx_accesos_nro ON solicitudes_accesos (nro_solicitud);
+CREATE INDEX IF NOT EXISTS idx_accesos_estado ON solicitudes_accesos (estado);
+CREATE INDEX IF NOT EXISTS idx_accesos_fecha ON solicitudes_accesos (fecha_solicitud DESC);
+CREATE INDEX IF NOT EXISTS idx_accesos_area ON solicitudes_accesos (area_departamento);
+CREATE INDEX IF NOT EXISTS idx_accesos_solicitante ON solicitudes_accesos (nombre_solicitante);
+
+-- Trigger de auditoría para solicitudes_accesos
+DROP TRIGGER IF EXISTS trigger_actualizar_solicitudes_accesos ON solicitudes_accesos;
+CREATE TRIGGER trigger_actualizar_solicitudes_accesos
+BEFORE UPDATE ON solicitudes_accesos
+FOR EACH ROW
+EXECUTE FUNCTION actualizar_marca_tiempo();
+
+

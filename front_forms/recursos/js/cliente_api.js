@@ -181,6 +181,41 @@ const clienteApi = {
         });
     },
 
+    // ==========================================================
+    // 5. MÓDULO: CREACIÓN Y ASIGNACIÓN DE ACCESOS
+    // ==========================================================
+    async crearSolicitudAccesos(datos) {
+        return await this.peticion('/api/asignacion_accesos/crear_solicitud.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+    },
+
+    async listarSolicitudesAccesos(filtros = {}) {
+        const query = new URLSearchParams();
+        if (filtros.busqueda) query.append('busqueda', filtros.busqueda);
+        if (filtros.estado) query.append('estado', filtros.estado);
+        if (filtros.sistema) query.append('sistema', filtros.sistema);
+
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        return await this.peticion(`/api/asignacion_accesos/listar_solicitudes.php${qs}`, {
+            method: 'GET'
+        });
+    },
+
+    async obtenerSolicitudAccesos(id) {
+        return await this.peticion(`/api/asignacion_accesos/obtener_solicitud.php?id=${encodeURIComponent(id)}`, {
+            method: 'GET'
+        });
+    },
+
+    async actualizarSolicitudAccesos(datos) {
+        return await this.peticion('/api/asignacion_accesos/actualizar_solicitud.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+    },
+
     /**
      * Muestra una notificación Toast flotante
      */
