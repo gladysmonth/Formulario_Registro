@@ -8,6 +8,7 @@
 $titulo_pagina = 'Ficha Técnica de Equipo - Diagnóstico';
 $pagina_activa = 'diagnostico_detalle';
 $nivel_ruta = '../../';
+$roles_requeridos = array('admin', 'tecnico');
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
 require_once __DIR__ . '/../../componentes/barra_navegacion.php';

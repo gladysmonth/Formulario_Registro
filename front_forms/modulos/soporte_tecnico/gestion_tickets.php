@@ -8,6 +8,7 @@
 $titulo_pagina = 'Panel de Gestión - Soporte Técnico';
 $pagina_activa = 'soporte_gestion';
 $nivel_ruta = '../../';
+$roles_requeridos = array('admin', 'tecnico');
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
 require_once __DIR__ . '/../../componentes/barra_navegacion.php';

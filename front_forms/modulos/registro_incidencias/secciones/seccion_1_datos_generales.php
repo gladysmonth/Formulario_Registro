@@ -42,6 +42,12 @@
         </div>
 
         <!-- Responsable del Reporte -->
+        <?php
+        $usuario_sesion_inc = function_exists('obtener_usuario_sesion') ? obtener_usuario_sesion() : null;
+        $nombre_reportante = ($usuario_sesion_inc && !empty($usuario_sesion_inc['nombre_completo'])) 
+            ? $usuario_sesion_inc['nombre_completo'] 
+            : '';
+        ?>
         <div class="col-md-4">
             <label for="responsable_reporte" class="form-label small fw-semibold">
                 Responsable del Reporte <span class="text-danger">*</span>
@@ -49,7 +55,8 @@
             <div class="input-group">
                 <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-fill"></i></span>
                 <input type="text" class="form-control" id="responsable_reporte" name="responsable_reporte" 
-                       placeholder="Nombre de quien reporta la falla" required>
+                       placeholder="Nombre de quien reporta la falla" 
+                       value="<?php echo htmlspecialchars($nombre_reportante); ?>" required>
             </div>
         </div>
     </div>

@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let ticketsActuales = [];
 
+    // Leer parámetros de URL para filtración rápida (FASE 4)
+    const urlParams = new URLSearchParams(window.location.search);
+    const estadoUrl = urlParams.get('estado');
+    if (estadoUrl && filtroEstado) {
+        filtroEstado.value = estadoUrl;
+    }
+    const prioridadUrl = urlParams.get('prioridad');
+    if (prioridadUrl && filtroPrioridad) {
+        filtroPrioridad.value = prioridadUrl;
+    }
+
     // Cargar tickets inicialmente
     cargarTickets();
 

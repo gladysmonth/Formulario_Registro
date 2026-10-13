@@ -245,10 +245,102 @@ const clienteApi = {
 
         const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
         toast.show();
+    },
+
+    // ==========================================================
+    // FASE 4: DASHBOARD Y MÉTRICAS GLOBALES DEL MENÚ LATERAL
+    // ==========================================================
+    async obtenerMetricasDashboard() {
+        const resultado = {
+            tickets: {
+                total: 0,
+                pendientes: 0,
+                en_proceso: 0,
+                resueltos: 0,
+                fuerza_mayor: 0
+            },
+            pcsAlerta: 0
+        };
+
+        try {
+            // 1. Obtener métricas consolidadas de tickets
+            const respTickets = await this.peticion('/api/soporte_tecnico/listar_tickets.php?limite=1');
+            if (respTickets.exito && respTickets.datos && respTickets.datos.metricas) {
+                const m = respTickets.datos.metricas;
+                resultado.tickets.total = parseInt(m.total, 10) || 0;
+                resultado.tickets.pendientes = parseInt(m.pendientes, 10) || 0;
+                resultado.tickets.en_proceso = parseInt(m.en_proceso, 10) || 0;
+                resultado.tickets.resueltos = parseInt(m.resueltos, 10) || 0;
+                resultado.tickets.fuerza_mayor = parseInt(m.fuerza_mayor, 10) || 0;
+            }
+        } catch (e) {
+            console.warn('[Dashboard] No se pudieron obtener métricas de tickets:', e);
+        }
+
+        try {
+            // 2. Obtener recuento de PCs con alertas técnicas de hardware
+            const respPcs = await this.peticion('/api/diagnostico/listar.php');
+            if (respPcs.exito && Array.isArray(respPcs.datos)) {
+                resultado.pcsAlerta = respPcs.datos.filter(pc => {
+                    const esCritico = (pc.estado_salud_general === 'critico' || pc.estado_salud_general === 'alerta');
+                    const tieneAlertas = (Array.isArray(pc.alertas_detectadas) && pc.alertas_detectadas.length > 0);
+                    return esCritico || tieneAlertas;
+                }).length;
+            }
+        } catch (e) {
+            // Si el usuario no tiene permisos o no está disponible, mantener en 0
+        }
+
+        return resultado;
+    },
+
+    /**
+     * Actualiza los números del Dashboard en el Menú Lateral Offcanvas
+     */
+    async actualizarKpisMenuOffcanvas() {
+        const elPendientes = document.getElementById('kpiTicketsPendientes');
+        if (!elPendientes) return;
+
+        const elEnProceso   = document.getElementById('kpiTicketsEnProceso');
+        const elResueltos   = document.getElementById('kpiTicketsResueltos');
+        const elFuerzaMayor = document.getElementById('kpiTicketsFuerzaMayor');
+        const elPcsAlerta   = document.getElementById('kpiPcsAlerta');
+
+        try {
+            const metricas = await this.obtenerMetricasDashboard();
+            if (!metricas) return;
+
+            if (elPendientes) elPendientes.textContent = metricas.tickets.pendientes;
+            if (elEnProceso) elEnProceso.textContent = metricas.tickets.en_proceso;
+            if (elResueltos) elResueltos.textContent = metricas.tickets.resueltos;
+            if (elFuerzaMayor) elFuerzaMayor.textContent = metricas.tickets.fuerza_mayor;
+            if (elPcsAlerta) elPcsAlerta.textContent = metricas.pcsAlerta;
+        } catch (err) {
+            console.warn('[Dashboard Offcanvas] Error al actualizar contadores:', err);
+        }
     }
 };
 
-// Verificar estado de conexión automáticamente al cargar
+// Inicialización de salud y oyentes del Menú Lateral y Ventana de Métricas
 document.addEventListener('DOMContentLoaded', () => {
     clienteApi.verificarSaludBackend();
+
+    // Actualización de KPIs del Menú Lateral Offcanvas
+    const offcanvasEl = document.getElementById('menuFormulariosLateral');
+    if (offcanvasEl) {
+        // Carga al inicio
+        clienteApi.actualizarKpisMenuOffcanvas();
+        // Carga fresca cada vez que se abre el menú lateral
+        offcanvasEl.addEventListener('show.bs.offcanvas', () => {
+            clienteApi.actualizarKpisMenuOffcanvas();
+        });
+    }
+
+    // Actualización de KPIs al abrir la Ventana Modal de "MÉTRICA"
+    const modalMetricasEl = document.getElementById('modalDashboardMetricas');
+    if (modalMetricasEl) {
+        modalMetricasEl.addEventListener('show.bs.modal', () => {
+            clienteApi.actualizarKpisMenuOffcanvas();
+        });
+    }
 });

@@ -11,6 +11,8 @@ $nivel_ruta = '../../';
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
 require_once __DIR__ . '/../../componentes/barra_navegacion.php';
+
+$es_tecnico_o_admin = es_personal_tecnico();
 ?>
 
 <main class="container my-4 my-lg-5">
@@ -35,11 +37,13 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                     COSMOL R.L. &bull; Reporte técnico de anomalías en plataformas institucionales (ERP SAI, NETCOB), servidores, conectividad y base de datos.
                 </p>
             </div>
+            <?php if ($es_tecnico_o_admin): ?>
             <div class="d-flex gap-2">
                 <a href="gestion_incidencias.php" class="btn btn-outline-secondary btn-sm px-3 py-2">
                     <i class="bi bi-card-checklist me-1"></i> Bandeja de Incidencias
                 </a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -63,8 +67,10 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
         <!-- 5. Descripción Técnica y Logs de Error -->
         <?php require_once __DIR__ . '/secciones/seccion_5_descripcion_logs.php'; ?>
 
-        <!-- 6. Solución Aplicada y Tiempos -->
-        <?php require_once __DIR__ . '/secciones/seccion_6_solucion_tiempos.php'; ?>
+        <!-- 6. Solución Aplicada y Tiempos (Exclusivo Técnico / Admin) -->
+        <?php if ($es_tecnico_o_admin): ?>
+            <?php require_once __DIR__ . '/secciones/seccion_6_solucion_tiempos.php'; ?>
+        <?php endif; ?>
 
         <!-- 7. Seguimiento y Recomendaciones -->
         <?php require_once __DIR__ . '/secciones/seccion_7_recomendaciones.php'; ?>

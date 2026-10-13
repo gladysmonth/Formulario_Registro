@@ -74,25 +74,23 @@
 
 ---
 
-### FASE 4: Frontend - Rediseño del Menú Desplegable (Offcanvas) y Dashboard
-* **Objetivo:** Transformar el menú lateral en un centro de comando unificado con estadísticas inmediatas y filtración de tickets.
+### FASE 4: Frontend - Menú Desplegable Izquierdo y Ventana Modal "MÉTRICA" [COMPLETADA]
+* **Objetivo:** Disponer el menú lateral en el margen izquierdo (`offcanvas-start`) y centralizar el dashboard de estadísticas en una ventana modal emergente accesible mediante el botón **"MÉTRICA"**.
 * **Archivos Involucrados:**
-  - `front_forms/componentes/barra_navegacion.php` (reestructuración del panel Offcanvas).
-  - `front_forms/recursos/js/cliente_api.js` (método para consultar métricas del dashboard).
-  - `front_forms/recursos/css/estilos_personalizados.css` (estilos para tarjetas de KPIs en el menú).
-* **Estructura del Menú Desplegable:**
-  1. **Dashboard de Estadísticas en Primera Vista:**
-     - Tickets Abiertos / Pendientes (Badge azul/ámbar).
-     - Tickets En Proceso (Badge celeste).
-     - Tickets Resueltos (Badge verde).
-     - Fuerza Mayor / Contingencias (Badge púrpura).
-     - PCs en Alerta de Hardware (Badge rojo).
-  2. **Bandeja de Tickets con Filtración Rápida:**
-     - Enlace predeterminado: **Ver Tickets ABIERTOS** (`gestion_tickets.php?estado=pendiente`).
-     - Enlaces a: "En Proceso", "Resueltos" y "Fuerza Mayor".
-  3. **Accesos a Formularios:**
-     - Accesos compactos de 1 clic a los 4 formularios (+ diagnóstico de PCs solo para técnicos).
-     - Botón al pie: *"Ver Catálogo Detallado de Formularios"*.
+  - `front_forms/componentes/barra_navegacion.php` (botón de menú en lado izquierdo, panel lateral izquierdo y modal `#modalDashboardMetricas`).
+  - `front_forms/recursos/js/cliente_api.js` (método `obtenerMetricasDashboard()` y listener de actualización en eventos `show.bs.modal`).
+  - `front_forms/recursos/css/estilos_personalizados.css` (estilos para botón MÉTRICA y tarjetas de KPIs en modal).
+* **Estructura Implementada:**
+  1. **Navegación Izquierda:**
+     - Botón de 3 Rayas (`☰ Menú`) posicionado en el extremo izquierdo del navbar en todas las vistas.
+     - Panel lateral deslizante desde la izquierda (`offcanvas-start`).
+     - Botón destacado **"MÉTRICA"** con badge "Abrir Ventana" dentro del menú lateral (y botón de acceso directo en navbar para técnicos).
+  2. **Ventana Modal Emergente "MÉTRICA":**
+     - **KPIs en tiempo real:** Tickets Abiertos/Pendientes (ámbar), En Proceso (celeste), Resueltos (verde), Fuerza Mayor (púrpura), y Equipos con Alertas SMART/CPU/Defender (rojo).
+     - **Bandeja de Tickets con Filtración Rápida:** Enlace principal a Tickets Abiertos prioritarios, y botones secundarios para filtrar por estado con 1 clic.
+  3. **Accesos Compactos a Formularios:**
+     - Enlaces directos a los 4 formularios activos (+ telemetría técnica) con botones para diligenciar y gestionar.
+     - Botón inferior hacia el Catálogo Detallado.
 
 ---
 
