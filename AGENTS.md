@@ -56,10 +56,6 @@ Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo
 - **`back_form/`**: Recibe peticiones HTTP, valida datos, procesa la lógica e interactúa con la base de datos PostgreSQL retornando respuestas JSON estandarizadas.
 - **`init.sql`**: Es el archivo físico único de inicialización de esquemas, tablas, restricciones e índices. Cualquier cambio estructural en la base de datos debe reflejarse en este script.
 
-### 3.5. Alcance de PowerShell y Uso de Herramientas Adecuadas
-- La restricción de utilizar scripts nativos de PowerShell aplica **única y exclusivamente al cliente periférico de telemetría de Windows** (`Cosmol-DiagnosticoP`) con el fin de evitar falsos positivos de Windows Defender en las PCs de los usuarios.
-- En este repositorio (`Formulario_Registro`), desarrolladores y agentes de IA **no están obligados a usar PowerShell**: deben emplear las herramientas y lenguajes estándar de la plataforma (PHP 7.3, JavaScript, Docker CLI, Bash dentro de contenedores Linux, PostgreSQL y edición directa de archivos) priorizando eficiencia, velocidad y evitando sobrecarga innecesaria de terminal.
-
 ### 3.4. Regla Estricta de Modificación Modular por Secciones (Vistas de Formulario)
 Cada vez que se modifique o estructure código en `formulario_soporte.php` o en cualquier vista de formulario:
 1. **No generar código monolítico ni archivos gigantes:** Prohibido crear bloques masivos e interminables de código de una sola vez.

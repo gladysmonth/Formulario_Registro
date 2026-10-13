@@ -85,6 +85,7 @@ try {
                 t.centro_costo,
                 t.prioridad,
                 t.estado,
+                t.motivo_imposibilidad,
                 t.firma_solicitante,
                 COALESCE(a.firma_sistemas, t.firma_sistemas) AS firma_sistemas,
                 t.creado_en,
@@ -127,6 +128,7 @@ try {
         COUNT(CASE WHEN estado = 'pendiente' THEN 1 END) AS pendientes,
         COUNT(CASE WHEN estado = 'en_proceso' THEN 1 END) AS en_proceso,
         COUNT(CASE WHEN estado = 'resuelto' THEN 1 END) AS resueltos,
+        COUNT(CASE WHEN estado = 'fuerza_mayor' THEN 1 END) AS fuerza_mayor,
         COUNT(CASE WHEN prioridad = 'urgente' THEN 1 END) AS urgentes
     FROM tickets_soporte");
     $metricas = $stmt_metricas->fetch();

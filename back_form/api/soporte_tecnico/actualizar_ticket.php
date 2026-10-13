@@ -61,11 +61,16 @@ try {
     }
 
     if ($nuevo_estado !== null) {
-        $estados_validos = array('pendiente', 'en_proceso', 'resuelto', 'cancelado');
+        $estados_validos = array('pendiente', 'en_proceso', 'resuelto', 'cancelado', 'fuerza_mayor');
         if (in_array($nuevo_estado, $estados_validos)) {
             $actualizaciones_ticket[] = "estado = :estado";
             $parametros_ticket[':estado'] = $nuevo_estado;
         }
+    }
+
+        if (isset($datos['motivo_imposibilidad'])) {
+        $actualizaciones_ticket[] = "motivo_imposibilidad = :motivo_imposibilidad";
+        $parametros_ticket[':motivo_imposibilidad'] = trim($datos['motivo_imposibilidad']);
     }
 
     if (!empty($firma_sistemas_enviada)) {

@@ -20,6 +20,34 @@ $$ LANGUAGE plpgsql;
 -- ==========================================================
 -- TABLA DE CATÁLOGO / INVENTARIO DE EQUIPOS
 -- ==========================================================
+-- =================================================================
+-- TABLA DE USUARIOS DEL SISTEMA (ROLES Y CONTROL DE ACCESO RBAC)
+-- =================================================================
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    usuario VARCHAR(50) UNIQUE NOT NULL,
+    clave_hash VARCHAR(255) NOT NULL,
+    nombre_completo VARCHAR(150) NOT NULL,
+    rol VARCHAR(30) NOT NULL DEFAULT 'usuario'
+        CHECK (rol IN ('admin', 'tecnico', 'usuario')),
+    departamento VARCHAR(100),
+    cargo VARCHAR(100),
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ultimo_acceso TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_usuarios_usuario ON usuarios (usuario);
+CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios (rol);
+
+-- Usuarios semilla por defecto (Clave: Cosmol2026!)
+INSERT INTO usuarios (usuario, clave_hash, nombre_completo, rol, departamento, cargo, activo)
+VALUES 
+    ('admin', '$2y$10$WezdWFReYQhxUxreIdI.sONf/AwMSBL6tMFG8sP/bpAc5./2RtklG', 'Administrador de Sistemas', 'admin', 'Sistemas e Informática', 'Jefe de Sistemas', TRUE),
+    ('tecnico', '$2y$10$WezdWFReYQhxUxreIdI.sONf/AwMSBL6tMFG8sP/bpAc5./2RtklG', 'Técnico de Soporte', 'tecnico', 'Sistemas e Informática', 'Técnico de Soporte', TRUE),
+    ('personal', '$2y$10$WezdWFReYQhxUxreIdI.sONf/AwMSBL6tMFG8sP/bpAc5./2RtklG', 'Personal Solicitante', 'usuario', 'Administración y Finanzas', 'Auxiliar Administrativo', TRUE)
+ON CONFLICT (usuario) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS equipos_inventario (
     id BIGSERIAL PRIMARY KEY,
     codigo_activo VARCHAR(100),
@@ -84,7 +112,8 @@ CREATE TABLE IF NOT EXISTS tickets_soporte (
 
     -- CAMPOS DE CONTROL Y ESTADO
     estado VARCHAR(30) NOT NULL DEFAULT 'pendiente'
-        CHECK (estado IN ('pendiente', 'en_proceso', 'resuelto', 'cancelado')),
+        CHECK (estado IN ('pendiente', 'en_proceso', 'resuelto', 'cancelado', 'fuerza_mayor')),
+    motivo_imposibilidad TEXT,
 
     -- FIRMAS DIGITALES
     firma_solicitante TEXT,
