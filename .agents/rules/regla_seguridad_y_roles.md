@@ -15,6 +15,3 @@ A partir de la integración del sistema modular y el módulo de Auditoría de PC
 ## 3. Centralización de Base de Datos
 - Todos los scripts SQL de inicialización o migraciones residen exclusivamente en `Formulario_Registro/database/`.
 - No deben crearse carpetas `database` en clientes ligeros periféricos.
-## 4. Alcance de PowerShell y Libertad de Herramientas
-- La exigencia de scripts nativos de PowerShell está limitada estrictamente al agente recolector periférico de Windows en `Cosmol-DiagnosticoP`.
-- Para la plataforma web `Formulario_Registro`, agentes y desarrolladores tienen **total libertad** de emplear las herramientas y lenguajes adecuados (PHP 7.3, JavaScript, Docker, Bash en Linux, PostgreSQL y manipulación directa de archivos), sin ninguna imposición de utilizar PowerShell.
