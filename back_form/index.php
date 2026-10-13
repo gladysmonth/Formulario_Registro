@@ -67,8 +67,9 @@ responder_exito('Servicio Backend de Formularios y Auditoría Activo', array(
         ),
         'diagnostico_pc' => array(
             'recibir_telemetria' => 'POST /api/diagnostico/recibir.php',
-            'listar_equipos' => 'GET /api/diagnostico/listar.php',
-            'detalle_equipo' => 'GET /api/diagnostico/detalle.php?mac={mac}'
+            'listar_equipos'     => 'GET /api/diagnostico/listar.php',
+            'detalle_equipo'     => 'GET /api/diagnostico/detalle.php?mac={mac}',
+            'detectar_mi_pc'     => 'GET /api/diagnostico/detectar_mi_pc.php'
         )
     ),
     'fecha_hora_servidor' => date('Y-m-d H:i:s')
