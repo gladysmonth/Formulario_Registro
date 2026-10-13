@@ -1,7 +1,7 @@
 <?php
 /**
- * Endpoint: Actualizar Ticket de Soporte Técnico (Gestión y Cierre)
- * Método: POST (compatible con formularios y fetch)
+ * Endpoint: Actualizar Ticket de Soporte Técnico (Gestión, Derivación y Cierre)
+ * Método: POST o PUT
  * Compatible con PHP 7.3
  * Archivo: actualizar_ticket.php
  */
@@ -28,7 +28,7 @@ try {
     $conexion->beginTransaction();
 
     // Comprobar existencia previa del ticket
-    $stmt_existe = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad, firma_sistemas FROM tickets_soporte WHERE id = :id");
+    $stmt_existe = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad, firma_sistemas, tecnico_asignado_id FROM tickets_soporte WHERE id = :id");
     $stmt_existe->execute(array(':id' => $id));
     $ticket_actual = $stmt_existe->fetch();
 
@@ -38,7 +38,7 @@ try {
     }
 
     // 1. Validar obligatoriedad de firma de sistemas al resolver
-    $nuevo_estado = isset($datos['estado']) ? strtolower($datos['estado']) : null;
+    $nuevo_estado = isset($datos['estado']) ? strtolower(trim($datos['estado'])) : null;
     $firma_sistemas_enviada = !empty($datos['firma_sistemas']) ? $datos['firma_sistemas'] : null;
 
     if ($nuevo_estado === 'resuelto') {
@@ -48,9 +48,40 @@ try {
         }
     }
 
-    // 2. Actualizaciones en tickets_soporte (prioridad y estado)
+    // 2. Extraer datos de derivación y asignación de técnicos
+    $tecnico_asignado_id = !empty($datos['tecnico_asignado_id']) ? (int)$datos['tecnico_asignado_id'] : (!empty($datos['tecnico_id']) ? (int)$datos['tecnico_id'] : null);
+    $asignado_por_id     = !empty($datos['asignado_por_id']) ? (int)$datos['asignado_por_id'] : (!empty($datos['usuario_id']) ? (int)$datos['usuario_id'] : null);
+    $nombre_tecnico_derivado = !empty(trim($datos['tecnico_asignado'] ?? '')) ? trim($datos['tecnico_asignado']) : null;
+
     $actualizaciones_ticket = array();
     $parametros_ticket = array(':id' => $id);
+
+    if ($tecnico_asignado_id !== null) {
+        $actualizaciones_ticket[] = "tecnico_asignado_id = :tecnico_asignado_id";
+        $parametros_ticket[':tecnico_asignado_id'] = $tecnico_asignado_id;
+
+        // Si no se proporcionó el nombre de texto del técnico, consultarlo de la tabla usuarios
+        if (empty($nombre_tecnico_derivado)) {
+            $stmt_tec_info = $conexion->prepare("SELECT nombre_completo FROM usuarios WHERE id = :tid");
+            $stmt_tec_info->execute(array(':tid' => $tecnico_asignado_id));
+            $nombre_tec_bd = $stmt_tec_info->fetchColumn();
+            if ($nombre_tec_bd) {
+                $nombre_tecnico_derivado = $nombre_tec_bd;
+            }
+        }
+
+        // Si el ticket estaba pendiente y se asigna/deriva un técnico, avanza naturalmente a en_proceso
+        if ($nuevo_estado === null && $ticket_actual['estado'] === 'pendiente') {
+            $nuevo_estado = 'en_proceso';
+        }
+    }
+
+    // Actualización de snapshot de telemetría (si el técnico asoció un diagnóstico tras revisar la PC)
+    if (isset($datos['diagnostico_id'])) {
+        $diag_id_val = !empty($datos['diagnostico_id']) ? (int)$datos['diagnostico_id'] : null;
+        $actualizaciones_ticket[] = "diagnostico_id = :diagnostico_id";
+        $parametros_ticket[':diagnostico_id'] = $diag_id_val;
+    }
 
     if (isset($datos['prioridad'])) {
         $prioridades_validas = array('urgente', 'alta', 'media', 'baja');
@@ -68,7 +99,7 @@ try {
         }
     }
 
-        if (isset($datos['motivo_imposibilidad'])) {
+    if (isset($datos['motivo_imposibilidad'])) {
         $actualizaciones_ticket[] = "motivo_imposibilidad = :motivo_imposibilidad";
         $parametros_ticket[':motivo_imposibilidad'] = trim($datos['motivo_imposibilidad']);
     }
@@ -84,9 +115,10 @@ try {
         $stmt_up_ticket->execute($parametros_ticket);
     }
 
-    // 2. Comprobar y actualizar / registrar en atenciones_soporte
+    // 3. Comprobar y actualizar / registrar en atenciones_soporte
     $hay_datos_atencion = isset($datos['fecha_hora_atencion']) || 
-                           isset($datos['tecnico_asignado']) || 
+                           !empty($nombre_tecnico_derivado) || 
+                           $tecnico_asignado_id !== null ||
                            isset($datos['diagnostico']) || 
                            isset($datos['solucion_aplicada']) || 
                            isset($datos['tipo_resolucion']) || 
@@ -99,7 +131,7 @@ try {
         $atencion_existente = $stmt_atencion_existe->fetch();
 
         $fecha_hora_atencion = !empty($datos['fecha_hora_atencion']) ? $datos['fecha_hora_atencion'] : date('Y-m-d H:i:s');
-        $tecnico_asignado    = !empty(trim($datos['tecnico_asignado'] ?? '')) ? trim($datos['tecnico_asignado']) : 'Área de Soporte Técnico';
+        $tecnico_asignado    = !empty($nombre_tecnico_derivado) ? $nombre_tecnico_derivado : 'Área de Soporte Técnico';
         $diagnostico         = !empty(trim($datos['diagnostico'] ?? '')) ? trim($datos['diagnostico']) : null;
         $solucion_aplicada   = !empty(trim($datos['solucion_aplicada'] ?? '')) ? trim($datos['solucion_aplicada']) : null;
         $tipo_resolucion     = !empty(trim($datos['tipo_resolucion'] ?? '')) ? trim($datos['tipo_resolucion']) : null;
@@ -108,6 +140,8 @@ try {
 
         if ($atencion_existente) {
             $sql_up_atencion = "UPDATE atenciones_soporte SET 
+                                    tecnico_id = COALESCE(:tecnico_id, tecnico_id),
+                                    asignado_por_id = COALESCE(:asignado_por_id, asignado_por_id),
                                     fecha_hora_atencion = :fecha_hora_atencion,
                                     tecnico_asignado = :tecnico_asignado,
                                     tipo_resolucion = :tipo_resolucion,
@@ -119,6 +153,8 @@ try {
             $stmt_up_at = $conexion->prepare($sql_up_atencion);
             $stmt_up_at->execute(array(
                 ':atencion_id'                => $atencion_existente['id'],
+                ':tecnico_id'                 => $tecnico_asignado_id,
+                ':asignado_por_id'            => $asignado_por_id,
                 ':fecha_hora_atencion'        => $fecha_hora_atencion,
                 ':tecnico_asignado'           => $tecnico_asignado,
                 ':tipo_resolucion'            => $tipo_resolucion,
@@ -130,6 +166,8 @@ try {
         } else {
             $sql_in_atencion = "INSERT INTO atenciones_soporte (
                                     ticket_id,
+                                    tecnico_id,
+                                    asignado_por_id,
                                     fecha_hora_atencion,
                                     tecnico_asignado,
                                     tipo_resolucion,
@@ -139,6 +177,8 @@ try {
                                     firma_sistemas
                                 ) VALUES (
                                     :ticket_id,
+                                    :tecnico_id,
+                                    :asignado_por_id,
                                     :fecha_hora_atencion,
                                     :tecnico_asignado,
                                     :tipo_resolucion,
@@ -150,6 +190,8 @@ try {
             $stmt_in_at = $conexion->prepare($sql_in_atencion);
             $stmt_in_at->execute(array(
                 ':ticket_id'                  => $id,
+                ':tecnico_id'                 => $tecnico_asignado_id,
+                ':asignado_por_id'            => $asignado_por_id,
                 ':fecha_hora_atencion'        => $fecha_hora_atencion,
                 ':tecnico_asignado'           => $tecnico_asignado,
                 ':tipo_resolucion'            => $tipo_resolucion,
@@ -167,7 +209,11 @@ try {
     }
 
     // Obtener estado final
-    $stmt_final = $conexion->prepare("SELECT id, codigo_ticket, estado, prioridad, actualizado_en FROM tickets_soporte WHERE id = :id");
+    $stmt_final = $conexion->prepare("
+        SELECT id, codigo_ticket, estado, prioridad, tecnico_asignado_id, diagnostico_id, motivo_imposibilidad, actualizado_en 
+        FROM tickets_soporte 
+        WHERE id = :id
+    ");
     $stmt_final->execute(array(':id' => $id));
     $resultado = $stmt_final->fetch();
 

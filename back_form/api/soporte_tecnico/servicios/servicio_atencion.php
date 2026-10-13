@@ -15,6 +15,8 @@
  * @return bool
  */
 function registrar_atencion_tecnica($conexion, $ticket_id, $datos, $firma_sistemas = null) {
+    $tecnico_id          = !empty($datos['tecnico_id']) ? (int)$datos['tecnico_id'] : (!empty($datos['tecnico_asignado_id']) ? (int)$datos['tecnico_asignado_id'] : null);
+    $asignado_por_id     = !empty($datos['asignado_por_id']) ? (int)$datos['asignado_por_id'] : null;
     $tecnico_asignado    = !empty($datos['tecnico_asignado']) ? trim($datos['tecnico_asignado']) : null;
     $fecha_hora_atencion = !empty($datos['fecha_hora_atencion']) ? $datos['fecha_hora_atencion'] : null;
     $diagnostico         = !empty($datos['diagnostico']) ? trim($datos['diagnostico']) : null;
@@ -23,6 +25,7 @@ function registrar_atencion_tecnica($conexion, $ticket_id, $datos, $firma_sistem
     $observaciones       = !empty($datos['observaciones_recomendacion']) ? trim($datos['observaciones_recomendacion']) : null;
 
     $tiene_datos_tecnicos = !empty($tecnico_asignado) || 
+                            !empty($tecnico_id) ||
                             !empty($diagnostico) || 
                             !empty($solucion_aplicada) || 
                             !empty($observaciones) || 
@@ -35,6 +38,8 @@ function registrar_atencion_tecnica($conexion, $ticket_id, $datos, $firma_sistem
 
     $sql = "INSERT INTO atenciones_soporte (
                 ticket_id,
+                tecnico_id,
+                asignado_por_id,
                 fecha_hora_atencion,
                 tecnico_asignado,
                 tipo_resolucion,
@@ -44,6 +49,8 @@ function registrar_atencion_tecnica($conexion, $ticket_id, $datos, $firma_sistem
                 firma_sistemas
             ) VALUES (
                 :ticket_id,
+                :tecnico_id,
+                :asignado_por_id,
                 :fecha_hora_atencion,
                 :tecnico_asignado,
                 :tipo_resolucion,
@@ -56,6 +63,8 @@ function registrar_atencion_tecnica($conexion, $ticket_id, $datos, $firma_sistem
     $stmt = $conexion->prepare($sql);
     return $stmt->execute(array(
         ':ticket_id'                  => $ticket_id,
+        ':tecnico_id'                 => $tecnico_id,
+        ':asignado_por_id'            => $asignado_por_id,
         ':fecha_hora_atencion'        => !empty($fecha_hora_atencion) ? $fecha_hora_atencion : date('Y-m-d H:i:s'),
         ':tecnico_asignado'           => !empty($tecnico_asignado) ? $tecnico_asignado : 'Área de Soporte Técnico',
         ':tipo_resolucion'            => $tipo_resolucion,

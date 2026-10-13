@@ -115,6 +115,14 @@ CREATE TABLE IF NOT EXISTS tickets_soporte (
         CHECK (estado IN ('pendiente', 'en_proceso', 'resuelto', 'cancelado', 'fuerza_mayor')),
     motivo_imposibilidad TEXT,
 
+    -- VINCULACIÓN RBAC Y USUARIOS
+    usuario_solicitante_id BIGINT REFERENCES usuarios(id) ON DELETE SET NULL,
+    tecnico_asignado_id BIGINT REFERENCES usuarios(id) ON DELETE SET NULL,
+
+    -- VINCULACIÓN A TELEMETRÍA PC (Cosmol-DiagnosticoP)
+    diagnostico_id BIGINT,
+    direccion_mac VARCHAR(50),
+
     -- FIRMAS DIGITALES
     firma_solicitante TEXT,
     firma_sistemas TEXT,
@@ -130,6 +138,8 @@ CREATE INDEX IF NOT EXISTS idx_tickets_prioridad ON tickets_soporte (prioridad);
 CREATE INDEX IF NOT EXISTS idx_tickets_fecha ON tickets_soporte (fecha_solicitud);
 CREATE INDEX IF NOT EXISTS idx_tickets_depto ON tickets_soporte (departamento_area);
 CREATE INDEX IF NOT EXISTS idx_tickets_equipo_id ON tickets_soporte (equipo_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_solicitante_id ON tickets_soporte (usuario_solicitante_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_tecnico_id ON tickets_soporte (tecnico_asignado_id);
 
 -- Trigger para actualizar campo actualizado_en en tickets_soporte
 DROP TRIGGER IF EXISTS trigger_actualizar_tickets_soporte ON tickets_soporte;
@@ -146,6 +156,8 @@ CREATE TABLE IF NOT EXISTS atenciones_soporte (
 
     -- 5. DATOS DEL TÉCNICO
     fecha_hora_atencion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    tecnico_id BIGINT REFERENCES usuarios(id) ON DELETE SET NULL,
+    asignado_por_id BIGINT REFERENCES usuarios(id) ON DELETE SET NULL,
     tecnico_asignado VARCHAR(150) NOT NULL,
     tipo_resolucion VARCHAR(100),
     diagnostico TEXT,
@@ -164,6 +176,8 @@ CREATE TABLE IF NOT EXISTS atenciones_soporte (
 -- Índices para optimizar búsquedas en atenciones_soporte
 CREATE INDEX IF NOT EXISTS idx_atenciones_ticket_id ON atenciones_soporte (ticket_id);
 CREATE INDEX IF NOT EXISTS idx_atenciones_tecnico ON atenciones_soporte (tecnico_asignado);
+CREATE INDEX IF NOT EXISTS idx_atenciones_tecnico_id ON atenciones_soporte (tecnico_id);
+CREATE INDEX IF NOT EXISTS idx_atenciones_asignado_por_id ON atenciones_soporte (asignado_por_id);
 
 -- Trigger para actualizar campo actualizado_en en atenciones_soporte
 DROP TRIGGER IF EXISTS trigger_actualizar_atenciones_soporte ON atenciones_soporte;

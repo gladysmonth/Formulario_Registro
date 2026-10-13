@@ -1,6 +1,6 @@
 <?php
 /**
- * Endpoint API: Detalle Técnico Completo e Historial de una PC
+ * Endpoint API: Detalle Técnico Completo, Historial y Tickets de una PC
  * Compatible con PHP 7.3 y PostgreSQL 13
  * Ruta: /api/diagnostico/detalle.php
  */
@@ -14,8 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     responder_error('Método no permitido. Solo se acepta GET.', 405);
 }
 
-$mac = isset($_GET['mac']) ? trim($_GET['mac']) : '';
-$equipo_id = isset($_GET['equipo_id']) ? (int)$_GET['equipo_id'] : 0;
+$mac            = isset($_GET['mac']) ? trim($_GET['mac']) : '';
+$equipo_id      = isset($_GET['equipo_id']) ? (int)$_GET['equipo_id'] : 0;
 $diagnostico_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if (empty($mac) && $equipo_id <= 0 && $diagnostico_id <= 0) {
@@ -67,6 +67,7 @@ try {
     }
 
     $mac_referencia = $detalle['direccion_mac'];
+    $equipo_id_referencia = !empty($detalle['equipo_id']) ? (int)$detalle['equipo_id'] : 0;
 
     // Decodificar campos JSONB
     $campos_json = array(
@@ -84,7 +85,7 @@ try {
     // Omitir payload completo duplicado para no sobrecargar el ancho de banda
     unset($detalle['payload_completo']);
 
-    // 2. Obtener el historial cronológico de esta PC
+    // 2. Obtener el historial cronológico de telemetría de esta PC
     $sql_historial = "
         SELECT 
             id, 
@@ -105,9 +106,44 @@ try {
     $stmt_hist->execute(array(':mac' => $mac_referencia));
     $historial = $stmt_hist->fetchAll(PDO::FETCH_ASSOC);
 
+    // 3. Obtener los tickets de soporte previos asociados a esta PC física
+    $sql_tickets = "
+        SELECT 
+            t.id,
+            t.codigo_ticket,
+            t.fecha_solicitud,
+            t.nombre_solicitante,
+            t.departamento_area,
+            t.descripcion_problema,
+            t.prioridad,
+            t.estado,
+            t.motivo_imposibilidad,
+            t.diagnostico_id,
+            t.creado_en,
+            t.actualizado_en,
+            COALESCE(a.tecnico_asignado, ut.nombre_completo) AS tecnico_asignado,
+            a.tipo_resolucion,
+            a.diagnostico,
+            a.solucion_aplicada
+        FROM tickets_soporte t
+        LEFT JOIN atenciones_soporte a ON a.ticket_id = t.id
+        LEFT JOIN usuarios ut ON ut.id = COALESCE(a.tecnico_id, t.tecnico_asignado_id)
+        WHERE (t.direccion_mac = :mac AND :mac != '') 
+           OR (t.equipo_id = :eq_id AND :eq_id > 0)
+        ORDER BY t.creado_en DESC
+        LIMIT 20
+    ";
+    $stmt_tic = $conexion->prepare($sql_tickets);
+    $stmt_tic->execute(array(
+        ':mac'   => $mac_referencia,
+        ':eq_id' => $equipo_id_referencia
+    ));
+    $tickets_asociados = $stmt_tic->fetchAll(PDO::FETCH_ASSOC);
+
     responder_exito('Detalle técnico obtenido correctamente', array(
-        'actual'    => $detalle,
-        'historial' => $historial
+        'actual'          => $detalle,
+        'historial'       => $historial,
+        'tickets_soporte' => $tickets_asociados
     ));
 
 } catch (Exception $e) {
