@@ -56,6 +56,7 @@ switch ($rol_actual) {
 $modulos_sistema = array(
     'soporte' => array(
         'numero' => '1',
+        'numero_personal' => '1',
         'nombre' => 'Soporte Técnico',
         'icono' => 'bi-tools',
         'color' => 'info',
@@ -67,6 +68,7 @@ $modulos_sistema = array(
     ),
     'mantenimiento' => array(
         'numero' => '2',
+        'numero_personal' => '',
         'nombre' => 'Mantenimiento Preventivo',
         'icono' => 'bi-shield-check',
         'color' => 'success',
@@ -78,6 +80,7 @@ $modulos_sistema = array(
     ),
     'incidencias' => array(
         'numero' => '3',
+        'numero_personal' => '2',
         'nombre' => 'Incidencias de Sistemas',
         'icono' => 'bi-shield-exclamation',
         'color' => 'danger',
@@ -89,6 +92,7 @@ $modulos_sistema = array(
     ),
     'accesos' => array(
         'numero' => '4',
+        'numero_personal' => '3',
         'nombre' => 'Asignación de Accesos',
         'icono' => 'bi-shield-lock',
         'color' => 'primary',
@@ -100,6 +104,7 @@ $modulos_sistema = array(
     ),
     'diagnostico' => array(
         'numero' => 'T',
+        'numero_personal' => '',
         'nombre' => 'Telemetría / Diagnóstico PC',
         'icono' => 'bi-cpu',
         'color' => 'warning',
@@ -269,6 +274,7 @@ foreach ($modulos_sistema as $clave => $mod) {
                             continue;
                         }
                         $es_activo = ($clave === $clave_modulo_activo);
+                        $numero_mostrar = ($es_tecnico_o_admin || empty($mod['numero_personal'])) ? $mod['numero'] : $mod['numero_personal'];
                         ?>
                         <div class="item-formulario-compacto <?php echo $es_activo ? 'activo' : ''; ?>">
                             <!-- Enlace directo en el nombre e icono para entrar a rellenar el formulario -->
@@ -277,7 +283,7 @@ foreach ($modulos_sistema as $clave => $mod) {
                                     <i class="bi <?php echo $mod['icono']; ?>"></i>
                                 </span>
                                 <span class="fw-semibold text-white text-truncate link-nombre-formulario" style="font-size: 0.82rem;">
-                                    <?php echo htmlspecialchars($mod['numero'] . '. ' . $mod['nombre']); ?>
+                                    <?php echo htmlspecialchars($numero_mostrar . '. ' . $mod['nombre']); ?>
                                 </span>
                             </a>
                         </div>

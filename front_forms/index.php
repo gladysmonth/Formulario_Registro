@@ -74,9 +74,10 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
         </span>
     </div>
 
+    <?php $clase_columna = $es_tecnico_o_admin ? 'col-md-6 col-lg-6' : 'col-md-6 col-lg-4'; ?>
     <div class="row g-4">
         <!-- FORMULARIO 1: ACTIVO (SOPORTE TÉCNICO) -->
-        <div class="col-md-6 col-lg-6">
+        <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-primary shadow-sm bg-white">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -117,23 +118,18 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
             </div>
         </div>
 
-        <!-- FORMULARIO 2: ACTIVO (MANTENIMIENTO PREVENTIVO PC / LAPTOP) -->
-        <div class="col-md-6 col-lg-6">
+        <?php if ($es_tecnico_o_admin): ?>
+        <!-- FORMULARIO 2: ACTIVO (MANTENIMIENTO PREVENTIVO PC / LAPTOP - SOLO TÉCNICO/ADMIN) -->
+        <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-success shadow-sm bg-white">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-success-subtle text-success rounded-3">
                             <i class="bi bi-tools fs-2"></i>
                         </div>
-                        <?php if ($es_tecnico_o_admin): ?>
                         <span class="badge bg-success px-3 py-2 rounded-pill">
                             <i class="bi bi-check-circle-fill me-1"></i> Activo y Disponible
                         </span>
-                        <?php else: ?>
-                        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill border">
-                            <i class="bi bi-lock-fill me-1"></i> Uso Técnico
-                        </span>
-                        <?php endif; ?>
                     </div>
 
                     <h3 class="h5 fw-bold text-dark mb-2">2. Mantenimiento Preventivo (Equipos)</h3>
@@ -151,22 +147,17 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                     </div>
 
                     <div class="mt-auto pt-2">
-                        <?php if ($es_tecnico_o_admin): ?>
                         <a href="modulos/mantenimiento_preventivo/formulario_mantenimiento.php" class="btn btn-success text-white w-100 fw-semibold">
                             <i class="bi bi-tools me-1"></i> Registrar Mantenimiento
                         </a>
-                        <?php else: ?>
-                        <button class="btn btn-outline-secondary w-100 fw-semibold" disabled title="Ficha completada por técnicos de soporte">
-                            <i class="bi bi-shield-lock me-1"></i> Exclusivo para Personal Técnico
-                        </button>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <!-- FORMULARIO 3: ACTIVO (REGISTRO DE INCIDENCIAS DE SISTEMAS) -->
-        <div class="col-md-6 col-lg-6">
+        <!-- FORMULARIO 3 (O 2 PARA EL PERSONAL): REGISTRO DE INCIDENCIAS DE SISTEMAS -->
+        <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-danger shadow-sm bg-white">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -178,7 +169,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         </span>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-2">3. Registro de Incidencias de Sistemas</h3>
+                    <h3 class="h5 fw-bold text-dark mb-2"><?php echo $es_tecnico_o_admin ? '3' : '2'; ?>. Registro de Incidencias de Sistemas</h3>
                     <p class="text-muted small flex-grow-1">
                         Reporte de fallas técnicas en plataformas (ERP SAI, NETCOB), servidores, base de datos y enlaces con clasificación por criticidad, logs de error, solución aplicada y firmas digitales.
                     </p>
@@ -207,8 +198,8 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
             </div>
         </div>
 
-        <!-- FORMULARIO 4: ACTIVO (CREACIÓN Y ASIGNACIÓN DE ACCESOS) -->
-        <div class="col-md-6 col-lg-6">
+        <!-- FORMULARIO 4 (O 3 PARA EL PERSONAL): ASIGNACIÓN DE ACCESOS -->
+        <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-primary shadow-sm bg-white">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -220,7 +211,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         </span>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-2">4. Asignación de Accesos</h3>
+                    <h3 class="h5 fw-bold text-dark mb-2"><?php echo $es_tecnico_o_admin ? '4' : '3'; ?>. Asignación de Accesos</h3>
                     <p class="text-muted small flex-grow-1">
                         Creación y asignación formal de usuarios, perfiles y permisos en plataformas ERP SAI, NETCOB y sistemas corporativos con validación jerárquica y triple firma digital.
                     </p>
