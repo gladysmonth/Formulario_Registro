@@ -50,11 +50,20 @@ function responder_error($mensaje, $codigo_http = 400, $detalles = null) {
 function obtener_cuerpo_json() {
     $cuerpo_crudo = file_get_contents('php://input');
     if (empty($cuerpo_crudo)) {
-        return array();
+        return !empty($_POST) ? $_POST : array();
+    }
+    // Eliminar Byte Order Mark (BOM UTF-8 de PowerShell Windows)
+    $cuerpo_crudo = preg_replace('/^\xEF\xBB\xBF/', '', $cuerpo_crudo);
+    $cuerpo_crudo = trim($cuerpo_crudo);
+    if (empty($cuerpo_crudo)) {
+        return !empty($_POST) ? $_POST : array();
     }
     $decodificado = json_decode($cuerpo_crudo, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        responder_error('El cuerpo de la solicitud no es un JSON válido', 400);
+        if (!empty($_POST)) {
+            return $_POST;
+        }
+        responder_error('El cuerpo de la solicitud no es un JSON válido: ' . json_last_error_msg(), 400);
     }
     return is_array($decodificado) ? $decodificado : array();
 }

@@ -11,7 +11,7 @@
 | Fase | Título y Enfoque | Estado | Entregables Principales |
 | :---: | :--- | :---: | :--- |
 | **FASE 1** | **Seguridad, Docker y Base de Datos Core** | **COMPLETADA** | `.env` seguro, IP local expuesta, tabla `usuarios`, restricción `fuerza_mayor` y `formularios_inicial.sql`. |
-| **FASE 2** | **Inconsistencias Backend API y Autenticación** | **COMPLETADA** | Sanitización BOM UTF-8, `/api/auth/login.php`, `actualizar_ticket.php` con fuerza mayor y catálogo API. |
+| **FASE 2** | **Backend Core: RBAC, Derivación y Telemetría** | **COMPLETADA** | Sanitización BOM UTF-8, `/api/auth/listar_tecnicos.php`, derivación de tickets, auto-enlace de telemetría y consultas enriquecidas. |
 | **FASE 3** | **Frontend - Sesión y Control de Roles (RBAC)** | **EN ESPERA** | `control_sesion.php`, vista `login.php`, navbar con perfil de usuario y protección de rutas. |
 | **FASE 4** | **Frontend - Menú Offcanvas y Dashboard KPIs** | **PENDIENTE** | Mini-dashboard a primera vista en el menú lateral, filtros directos a tickets abiertos y navegación de formularios. |
 | **FASE 5** | **Limpieza de Tarjetas y Vistas de Formularios** | **PENDIENTE** | Eliminación de menús redundantes en tarjetas, separación de campos de solicitud vs campos técnicos. |
@@ -37,18 +37,25 @@
 
 ---
 
-### FASE 2: Inconsistencias Backend API y Autenticación [COMPLETADA]
-* **Objetivo:** Blindar la recepción de datos JSON contra caracteres invisibles de Windows (BOM), crear endpoints de login/perfil y registrar todos los módulos en la API.
+### FASE 2: Backend API Core, RBAC, Derivación y Telemetría [COMPLETADA]
+* **Objetivo:** Blindar la recepción de datos JSON contra caracteres invisibles de Windows (BOM), crear endpoints de login/perfil, derivación técnica RBAC y auto-vinculación con el módulo de telemetría de PCs.
 * **Archivos Modificados / Creados:**
-  - `back_form/configuracion/respuestas_api.php` (sanitización de BOM UTF-8).
-  - `back_form/api/auth/login.php` (POST: autenticación con `password_verify` y retorno de rol).
-  - `back_form/api/auth/perfil.php` (GET: consulta de perfil de usuario).
-  - `back_form/api/soporte_tecnico/actualizar_ticket.php` (soporte para estado `fuerza_mayor` y `motivo_imposibilidad`).
-  - `back_form/api/soporte_tecnico/listar_tickets.php` (métrica de `fuerza_mayor` y campo de motivo).
-  - `back_form/index.php` (catálogo oficial con los 6 módulos activos).
+  - `database/migracion_fase2_soporte_telemetria_rbac.sql` (migración aplicada: `usuario_solicitante_id`, `tecnico_asignado_id`, `tecnico_id`, `asignado_por_id`).
+  - `database/formularios_inicial.sql` (actualización de DDL con nuevas llaves foráneas e índices).
+  - `back_form/configuracion/respuestas_api.php` (sanitización de BOM UTF-8 y fallback de payload).
+  - `back_form/api/auth/login.php` y `perfil.php` (autenticación y perfil de usuario).
+  - `back_form/api/auth/listar_tecnicos.php` (GET: lista de técnicos y administradores activos para derivación).
+  - `back_form/api/soporte_tecnico/crear_ticket.php` (RBAC, auto-vinculación con telemetría de PC por MAC/equipo y persistencia de solicitante).
+  - `back_form/api/soporte_tecnico/actualizar_ticket.php` (derivación de tickets por administradores, cambio a `en_proceso`, cierre con firma y actualización de diagnósticos).
+  - `back_form/api/soporte_tecnico/obtener_ticket.php` (respuesta enriquecida con objeto `telemetria_pc`, `telemetria_actual_en_vivo`, técnicos y `motivo_imposibilidad`).
+  - `back_form/api/soporte_tecnico/listar_tickets.php` (filtros `usuario_solicitante_id`, `tecnico_asignado_id`, indicador `tiene_diagnostico` y semáforo de salud de PC).
+  - `back_form/api/diagnostico/detalle.php` (inspección de hardware, SMART, Defender, Prefetch e historial cruzado de tickets de la PC).
+  - `back_form/api/diagnostico/listar.php` (filtros por estado de salud `critico`/`advertencia`, buscador y métricas globales).
 * **Pruebas Realizadas:**
-  - Autenticación probada para `admin` (rol `admin`) y `personal` (rol `usuario`).
-  - Filtrado de tickets por estado `pendiente`, `en_proceso` y `fuerza_mayor` validado vía REST.
+  - Creación de ticket con auto-detección del último diagnóstico del equipo verificado en vivo (`diagnostico_id: 6`).
+  - Derivación técnica por Administrador a técnico específico con actualización de trazabilidad (`asignado_por_id: 1`, `tecnico_asignado_id: 2`).
+  - Endpoint `obtener_ticket.php` probado retornando el bloque completo de telemetría con alertas de disco y uso de RAM.
+  - Endpoint `detalle.php` de telemetría probado retornando el historial cruzado de tickets asociados a la computadora física.
 
 ---
 
