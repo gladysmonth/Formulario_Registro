@@ -38,7 +38,7 @@ Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo
 - **Excepciones exclusivas para archivos base del ecosistema:**
   - `docker-compose.yml`
   - `Dockerfile`
-  - `init.sql`
+  - `database/formularios_inicial.sql`
   - `AGENTS.md`
   - `index.php` (punto de entrada estándar del servidor web)
 
@@ -55,6 +55,10 @@ Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo
 - **`front_forms/`**: No realiza consultas SQL directas. Se comunica exclusivamente con el backend mediante peticiones HTTP (Fetch API / cURL) a `back_form/`.
 - **`back_form/`**: Recibe peticiones HTTP, valida datos, procesa la lógica e interactúa con la base de datos PostgreSQL retornando respuestas JSON estandarizadas.
 - **`init.sql`**: Es el archivo físico único de inicialización de esquemas, tablas, restricciones e índices. Cualquier cambio estructural en la base de datos debe reflejarse en este script.
+
+### 3.5. Alcance de PowerShell y Uso de Herramientas Adecuadas
+- La restricción de utilizar scripts nativos de PowerShell aplica **única y exclusivamente al cliente periférico de telemetría de Windows** (`Cosmol-DiagnosticoP`) con el fin de evitar falsos positivos de Windows Defender en las PCs de los usuarios.
+- En este repositorio (`Formulario_Registro`), desarrolladores y agentes de IA **no están obligados a usar PowerShell**: deben emplear las herramientas y lenguajes estándar de la plataforma (PHP 7.3, JavaScript, Docker CLI, Bash dentro de contenedores Linux, PostgreSQL y edición directa de archivos) priorizando eficiencia, velocidad y evitando sobrecarga innecesaria de terminal.
 
 ### 3.4. Regla Estricta de Modificación Modular por Secciones (Vistas de Formulario)
 Cada vez que se modifique o estructure código en `formulario_soporte.php` o en cualquier vista de formulario:
@@ -272,7 +276,7 @@ El formulario consta de las siguientes 7 secciones y doble firma digital:
    - Firma del Responsable del Reporte (`firma_responsable_reporte`)
    - Firma del Dpto. de Sistemas (`firma_sistemas`)
 
-> **Estructura en Base de Datos:** Tabla `incidencias_sistemas` en `init.sql` con índices en código, criticidad, estado, fecha y responsable.
+> **Estructura en Base de Datos:** Tabla `incidencias_sistemas` en `database/formularios_inicial.sql` con índices en código, criticidad, estado, fecha y responsable.
 
 ---
 
@@ -305,7 +309,7 @@ El formulario consta de las siguientes 6 secciones y triple firma digital:
    - Nombre y Firma de Autorización / Jefatura (`nombre_autoriza`, `firma_autoriza`)
    - Firma del Dpto. de Sistemas (`firma_sistemas`)
 
-> **Estructura en Base de Datos:** Tabla `solicitudes_accesos` en `init.sql` con índices en nro_solicitud, estado, fecha, área y solicitante.
+> **Estructura en Base de Datos:** Tabla `solicitudes_accesos` en `database/formularios_inicial.sql` con índices en nro_solicitud, estado, fecha, área y solicitante.
 
 ---
 
@@ -335,8 +339,23 @@ En caso de error:
 ## 10. Instrucciones para Agregar un Nuevo Formulario
 
 Cuando se implementen los formularios restantes (5 o futuro):
-1. **Base de Datos:** Añadir la nueva tabla en `init.sql` con prefijo descriptivo (ej. `compras_suministros`).
+1. **Base de Datos:** Añadir la nueva tabla en `database/formularios_inicial.sql` con prefijo descriptivo (ej. `compras_suministros`).
 2. **Backend:** Crear la carpeta en `back_form/api/<nombre_modulo>/` con los scripts correspondientes (`crear_registro.php`, `listar_registros.php`, etc.).
 3. **Frontend:** Crear la carpeta en `front_forms/modulos/<nombre_modulo>/` reutilizando `componentes/encabezado.php`, `barra_navegacion.php` y `pie_pagina.php`.
 4. **Portal Principal:** Actualizar `front_forms/index.php` cambiando el estado del módulo de "En desarrollo" a "Activo".
 
+
+---
+
+## 11. Módulo de Diagnóstico, Telemetría y Auditoría de PCs (Integración Cosmol)
+
+### 11.1. Arquitectura del Módulo
+El sistema integra telemetría desatendida desde las PCs institucionales mediante el agente PowerShell nativo de `Cosmol-DiagnosticoP`.
+- **Backend API:** `back_form/api/diagnostico/`
+  - `recibir.php` (POST): Recibe payload JSON del agente (`metadatos`, `resumen_salud`, `hardware`, `software_y_seguridad`).
+  - `listar.php` (GET): Retorna lista consolidada de equipos auditados desde `vista_ultimo_diagnostico_pc`.
+  - `detalle.php` (GET): Retorna el historial cronológico y último diagnóstico detallado de una PC por dirección MAC.
+- **Frontend:** `front_forms/modulos/diagnostico/`
+  - `monitoreo_equipos.php`: Vista de tablero con tarjetas de salud, filtros y contadores de alerta.
+  - `detalle_equipo.php`: Vista de inspección profunda (CPU, RAM, discos con SMART, Prefetch y Defender).
+- **Control de Acceso:** Exclusivo para el rol `admin` / `tecnico`. Oculto para usuarios solicitantes.
