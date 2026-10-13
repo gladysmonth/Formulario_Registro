@@ -455,33 +455,247 @@ body {
 }
 
 /* ==========================================================
- * MENÚ LATERAL OFFCANVAS DE MÓDULOS (BOTÓN 3 RAYAS)
+ * FASE 4: MENÚ LATERAL OFFCANVAS Y DASHBOARD DE ESTADÍSTICAS
  * ========================================================== */
 .offcanvas-modulos {
     background-color: #0f172a !important; /* Slate 900 corporativo */
     color: #f8fafc;
-    width: 340px !important;
+    width: 380px !important;
+    max-width: 92vw !important;
 }
 
-.tarjeta-modulo-offcanvas {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Scrollbar refinado para el menú lateral */
+.offcanvas-modulos .offcanvas-body::-webkit-scrollbar {
+    width: 6px;
+}
+.offcanvas-modulos .offcanvas-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+.offcanvas-modulos .offcanvas-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Tarjeta de usuario en el menú */
+.tarjeta-usuario-offcanvas {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
-    padding: 0.75rem 0.9rem;
+    padding: 0.85rem 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Cuadrícula de KPIs del Dashboard en el Offcanvas */
+.contenedor-kpis-offcanvas {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+}
+
+.tarjeta-kpi-offcanvas {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    text-decoration: none;
+    color: #f8fafc;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.tarjeta-kpi-offcanvas:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.22);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+.tarjeta-kpi-offcanvas.kpi-ancho-completo {
+    grid-column: span 2;
+}
+
+.kpi-valor {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+    font-feature-settings: "tnum";
+}
+
+.kpi-etiqueta {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 0.3rem;
+    font-weight: 500;
+}
+
+/* Variaciones cromáticas para KPIs */
+.kpi-pendiente {
+    border-left: 3px solid #f59e0b;
+}
+.kpi-pendiente .kpi-valor {
+    color: #fbbf24;
+}
+
+.kpi-en-proceso {
+    border-left: 3px solid #06b6d4;
+}
+.kpi-en-proceso .kpi-valor {
+    color: #38bdf8;
+}
+
+.kpi-resuelto {
+    border-left: 3px solid #10b981;
+}
+.kpi-resuelto .kpi-valor {
+    color: #34d399;
+}
+
+.kpi-fuerza-mayor {
+    border-left: 3px solid #a855f7;
+}
+.kpi-fuerza-mayor .kpi-valor {
+    color: #c084fc;
+}
+
+.kpi-alerta-pc {
+    border-left: 3px solid #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+.kpi-alerta-pc .kpi-valor {
+    color: #f87171;
+}
+.kpi-alerta-pc:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* Botones de Filtración Rápida de Tickets */
+.btn-filtro-abiertos-principal {
+    background: linear-gradient(135deg, #0d6efd 0%, #0052cc 100%);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.82rem;
+}
+.btn-filtro-abiertos-principal:hover {
+    background: linear-gradient(135deg, #0b5ed7 0%, #0040a8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(13, 110, 253, 0.4);
+    color: #ffffff;
+}
+
+.fila-filtros-rapidos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+}
+
+.btn-filtro-secundario {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.72rem;
+    padding: 0.45rem 0.4rem;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+.btn-filtro-secundario:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
+/* Accesos Compactos de 1 Clic a Formularios */
+.lista-formularios-compacta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.item-formulario-compacto {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    text-decoration: none;
+    color: #e2e8f0;
     transition: all 0.2s ease;
 }
-
-.tarjeta-modulo-offcanvas:hover {
-    background-color: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.2);
+.item-formulario-compacto:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    transform: translateX(3px);
 }
-
-.tarjeta-modulo-offcanvas.modulo-activo {
+.item-formulario-compacto.activo {
     border-color: #3b82f6;
     background-color: rgba(13, 110, 253, 0.15);
     box-shadow: 0 0 10px rgba(13, 110, 253, 0.25);
 }
 
+/* ==========================================================
+ * BOTÓN Y VENTANA MODAL "MÉTRICA"
+ * ========================================================== */
+.tarjeta-boton-metrica-menu {
+    background: rgba(13, 110, 253, 0.08);
+    border: 1px solid rgba(13, 110, 253, 0.25);
+    border-radius: 12px;
+    padding: 0.75rem;
+}
 
+.btn-abrir-metrica {
+    transition: all 0.25s ease;
+    letter-spacing: 0.5px;
+}
+.btn-abrir-metrica:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(13, 110, 253, 0.45) !important;
+}
 
+/* Ventana Modal de Métricas */
+.modal-dashboard-metricas-estilo {
+    background-color: #0f172a !important; /* Slate 900 corporativo */
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+}
 
+/* Tarjetas KPI dentro de la ventana Modal */
+.tarjeta-kpi-modal {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    text-decoration: none;
+    color: #f8fafc;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 85px;
+}
+
+.tarjeta-kpi-modal:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.22);
+    transform: translateY(-2px);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}

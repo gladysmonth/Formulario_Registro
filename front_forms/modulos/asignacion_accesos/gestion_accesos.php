@@ -8,6 +8,7 @@
 $titulo_pagina = 'Bandeja de Solicitudes de Accesos';
 $pagina_activa = 'accesos_gestion';
 $nivel_ruta = '../../';
+$roles_requeridos = array('admin', 'tecnico');
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
 require_once __DIR__ . '/../../componentes/barra_navegacion.php';

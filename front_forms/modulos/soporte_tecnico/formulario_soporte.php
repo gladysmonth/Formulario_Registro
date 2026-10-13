@@ -11,6 +11,8 @@ $nivel_ruta = '../../';
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
 require_once __DIR__ . '/../../componentes/barra_navegacion.php';
+
+$es_tecnico_o_admin = es_personal_tecnico();
 ?>
 
 <main class="container my-4 my-lg-5">
@@ -35,11 +37,13 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                     Complete los datos del requerimiento o incidente técnico. Los campos marcados con <span class="text-danger">*</span> son obligatorios.
                 </p>
             </div>
+            <?php if ($es_tecnico_o_admin): ?>
             <div>
                 <a href="gestion_tickets.php" class="btn btn-outline-primary btn-sm px-3 py-2">
                     <i class="bi bi-kanban me-1"></i> Ver Panel de Tickets
                 </a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -59,6 +63,7 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
             <!-- SECCIÓN 3: DETALLE DEL PROBLEMA / REQUERIMIENTO -->
             <?php include __DIR__ . '/secciones/seccion_3_detalle_problema.php'; ?>
 
+            <?php if ($es_tecnico_o_admin): ?>
             <!-- INTERRUPTOR PARA ACTIVAR SECCIONES 4, 5 Y 6 (SOPORTE TÉCNICO) -->
             <div class="col-12">
                 <div class="p-3 bg-white border rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
@@ -90,6 +95,7 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                     <?php include __DIR__ . '/secciones/seccion_6_observaciones.php'; ?>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- SECCIÓN: FIRMAS DIGITALES (SOLICITANTE Y DPTO. DE SISTEMAS) -->
             <?php include __DIR__ . '/secciones/seccion_firmas.php'; ?>

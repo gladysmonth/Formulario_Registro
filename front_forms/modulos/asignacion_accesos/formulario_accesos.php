@@ -11,6 +11,8 @@ $nivel_ruta = '../../';
 
 require_once __DIR__ . '/../../componentes/encabezado.php';
 require_once __DIR__ . '/../../componentes/barra_navegacion.php';
+
+$es_tecnico_o_admin = es_personal_tecnico();
 ?>
 
 <main class="container my-4 my-lg-5">
@@ -35,11 +37,13 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
                     COSMOL R.L. &bull; Solicitud formal de creación de usuarios, perfiles y permisos en plataformas ERP SAI, NETCOB y sistemas corporativos.
                 </p>
             </div>
+            <?php if ($es_tecnico_o_admin): ?>
             <div class="d-flex gap-2">
                 <a href="gestion_accesos.php" class="btn btn-outline-secondary btn-sm px-3 py-2">
                     <i class="bi bi-card-checklist me-1"></i> Bandeja de Solicitudes
                 </a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -60,8 +64,10 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
         <!-- 4. Requerimientos de Accesos -->
         <?php require_once __DIR__ . '/secciones/seccion_4_requerimientos.php'; ?>
 
-        <!-- 5. Departamento de Sistemas (Atención y Comentarios) -->
-        <?php require_once __DIR__ . '/secciones/seccion_5_atencion_sistemas.php'; ?>
+        <!-- 5. Departamento de Sistemas (Atención y Comentarios - Exclusivo Técnico/Admin) -->
+        <?php if ($es_tecnico_o_admin): ?>
+            <?php require_once __DIR__ . '/secciones/seccion_5_atencion_sistemas.php'; ?>
+        <?php endif; ?>
 
         <!-- 6. Firmas y Validaciones Institucionales (Triple Firma) -->
         <?php require_once __DIR__ . '/secciones/seccion_firmas.php'; ?>

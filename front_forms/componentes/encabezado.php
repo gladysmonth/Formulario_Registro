@@ -8,8 +8,21 @@ if (!isset($titulo_pagina)) {
     $titulo_pagina = 'Portal de Formularios de Registro';
 }
 
+require_once __DIR__ . '/control_sesion.php';
+
 // Ruta base relativa al root de front_forms
 $ruta_base = isset($nivel_ruta) ? $nivel_ruta : '';
+
+// Si la vista no define $omitir_control_sesion = true, exigir login obligatorio o rol específico
+if (!isset($omitir_control_sesion) || !$omitir_control_sesion) {
+    if (isset($roles_requeridos) && is_array($roles_requeridos)) {
+        requerir_rol($roles_requeridos, $ruta_base);
+    } else {
+        requerir_autenticacion($ruta_base);
+    }
+}
+
+$usuario_actual_sesion = obtener_usuario_sesion();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -47,6 +60,7 @@ $ruta_base = isset($nivel_ruta) ? $nivel_ruta : '';
     ?>
     <script>
         window.URL_BACKEND = <?php echo json_encode($url_backend_final); ?>;
+        window.USUARIO_SESION = <?php echo json_encode($usuario_actual_sesion); ?>;
     </script>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">

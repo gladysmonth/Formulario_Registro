@@ -4,6 +4,13 @@
  * Formulario de Soporte Técnico
  * Compatible con PHP 7.3
  */
+$usuario_actual_sesion = function_exists('obtener_usuario_sesion') ? obtener_usuario_sesion() : null;
+$nombre_precargado = ($usuario_actual_sesion && !empty($usuario_actual_sesion['nombre_completo'])) 
+    ? $usuario_actual_sesion['nombre_completo'] 
+    : '';
+$depto_precargado = ($usuario_actual_sesion && !empty($usuario_actual_sesion['departamento'])) 
+    ? $usuario_actual_sesion['departamento'] 
+    : '';
 ?>
 <div class="col-12">
     <div class="tarjeta-formulario p-4">
@@ -22,7 +29,8 @@
                 </label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
-                    <input type="text" class="form-control" id="nombre_solicitante" name="nombre_solicitante" placeholder="Ej: Juan Pérez Martínez" required>
+                    <input type="text" class="form-control" id="nombre_solicitante" name="nombre_solicitante" 
+                           placeholder="Ej: Juan Pérez Martínez" value="<?php echo htmlspecialchars($nombre_precargado); ?>" required>
                 </div>
             </div>
 
@@ -42,7 +50,9 @@
                 </label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-secondary"><i class="bi bi-building"></i></span>
-                    <input type="text" class="form-control" id="departamento_area" name="departamento_area" list="listaDepartamentos" placeholder="Seleccione o escriba..." required>
+                    <input type="text" class="form-control" id="departamento_area" name="departamento_area" 
+                           list="listaDepartamentos" placeholder="Seleccione o escriba..." 
+                           value="<?php echo htmlspecialchars($depto_precargado); ?>" required>
                 </div>
                 <datalist id="listaDepartamentos">
                     <option value="Administración">
