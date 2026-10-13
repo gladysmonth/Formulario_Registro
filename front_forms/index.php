@@ -62,7 +62,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h4 fw-bold mb-0">Módulos del Sistema</h2>
         <span class="badge bg-secondary-subtle text-dark border">
-            <?php echo $es_tecnico_o_admin ? '4 Formularios + 1 Auditoría PC' : '4 Formularios Activos'; ?>
+            <?php echo $es_tecnico_o_admin ? '4 Formularios + 1 Auditoría PC' : '3 Formularios de Solicitud'; ?>
         </span>
     </div>
 
@@ -94,13 +94,14 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-auto pt-2">
-                        <a href="modulos/soporte_tecnico/formulario_soporte.php" class="btn btn-primary flex-grow-1 fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i> Llenar Formulario
-                        </a>
+                    <div class="mt-auto pt-2">
                         <?php if ($es_tecnico_o_admin): ?>
-                        <a href="modulos/soporte_tecnico/gestion_tickets.php" class="btn btn-outline-primary" title="Bandeja de Gestión">
-                            <i class="bi bi-kanban"></i>
+                        <a href="modulos/soporte_tecnico/gestion_tickets.php" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-kanban me-1"></i> Bandeja de Gestión
+                        </a>
+                        <?php else: ?>
+                        <a href="modulos/soporte_tecnico/formulario_soporte.php" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Llenar Solicitud
                         </a>
                         <?php endif; ?>
                     </div>
@@ -116,9 +117,15 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         <div class="p-3 bg-success-subtle text-success rounded-3">
                             <i class="bi bi-tools fs-2"></i>
                         </div>
+                        <?php if ($es_tecnico_o_admin): ?>
                         <span class="badge bg-success px-3 py-2 rounded-pill">
                             <i class="bi bi-check-circle-fill me-1"></i> Activo y Disponible
                         </span>
+                        <?php else: ?>
+                        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill border">
+                            <i class="bi bi-lock-fill me-1"></i> Uso Técnico
+                        </span>
+                        <?php endif; ?>
                     </div>
 
                     <h3 class="h5 fw-bold text-dark mb-2">2. Mantenimiento Preventivo (Equipos)</h3>
@@ -135,14 +142,15 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-auto pt-2">
-                        <a href="modulos/mantenimiento_preventivo/formulario_mantenimiento.php" class="btn btn-success text-white flex-grow-1 fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i> Registrar Mantenimiento
-                        </a>
+                    <div class="mt-auto pt-2">
                         <?php if ($es_tecnico_o_admin): ?>
-                        <a href="modulos/mantenimiento_preventivo/gestion_mantenimientos.php" class="btn btn-outline-success" title="Bandeja de Mantenimientos">
-                            <i class="bi bi-card-checklist"></i>
+                        <a href="modulos/mantenimiento_preventivo/formulario_mantenimiento.php" class="btn btn-success text-white w-100 fw-semibold">
+                            <i class="bi bi-tools me-1"></i> Registrar Mantenimiento
                         </a>
+                        <?php else: ?>
+                        <button class="btn btn-outline-secondary w-100 fw-semibold" disabled title="Ficha completada por técnicos de soporte">
+                            <i class="bi bi-shield-lock me-1"></i> Exclusivo para Personal Técnico
+                        </button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -176,13 +184,14 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-auto pt-2">
-                        <a href="modulos/registro_incidencias/formulario_incidencias.php" class="btn btn-danger flex-grow-1 fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i> Reportar Incidencia
-                        </a>
+                    <div class="mt-auto pt-2">
                         <?php if ($es_tecnico_o_admin): ?>
-                        <a href="modulos/registro_incidencias/gestion_incidencias.php" class="btn btn-outline-danger" title="Bandeja de Incidencias">
-                            <i class="bi bi-card-checklist"></i>
+                        <a href="modulos/registro_incidencias/gestion_incidencias.php" class="btn btn-danger w-100 fw-semibold">
+                            <i class="bi bi-card-checklist me-1"></i> Bandeja de Incidencias
+                        </a>
+                        <?php else: ?>
+                        <a href="modulos/registro_incidencias/formulario_incidencias.php" class="btn btn-danger w-100 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Llenar Solicitud
                         </a>
                         <?php endif; ?>
                     </div>
@@ -217,13 +226,14 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-auto pt-2">
-                        <a href="modulos/asignacion_accesos/formulario_accesos.php" class="btn btn-primary flex-grow-1 fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i> Solicitar Acceso
-                        </a>
+                    <div class="mt-auto pt-2">
                         <?php if ($es_tecnico_o_admin): ?>
-                        <a href="modulos/asignacion_accesos/gestion_accesos.php" class="btn btn-outline-primary" title="Bandeja de Accesos">
-                            <i class="bi bi-card-checklist"></i>
+                        <a href="modulos/asignacion_accesos/gestion_accesos.php" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-card-checklist me-1"></i> Bandeja de Accesos
+                        </a>
+                        <?php else: ?>
+                        <a href="modulos/asignacion_accesos/formulario_accesos.php" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Llenar Solicitud
                         </a>
                         <?php endif; ?>
                     </div>

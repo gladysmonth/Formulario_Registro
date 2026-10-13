@@ -14,9 +14,10 @@
         </div>
     </div>
 
+    <?php $es_tecnico_o_admin = function_exists('es_personal_tecnico') ? es_personal_tecnico() : false; ?>
     <div class="row g-4">
         <!-- 1. SOLICITANTE -->
-        <div class="col-lg-4 col-md-6">
+        <div class="<?php echo $es_tecnico_o_admin ? 'col-lg-4 col-md-6' : 'col-md-6'; ?>">
             <div class="tarjeta-firma h-100 d-flex flex-column justify-content-between">
                 <div class="contenedor-lienzo flex-grow-1">
                     <canvas id="canvasFirmaSolicitanteAcc" class="lienzo-firma"></canvas>
@@ -32,7 +33,7 @@
         </div>
 
         <!-- 2. AUTORIZA (JEFATURA) -->
-        <div class="col-lg-4 col-md-6">
+        <div class="<?php echo $es_tecnico_o_admin ? 'col-lg-4 col-md-6' : 'col-md-6'; ?>">
             <div class="tarjeta-firma h-100 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -61,7 +62,8 @@
             </div>
         </div>
 
-        <!-- 3. DPTO. DE SISTEMAS -->
+        <?php if ($es_tecnico_o_admin): ?>
+        <!-- 3. DPTO. DE SISTEMAS (SÓLO PERSONAL TÉCNICO) -->
         <div class="col-lg-4 col-md-12">
             <div class="tarjeta-firma h-100 d-flex flex-column justify-content-between">
                 <div>
@@ -86,5 +88,6 @@
                 </div>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </div>

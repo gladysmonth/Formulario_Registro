@@ -72,34 +72,41 @@
 
 ---
 
-### FASE 4: Frontend - Menú Desplegable Izquierdo y Ventana Modal "MÉTRICA" [COMPLETADA]
-* **Objetivo:** Disponer el menú lateral en el margen izquierdo (`offcanvas-start`) y centralizar el dashboard de estadísticas en una ventana modal emergente accesible mediante el botón **"MÉTRICA"**.
+### FASE 4: Frontend - Menú Desplegable Izquierdo y Pantalla Dedicada "MÉTRICA" (`metricas.php`) [COMPLETADA]
+* **Objetivo:** Disponer el menú lateral en el margen izquierdo (`offcanvas-start`) y centralizar el dashboard de estadísticas en una pantalla completa dedicada con su propia dirección URL (`front_forms/metricas.php`), accesible mediante el botón **"MÉTRICA"** sin ventanas emergentes.
 * **Archivos Involucrados:**
-  - `front_forms/componentes/barra_navegacion.php` (botón de menú en lado izquierdo, panel lateral izquierdo y modal `#modalDashboardMetricas`).
-  - `front_forms/recursos/js/cliente_api.js` (método `obtenerMetricasDashboard()` y listener de actualización en eventos `show.bs.modal`).
-  - `front_forms/recursos/css/estilos_personalizados.css` (estilos para botón MÉTRICA y tarjetas de KPIs en modal).
+  - `front_forms/metricas.php` (nueva pantalla completa con URL propia `/metricas.php`, KPIs en vivo, filtración rápida y accesos a módulos).
+  - `front_forms/componentes/barra_navegacion.php` (botón de menú en lado izquierdo, panel lateral izquierdo y enlaces directos a `metricas.php`).
+  - `front_forms/recursos/js/cliente_api.js` (método `obtenerMetricasDashboard()` y actualización de indicadores en vivo).
+  - `front_forms/recursos/css/estilos_personalizados.css` (estilos para botón MÉTRICA y diseño de panel).
 * **Estructura Implementada:**
   1. **Navegación Izquierda:**
      - Botón de 3 Rayas (`☰ Menú`) posicionado en el extremo izquierdo del navbar en todas las vistas.
      - Panel lateral deslizante desde la izquierda (`offcanvas-start`).
-     - Botón destacado **"MÉTRICA"** con badge "Abrir Ventana" dentro del menú lateral (y botón de acceso directo en navbar para técnicos).
-  2. **Ventana Modal Emergente "MÉTRICA":**
+     - Botón destacado **"MÉTRICA"** que navega directamente a `/metricas.php` (también presente en la barra superior para personal técnico).
+  2. **Pantalla Dedicada "MÉTRICA" (`/metricas.php`):**
+     - **Dirección propia:** Permite acceso directo y navegación estándar en el navegador sin popups.
      - **KPIs en tiempo real:** Tickets Abiertos/Pendientes (ámbar), En Proceso (celeste), Resueltos (verde), Fuerza Mayor (púrpura), y Equipos con Alertas SMART/CPU/Defender (rojo).
      - **Bandeja de Tickets con Filtración Rápida:** Enlace principal a Tickets Abiertos prioritarios, y botones secundarios para filtrar por estado con 1 clic.
+     - **Auditoría de Hardware:** Tarjeta destacada con alerta de equipos y enlace a telemetría.
   3. **Accesos Compactos a Formularios:**
      - Enlaces directos a los 4 formularios activos (+ telemetría técnica) con botones para diligenciar y gestionar.
      - Botón inferior hacia el Catálogo Detallado.
 
 ---
 
-### FASE 5: Limpieza de Tarjetas y Simplificación de Formularios
+### FASE 5: Limpieza de Tarjetas y Simplificación de Formularios (COMPLETADA)
 * **Objetivo:** Quitar menús confusos dentro de las tarjetas del catálogo y adaptar los formularios según el rol del usuario conectado.
+* **Estado:** `COMPLETADA`
 * **Archivos Involucrados:**
-  - `front_forms/index.php` (limpieza de tarjetas).
-  - `front_forms/modulos/soporte_tecnico/formulario_soporte.php` (ocultar campos técnicos a solicitantes).
-  - `front_forms/modulos/mantenimiento_preventivo/formulario_mantenimiento.php` (restringir a técnicos).
-  - `front_forms/modulos/registro_incidencias/formulario_incidencias.php`.
-  - `front_forms/modulos/asignacion_accesos/formulario_accesos.php`.
+  - `front_forms/index.php`: Un solo botón de acción claro por tarjeta (`Llenar Solicitud` para solicitantes; `Bandeja de Gestión` / `Registrar Mantenimiento` para personal técnico). Mantenimiento Preventivo bloqueado con candado informativo para solicitantes.
+  - `front_forms/modulos/soporte_tecnico/formulario_soporte.php`: Oculta el switch de campos técnicos y la sección de resolución a solicitantes.
+  - `front_forms/modulos/soporte_tecnico/secciones/seccion_3_detalle_problema.php`: Bloque amigable de equipo para solicitantes; buscador e inventario técnico completo para técnicos.
+  - `front_forms/modulos/soporte_tecnico/secciones/seccion_firmas.php`: Oculta la Firma del Dpto. de Sistemas al solicitante (centra la del Solicitante).
+  - `front_forms/modulos/mantenimiento_preventivo/formulario_mantenimiento.php`: Restringido estrictamente a roles `admin` y `tecnico` (`$roles_requeridos`).
+  - `front_forms/modulos/registro_incidencias/secciones/seccion_firmas.php`: Oculta Firma de Sistemas al solicitante.
+  - `front_forms/modulos/asignacion_accesos/secciones/seccion_firmas.php`: Oculta Firma de Sistemas al solicitante, manteniendo Solicitante y Autorización de Jefatura.
+  - `front_forms/recursos/js/formulario_soporte.js`, `formulario_incidencias.js`, `formulario_accesos.js`: Redirección inteligente tras el registro (solicitante vuelve a `index.php`, técnico va a su bandeja de gestión).
 * **Criterio de Limpieza:**
   - En las tarjetas del catálogo: un único botón claro por tarjeta (`Llenar Solicitud` para usuarios normales, o `Registrar Formulario` / acceso a bandeja para técnicos).
   - En los formularios: el solicitante no ve preguntas como *"¿Llenar campos de soporte técnico inmediatamente?"*. El técnico realiza la atención técnica desde la bandeja de gestión.

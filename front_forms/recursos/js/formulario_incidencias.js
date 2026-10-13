@@ -442,8 +442,8 @@ document.addEventListener('DOMContentLoaded', () => {
             detalle_tecnico: detalleTecnico || null,
             fecha_hora_cierre: fechaHoraCierre || null,
             observaciones_recomendaciones: document.getElementById('observaciones_recomendaciones')?.value.trim() || null,
-            firma_responsable_reporte: controlFirmaResponsable.obtenerBase64(),
-            firma_sistemas: controlFirmaSistemas.obtenerBase64()
+            firma_responsable_reporte: controlFirmaResponsable ? controlFirmaResponsable.obtenerBase64() : null,
+            firma_sistemas: (controlFirmaSistemas && controlFirmaSistemas.estaFirmado()) ? controlFirmaSistemas.obtenerBase64() : null
         };
 
         // Estado de carga en botón
@@ -455,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const respuesta = await clienteApi.crearIncidencia(payload);
 
             if (respuesta.exito) {
+                const esPersonalTecnico = window.USUARIO_SESION && (window.USUARIO_SESION.rol === 'admin' || window.USUARIO_SESION.rol === 'tecnico');
                 Swal.fire({
                     icon: 'success',
                     title: '¡Incidencia Registrada!',
@@ -467,17 +468,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `,
                     showCancelButton: true,
-                    confirmButtonText: '<i class="bi bi-card-checklist me-1"></i> Ir a Bandeja de Incidencias',
+                    confirmButtonText: esPersonalTecnico
+                        ? '<i class="bi bi-card-checklist me-1"></i> Ir a Bandeja de Incidencias'
+                        : '<i class="bi bi-house me-1"></i> Volver al Catálogo',
                     cancelButtonText: '<i class="bi bi-plus-circle me-1"></i> Nuevo Reporte',
                     confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d'
                 }).then((resultado) => {
                     if (resultado.isConfirmed) {
-                        window.location.href = 'gestion_incidencias.php';
+                        window.location.href = esPersonalTecnico ? 'gestion_incidencias.php' : '../../index.php';
                     } else {
                         formRI.reset();
-                        controlFirmaResponsable.limpiar();
-                        controlFirmaSistemas.limpiar();
+                        if (controlFirmaResponsable) controlFirmaResponsable.limpiar();
+                        if (controlFirmaSistemas) controlFirmaSistemas.limpiar();
                         checkboxesNaturaleza.forEach(ch => {
                             ch.checked = false;
                             ch.dispatchEvent(new Event('change'));

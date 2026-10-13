@@ -23,12 +23,13 @@
             <div class="form-text">Sea lo más específico posible para agilizar el diagnóstico.</div>
         </div>
 
-        <!-- Sub-bloque: Equipo Afectado (Con Catálogo e Inventario) -->
+        <?php if ($es_tecnico_o_admin): ?>
+        <!-- Sub-bloque: Equipo Afectado (Para Personal Técnico: Con Catálogo e Inventario) -->
         <div class="bloque-equipo-afectado">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-laptop text-primary fs-5"></i>
-                    <h3 class="h6 fw-bold mb-0 text-dark">Equipo Afectado <span class="fw-normal text-muted small">(Inventario y Registro)</span></h3>
+                    <h3 class="h6 fw-bold mb-0 text-dark">Equipo Afectado <span class="fw-normal text-muted small">(Inventario y Registro Técnico)</span></h3>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" id="btnLimpiarEquipo" class="btn btn-outline-secondary btn-sm py-0 px-2 d-none" title="Limpiar selección para registrar nuevo">
@@ -134,5 +135,46 @@
                 </label>
             </div>
         </div>
+        <?php else: ?>
+        <!-- Sub-bloque: Equipo Afectado (Para el Solicitante: Preguntas Simples y Humanas) -->
+        <div class="bloque-equipo-afectado p-3 rounded-3 bg-light border">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-laptop text-primary fs-5"></i>
+                <div>
+                    <h3 class="h6 fw-bold mb-0 text-dark">¿En qué equipo ocurre la falla?</h3>
+                    <small class="text-muted">Indique el tipo de equipo para que el técnico acuda con los repuestos o herramientas adecuadas</small>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="tipo_equipo" class="form-label small fw-semibold">Tipo de Equipo</label>
+                    <select class="form-select form-select-sm" id="tipo_equipo" name="tipo_equipo">
+                        <option value="PC de Escritorio" selected>Mi computadora de escritorio actual</option>
+                        <option value="Laptop / Portátil">Laptop institucional</option>
+                        <option value="Impresora / Multifuncional">Impresora / Escáner</option>
+                        <option value="Monitor / Pantalla">Monitor / Pantalla</option>
+                        <option value="Periférico / Otro">Teclado, Mouse o Periférico</option>
+                        <option value="Switch / Router / Red">Teléfono IP / Enlace de Red</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="marca_modelo" class="form-label small fw-semibold">Referencia o Ubicación <span class="text-muted fw-normal">(Opcional)</span></label>
+                    <input type="text" class="form-control form-control-sm" id="marca_modelo" name="marca_modelo" placeholder="Ej: Marca HP, en mi escritorio o nro de oficina">
+                </div>
+            </div>
+
+            <!-- Campos técnicos no solicitados al usuario común (compatibilidad con API) -->
+            <input type="hidden" id="equipo_id" name="equipo_id" value="">
+            <input type="hidden" id="codigo_activo" name="codigo_activo" value="">
+            <input type="hidden" id="numero_serie" name="numero_serie" value="">
+            <input type="hidden" id="sistema_operativo" name="sistema_operativo" value="">
+            <input type="hidden" id="area_equipo" name="area" value="<?php echo htmlspecialchars(isset($usuario_actual_sesion['departamento']) ? $usuario_actual_sesion['departamento'] : ''); ?>">
+            <input type="hidden" id="encargado_equipo" name="encargado" value="<?php echo htmlspecialchars(isset($usuario_actual_sesion['nombre_completo']) ? $usuario_actual_sesion['nombre_completo'] : ''); ?>">
+            <input type="hidden" id="centro_costo" name="centro_costo" value="">
+            <input type="hidden" id="guardar_en_inventario" name="guardar_en_inventario" value="0">
+        </div>
+        <?php endif; ?>
     </div>
 </div>

@@ -321,25 +321,17 @@ const clienteApi = {
     }
 };
 
-// Inicialización de salud y oyentes del Menú Lateral y Ventana de Métricas
+// Inicialización de salud y oyentes del Menú Lateral y Pantalla de Métricas
 document.addEventListener('DOMContentLoaded', () => {
     clienteApi.verificarSaludBackend();
 
-    // Actualización de KPIs del Menú Lateral Offcanvas
+    // Actualización de KPIs en el Dashboard de Métricas y Menú Lateral
     const offcanvasEl = document.getElementById('menuFormulariosLateral');
     if (offcanvasEl) {
         // Carga al inicio
         clienteApi.actualizarKpisMenuOffcanvas();
         // Carga fresca cada vez que se abre el menú lateral
         offcanvasEl.addEventListener('show.bs.offcanvas', () => {
-            clienteApi.actualizarKpisMenuOffcanvas();
-        });
-    }
-
-    // Actualización de KPIs al abrir la Ventana Modal de "MÉTRICA"
-    const modalMetricasEl = document.getElementById('modalDashboardMetricas');
-    if (modalMetricasEl) {
-        modalMetricasEl.addEventListener('show.bs.modal', () => {
             clienteApi.actualizarKpisMenuOffcanvas();
         });
     }

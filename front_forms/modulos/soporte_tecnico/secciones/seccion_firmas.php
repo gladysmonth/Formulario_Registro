@@ -23,9 +23,10 @@
             </div>
         </div>
 
+        <?php $es_tecnico_o_admin = function_exists('es_personal_tecnico') ? es_personal_tecnico() : false; ?>
         <div class="row g-4 pt-2">
             <!-- CUADRO 1: FIRMA DEL SOLICITANTE -->
-            <div class="col-md-6">
+            <div class="<?php echo $es_tecnico_o_admin ? 'col-md-6' : 'col-md-8 mx-auto'; ?>">
                 <div class="tarjeta-firma p-3 rounded-3 border bg-light h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -53,7 +54,8 @@
                 </div>
             </div>
 
-            <!-- CUADRO 2: FIRMA DEL DPTO. DE SISTEMAS -->
+            <?php if ($es_tecnico_o_admin): ?>
+            <!-- CUADRO 2: FIRMA DEL DPTO. DE SISTEMAS (SÓLO TÉCNICOS) -->
             <div class="col-md-6">
                 <div class="tarjeta-firma p-3 rounded-3 border bg-light h-100 d-flex flex-column justify-content-between">
                     <div>
@@ -81,6 +83,7 @@
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

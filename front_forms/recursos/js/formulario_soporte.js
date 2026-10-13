@@ -358,13 +358,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         `,
                         icon: 'success',
                         showCancelButton: true,
-                        confirmButtonText: '<i class="bi bi-kanban me-1"></i> Ir al Panel de Gestión',
+                        confirmButtonText: (window.USUARIO_SESION && (window.USUARIO_SESION.rol === 'admin' || window.USUARIO_SESION.rol === 'tecnico'))
+                            ? '<i class="bi bi-kanban me-1"></i> Ir al Panel de Gestión'
+                            : '<i class="bi bi-house me-1"></i> Volver al Catálogo',
                         cancelButtonText: '<i class="bi bi-plus-circle me-1"></i> Registrar Otro Ticket',
                         confirmButtonColor: '#0d6efd',
                         cancelButtonColor: '#6c757d'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.href = 'gestion_tickets.php';
+                            const esPersonalTecnico = window.USUARIO_SESION && (window.USUARIO_SESION.rol === 'admin' || window.USUARIO_SESION.rol === 'tecnico');
+                            window.location.href = esPersonalTecnico ? 'gestion_tickets.php' : '../../index.php';
                         } else {
                             formulario.reset();
                             if (firmaSolicitante) firmaSolicitante.limpiar();
