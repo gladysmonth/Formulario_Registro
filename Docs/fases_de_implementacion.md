@@ -45,14 +45,16 @@
   - `back_form/configuracion/respuestas_api.php` (sanitización de BOM UTF-8 y fallback de payload).
   - `back_form/api/auth/login.php` y `perfil.php` (autenticación y perfil de usuario).
   - `back_form/api/auth/listar_tecnicos.php` (GET: lista de técnicos y administradores activos para derivación).
-  - `back_form/api/soporte_tecnico/crear_ticket.php` (RBAC, auto-vinculación con telemetría de PC por MAC/equipo y persistencia de solicitante).
+  - `back_form/api/diagnostico/detectar_mi_pc.php` (GET: auto-detección de PC por IP en red local `REMOTE_ADDR`).
+  - `back_form/api/soporte_tecnico/crear_ticket.php` (RBAC, respaldo por IP del cliente, auto-vinculación con telemetría de PC por MAC/equipo y persistencia de solicitante).
   - `back_form/api/soporte_tecnico/actualizar_ticket.php` (derivación de tickets por administradores, cambio a `en_proceso`, cierre con firma y actualización de diagnósticos).
   - `back_form/api/soporte_tecnico/obtener_ticket.php` (respuesta enriquecida con objeto `telemetria_pc`, `telemetria_actual_en_vivo`, técnicos y `motivo_imposibilidad`).
   - `back_form/api/soporte_tecnico/listar_tickets.php` (filtros `usuario_solicitante_id`, `tecnico_asignado_id`, indicador `tiene_diagnostico` y semáforo de salud de PC).
   - `back_form/api/diagnostico/detalle.php` (inspección de hardware, SMART, Defender, Prefetch e historial cruzado de tickets de la PC).
   - `back_form/api/diagnostico/listar.php` (filtros por estado de salud `critico`/`advertencia`, buscador y métricas globales).
 * **Pruebas Realizadas:**
-  - Creación de ticket con auto-detección del último diagnóstico del equipo verificado en vivo (`diagnostico_id: 6`).
+  - Auto-detección de PC en vivo vía `/api/diagnostico/detectar_mi_pc.php?ip=192.168.11.75` retornando MAC `2C:3B:70:D8:1E:81`, hostname y métricas de salud.
+  - Creación de ticket con auto-detección por IP remota (`SOP-2026-0005`) sin enviar MAC explícita, resolviendo exitosamente `diagnostico_id: 6` y `direccion_mac`.
   - Derivación técnica por Administrador a técnico específico con actualización de trazabilidad (`asignado_por_id: 1`, `tecnico_asignado_id: 2`).
   - Endpoint `obtener_ticket.php` probado retornando el bloque completo de telemetría con alertas de disco y uso de RAM.
   - Endpoint `detalle.php` de telemetría probado retornando el historial cruzado de tickets asociados a la computadora física.

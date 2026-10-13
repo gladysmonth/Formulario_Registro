@@ -108,7 +108,59 @@ try {
         }
     }
 
-    // 4.2. Auto-vinculación de telemetría (último diagnóstico reportado por agente Cosmol)
+    // 4.2. Respaldo por IP del cliente (si no se indicó MAC y no vino vinculada por equipo)
+    if (empty($direccion_mac)) {
+        $ip_cliente = '';
+        if (!empty($datos['ip_cliente'])) {
+            $ip_cliente = trim($datos['ip_cliente']);
+        } elseif (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            $ip_cliente = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $partes_ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip_cliente = trim($partes_ip[0]);
+        } elseif (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+            $ip_cliente = trim($_SERVER['HTTP_X_REAL_IP']);
+        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+            $ip_cliente = trim($_SERVER['REMOTE_ADDR']);
+        }
+
+        if ($ip_cliente === '::1') {
+            $ip_cliente = '127.0.0.1';
+        }
+
+        if (!empty($ip_cliente)) {
+            // Buscar si hay diagnóstico previo con esa IP local
+            $stmt_ip = $conexion->prepare("
+                SELECT d.id AS diagnostico_id, d.direccion_mac, d.equipo_id,
+                       eq.marca_modelo, eq.sistema_operativo, eq.numero_serie, eq.tipo_equipo
+                FROM historial_diagnosticos d
+                LEFT JOIN equipos_inventario eq ON eq.id = d.equipo_id OR eq.direccion_mac = d.direccion_mac
+                WHERE d.ip_local = :ip
+                ORDER BY d.fecha_diagnostico DESC
+                LIMIT 1
+            ");
+            $stmt_ip->execute(array(':ip' => $ip_cliente));
+            $hallado_ip = $stmt_ip->fetch(PDO::FETCH_ASSOC);
+
+            if ($hallado_ip) {
+                $direccion_mac = $hallado_ip['direccion_mac'];
+                if (empty($diagnostico_id)) {
+                    $diagnostico_id = (int)$hallado_ip['diagnostico_id'];
+                }
+                if (empty($equipo['equipo_id']) && !empty($hallado_ip['equipo_id'])) {
+                    $equipo['equipo_id'] = (int)$hallado_ip['equipo_id'];
+                }
+                if (empty($equipo['marca_modelo']) && !empty($hallado_ip['marca_modelo'])) {
+                    $equipo['marca_modelo'] = $hallado_ip['marca_modelo'];
+                }
+                if (empty($equipo['sistema_operativo']) && !empty($hallado_ip['sistema_operativo'])) {
+                    $equipo['sistema_operativo'] = $hallado_ip['sistema_operativo'];
+                }
+            }
+        }
+    }
+
+    // 4.3. Auto-vinculación de telemetría (último diagnóstico reportado por agente Cosmol)
     if (empty($diagnostico_id) && (!empty($direccion_mac) || !empty($equipo['equipo_id']))) {
         $stmt_diag = $conexion->prepare("
             SELECT id, direccion_mac 
@@ -119,10 +171,10 @@ try {
             LIMIT 1
         ");
         $stmt_diag->execute(array(
-            ':mac'   => $direccion_mac ?: '',
-            ':eq_id' => (int)($equipo['equipo_id'] ?? 0)
+            ':mac'   => $direccion_mac ? $direccion_mac : '',
+            ':eq_id' => !empty($equipo['equipo_id']) ? (int)$equipo['equipo_id'] : 0
         ));
-        $diag_encontrado = $stmt_diag->fetch();
+        $diag_encontrado = $stmt_diag->fetch(PDO::FETCH_ASSOC);
         if ($diag_encontrado) {
             $diagnostico_id = (int)$diag_encontrado['id'];
             if (empty($direccion_mac)) {

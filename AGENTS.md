@@ -351,6 +351,7 @@ El sistema integra telemetría desatendida desde las PCs institucionales mediant
   - `recibir.php` (POST): Recibe payload JSON del agente (`metadatos`, `resumen_salud`, `hardware`, `software_y_seguridad`).
   - `listar.php` (GET): Retorna lista consolidada de equipos auditados desde `vista_ultimo_diagnostico_pc`.
   - `detalle.php` (GET): Retorna el historial cronológico y último diagnóstico detallado de una PC por dirección MAC.
+  - `detectar_mi_pc.php` (GET): Auto-detecta en vivo el equipo del usuario a través de su IP en la red local (`REMOTE_ADDR`), retornando MAC, Hostname y métricas de salud.
 - **Frontend:** `front_forms/modulos/diagnostico/`
   - `monitoreo_equipos.php`: Vista de tablero con tarjetas de salud, filtros y contadores de alerta.
   - `detalle_equipo.php`: Vista de inspección profunda (CPU, RAM, discos con SMART, Prefetch y Defender).

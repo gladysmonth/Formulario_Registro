@@ -175,15 +175,106 @@ Este formulario es una **Ficha Técnica de Servicio Especializado**.
 
 ---
 
-## 6. Catálogo de Endpoints Backend Disponibles para el Frontend
+---
+
+## 6. Detección Automática de Equipos (Opción B: IP en Red Local)
+
+Para evitar que el usuario deba conocer o tipear su Dirección MAC, Número de Serie o datos de hardware:
+
+### 6.1. Endpoint de Auto-Detección: `GET /api/diagnostico/detectar_mi_pc.php`
+Al cargar el formulario de soporte técnico (`formulario_soporte.php`), el frontend puede realizar una petición silenciosa:
+```javascript
+// Al iniciar el formulario:
+fetch('/api/diagnostico/detectar_mi_pc.php')
+  .then(res => res.json())
+  .then(res => {
+    if (res.exito && res.datos.detectado) {
+      // Guardar de forma oculta en el formulario
+      document.getElementById('input_direccion_mac').value = res.datos.direccion_mac;
+      document.getElementById('input_diagnostico_id').value = res.datos.diagnostico_id;
+      
+      // Mostrar al usuario una alerta visual amigable:
+      // "✓ Computadora identificada automáticamente: [Hostname] (IP: [IP])"
+      console.log('PC identificada:', res.datos.hostname, res.datos.direccion_mac);
+    }
+  });
+```
+
+#### Respuesta si la PC fue identificada (`200 OK`):
+```json
+{
+  "exito": true,
+  "mensaje": "Equipo detectado exitosamente por IP.",
+  "datos": {
+    "detectado": true,
+    "ip": "192.168.11.75",
+    "direccion_mac": "2C:3B:70:D8:1E:81",
+    "hostname": "AIREYU",
+    "usuario_windows": "Aireyu\\airey",
+    "diagnostico_id": 6,
+    "equipo_id": 4,
+    "codigo_activo": "",
+    "marca_modelo": "HP 8A50",
+    "sistema_operativo": "Windows 10/11",
+    "estado_salud_general": "advertencia",
+    "metricas_salud": {
+      "temperatura_cpu": null,
+      "uso_cpu_porcentaje": 30.0,
+      "uso_ram_porcentaje": 81.9,
+      "espacio_libre_c_gb": 12.4,
+      "salud_disco_smart": "OK",
+      "antivirus_activo": true,
+      "amenazas_activas": 0
+    },
+    "fecha_ultimo_diagnostico": "2026-10-12 21:25:03"
+  }
+}
+```
+
+#### Respaldo en Backend si el Frontend no envía la MAC:
+Incluso si el frontend no llamara al endpoint o el navegador estuviera en un entorno estricto, al ejecutar `POST /api/soporte_tecnico/crear_ticket.php` el backend examina automáticamente la IP remota del cliente (`REMOTE_ADDR`), vinculando la `direccion_mac` y el `diagnostico_id` sin intervención humana.
+
+---
+
+## 7. Navegación al Historial de la PC desde la Bandeja de Tickets
+
+En la lista de tickets (`GET /api/soporte_tecnico/listar_tickets.php`), cada registro incluye:
+- `ticket.direccion_mac`: La MAC física del equipo (ej. `"2C:3B:70:D8:1E:81"`).
+- `ticket.tiene_diagnostico`: Booleano (`true` o `false`).
+- `ticket.estado_salud_pc`: Estado de salud (`"bueno"`, `"advertencia"`, `"critico"` o `null`).
+
+### ¿Cómo habilitar el botón hacia la telemetría en la tabla?
+Cuando la desarrolladora pinte la tabla de tickets:
+```javascript
+// Si el ticket tiene direccion_mac vinculada:
+if (ticket.direccion_mac) {
+    botonTelemetria = `
+        <a href="../diagnostico/detalle_equipo.php?mac=${encodeURIComponent(ticket.direccion_mac)}" 
+           class="btn btn-sm btn-outline-info" 
+           title="Ver historial de telemetría y diagnósticos de esta PC">
+           🖥️ Historial PC
+        </a>
+    `;
+} else {
+    botonTelemetria = `<span class="text-muted small">Sin equipo PC</span>`;
+}
+```
+Al hacer clic, el técnico o administrador viaja directamente a la vista de inspección profunda de esa máquina (`detalle_equipo.php?mac=...`), donde podrá ver sus discos, SMART, aplicaciones Prefetch, antivirus y todos los tickets que ha tenido en su historia.
+
+---
+
+## 8. Catálogo Completo de Endpoints Backend Disponibles
 
 | Método | Endpoint Backend | Parámetros Clave | Uso en Frontend |
 | :---: | :--- | :--- | :--- |
+| `GET` | `/api/diagnostico/detectar_mi_pc.php` | Opcional: `?ip=...` | Auto-detectar la PC del solicitante por su IP en red local. |
 | `GET` | `/api/auth/listar_tecnicos.php` | Ninguno | Poblar el `<select>` de técnicos disponibles para derivación. |
-| `POST` | `/api/soporte_tecnico/crear_ticket.php` | Payload simplificado de cliente | Envío del formulario de nuevo ticket por el usuario. |
+| `POST` | `/api/soporte_tecnico/crear_ticket.php` | Payload de cliente (con o sin MAC) | Envío del formulario de nuevo ticket por el usuario. |
 | `GET` | `/api/soporte_tecnico/listar_tickets.php` | `?usuario_solicitante_id={id}` | Listar la bandeja *"Mis Tickets"* del cliente logueado. |
 | `GET` | `/api/soporte_tecnico/listar_tickets.php` | `?tecnico_asignado_id={id}` | Listar la bandeja *"Tickets Asignados a Mí"* del técnico. |
-| `GET` | `/api/soporte_tecnico/obtener_ticket.php` | `?id={id}` o `?codigo={codigo}` | Cargar el modal de detalle con la telemetría resumida. |
+| `GET` | `/api/soporte_tecnico/obtener_ticket.php` | `?id={id}` o `?codigo={codigo}` | Cargar el modal de detalle con la telemetría y datos cruzados. |
 | `POST` | `/api/soporte_tecnico/actualizar_ticket.php` | `id`, `tecnico_asignado_id`, etc. | Derivar, atender o resolver ticket desde el modal. |
 | `GET` | `/api/diagnostico/listar.php` | `?estado_salud=...&buscar=...` | Tablero de monitoreo de PCs (exclusivo para técnicos). |
 | `GET` | `/api/diagnostico/detalle.php` | `?mac={MAC}` | Ficha profunda de la PC con su historial de tickets. |
+| `POST` | `/api/diagnostico/recibir.php` | Payload JSON del agente | Recepción de telemetría desatendida desde PowerShell. |
+
