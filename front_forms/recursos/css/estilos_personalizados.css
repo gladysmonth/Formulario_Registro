@@ -648,6 +648,12 @@ body {
     background-color: rgba(13, 110, 253, 0.15);
     box-shadow: 0 0 10px rgba(13, 110, 253, 0.25);
 }
+.link-nombre-formulario {
+    transition: color 0.2s ease;
+}
+.item-formulario-compacto:hover .link-nombre-formulario {
+    color: #38bdf8 !important;
+}
 
 /* ==========================================================
  * BOTÓN Y VENTANA MODAL "MÉTRICA"

@@ -263,8 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const respuesta = await clienteApi.crearSolicitudAccesos(payload);
                 if (respuesta.exito) {
                     clienteApi.mostrarToast('¡Solicitud de accesos registrada con éxito!', 'exito');
+                    const esPersonalTecnico = window.USUARIO_SESION && (window.USUARIO_SESION.rol === 'admin' || window.USUARIO_SESION.rol === 'tecnico');
                     setTimeout(() => {
-                        window.location.href = 'gestion_accesos.php';
+                        window.location.href = esPersonalTecnico ? 'gestion_accesos.php' : '../../index.php';
                     }, 1200);
                 } else {
                     alertaValidacion.innerHTML = `<strong>Error del servidor:</strong> ${respuesta.mensaje || 'No se pudo guardar el registro.'}`;

@@ -129,71 +129,40 @@ foreach ($modulos_sistema as $clave => $mod) {
 <?php if ($pagina_activa === 'inicio'): ?>
 <!-- Barra de Navegación para el Portal Central (Catálogo de Formularios) -->
 <nav class="navbar navbar-dark bg-dark shadow-sm sticky-top py-2 py-md-3">
-    <div class="container-fluid px-lg-4 d-flex align-items-center justify-content-between">
-        <!-- Izquierda: Botón Menú 3 Rayas (☰) y Marca Principal -->
-        <div class="d-flex align-items-center gap-2 gap-md-3">
+    <div class="container-fluid px-3 px-lg-4 d-flex align-items-center justify-content-between">
+        <!-- Izquierda: Botón Menú 3 Rayas (☰) -->
+        <div class="d-flex align-items-center" style="min-width: 90px;">
             <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuFormulariosLateral" aria-controls="menuFormulariosLateral" title="Abrir Menú Lateral">
                 <i class="bi bi-list fs-5"></i>
                 <span class="d-none d-md-inline small fw-semibold">Menú</span>
             </button>
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 mb-0 text-white text-decoration-none" href="<?php echo $ruta_base; ?>index.php">
-                <span class="badge bg-primary p-2 rounded-3">
-                    <i class="bi bi-ui-checks-grid fs-4"></i>
-                </span>
-                <span class="fs-4 d-none d-sm-inline">Catálogo de Formularios <span class="badge bg-secondary fs-6 fw-normal align-middle">Cosmol R.L.</span></span>
-                <span class="fs-5 d-inline d-sm-none">Cosmol R.L.</span>
-            </a>
         </div>
 
-        <!-- Derecha: Botón Directo MÉTRICA y Dropdown de Usuario -->
-        <div class="d-flex align-items-center gap-2">
-            <?php if ($es_tecnico_o_admin): ?>
-            <!-- Botón Directo a Ventana MÉTRICA -->
-            <button class="btn btn-outline-info btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-info text-info fw-bold rounded-pill" type="button" data-bs-toggle="modal" data-bs-target="#modalDashboardMetricas" title="Abrir Ventana de Métricas y Estadísticas">
-                <i class="bi bi-speedometer2"></i>
-                <span class="d-none d-sm-inline">MÉTRICA</span>
-            </button>
-            <?php endif; ?>
+        <!-- Centro: CATALOGO DETALLADO DE FORMULARIO -->
+        <div class="text-center flex-grow-1 px-2">
+            <span class="navbar-brand mb-0 h1 fw-bold text-white fs-5 fs-md-4 text-uppercase tracking-wider">
+                CATALOGO DETALLADO DE FORMULARIO
+            </span>
+        </div>
 
-            <!-- Dropdown de Usuario -->
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary text-light dropdown-toggle d-flex align-items-center gap-2 py-1 px-3 rounded-pill border-secondary" type="button" id="dropdownUsuarioInicio" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span class="avatar-usuario-nav bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.85rem;">
-                        <i class="bi <?php echo $badge_rol_icono; ?>"></i>
-                    </span>
-                    <span class="d-none d-sm-inline fw-semibold small"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></span>
-                    <span class="badge <?php echo $badge_rol_clase; ?> ms-1" style="font-size: 0.7rem;"><?php echo $badge_rol_texto; ?></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="dropdownUsuarioInicio" style="min-width: 240px;">
-                    <li class="px-3 py-2 bg-light border-bottom">
-                        <div class="fw-bold text-dark small"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></div>
-                        <div class="text-muted" style="font-size: 0.75rem;">
-                            <?php echo htmlspecialchars($depto_usuario_mostrar); ?>
-                            <?php echo $cargo_usuario_mostrar ? ' &bull; ' . htmlspecialchars($cargo_usuario_mostrar) : ''; ?>
-                        </div>
-                        <span class="badge <?php echo $badge_rol_clase; ?> mt-1" style="font-size: 0.68rem;"><?php echo $badge_rol_texto; ?></span>
-                    </li>
-                    <li><hr class="dropdown-divider my-1"></li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 text-danger py-2" href="<?php echo $ruta_base; ?>logout.php">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span class="fw-semibold">Cerrar Sesión</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <!-- Derecha: Botón Salir para todas las vistas -->
+        <div class="d-flex justify-content-end align-items-center" style="min-width: 90px;">
+            <a href="<?php echo $ruta_base; ?>logout.php" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 fw-semibold border-secondary" title="Cerrar sesión institucional">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="d-none d-sm-inline">Salir</span>
+            </a>
         </div>
     </div>
 </nav>
 
 <?php else: ?>
 
-<!-- Barra Superior para Módulos de Formularios -->
+<!-- Barra Superior para Módulos de Formularios y Pantallas Secundarias -->
 <nav class="navbar navbar-dark bg-dark shadow-sm sticky-top py-2 py-md-3">
     <div class="container-fluid px-3 px-lg-4 d-flex align-items-center justify-content-between">
         
         <!-- Izquierda: Botón Menú 3 Rayas (☰) y Botón Catálogo para volver -->
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2" style="min-width: 140px;">
             <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuFormulariosLateral" aria-controls="menuFormulariosLateral" title="Abrir Menú Lateral">
                 <i class="bi bi-list fs-5"></i>
                 <span class="d-none d-md-inline small fw-semibold">Menú</span>
@@ -204,50 +173,23 @@ foreach ($modulos_sistema as $clave => $mod) {
             </a>
         </div>
 
-        <!-- Centro: Título Oficial Único Solicitado -->
-        <div class="text-center px-2">
-            <span class="navbar-brand mb-0 h1 fw-bold text-white fs-5 fs-md-4">
-                Formulario de Registro - <span class="badge bg-secondary fs-6 fw-normal align-middle">Cosmol R.L.</span>
+        <!-- Centro: Título Oficial de la Vista -->
+        <div class="text-center flex-grow-1 px-2 text-truncate">
+            <span class="navbar-brand mb-0 h1 fw-bold text-white fs-5 fs-md-4 text-truncate">
+                <?php if ($pagina_activa === 'metricas'): ?>
+                    Panel de Métrica y Gestión - <span class="badge bg-secondary fs-6 fw-normal align-middle">Cosmol R.L.</span>
+                <?php else: ?>
+                    Formulario de Registro - <span class="badge bg-secondary fs-6 fw-normal align-middle">Cosmol R.L.</span>
+                <?php endif; ?>
             </span>
         </div>
 
-        <!-- Derecha: Botón Directo MÉTRICA y Perfil de Usuario -->
-        <div class="d-flex align-items-center gap-2">
-            <?php if ($es_tecnico_o_admin): ?>
-            <!-- Botón Directo a Ventana MÉTRICA -->
-            <button class="btn btn-outline-info btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-info text-info fw-bold rounded-pill" type="button" data-bs-toggle="modal" data-bs-target="#modalDashboardMetricas" title="Abrir Ventana de Métricas y Estadísticas">
-                <i class="bi bi-speedometer2"></i>
-                <span class="d-none d-sm-inline">MÉTRICA</span>
-            </button>
-            <?php endif; ?>
-
-            <!-- Dropdown Compacto de Usuario -->
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary text-light dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 px-md-3 rounded-pill border-secondary" type="button" id="dropdownUsuarioNav" data-bs-toggle="dropdown" aria-expanded="false" title="<?php echo htmlspecialchars($nombre_usuario_mostrar); ?>">
-                    <span class="avatar-usuario-nav bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 0.8rem;">
-                        <i class="bi <?php echo $badge_rol_icono; ?>"></i>
-                    </span>
-                    <span class="d-none d-md-inline fw-semibold small"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></span>
-                    <span class="badge <?php echo $badge_rol_clase; ?> ms-1 d-none d-sm-inline" style="font-size: 0.68rem;"><?php echo $badge_rol_texto; ?></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="dropdownUsuarioNav" style="min-width: 240px;">
-                    <li class="px-3 py-2 bg-light border-bottom">
-                        <div class="fw-bold text-dark small"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></div>
-                        <div class="text-muted" style="font-size: 0.75rem;">
-                            <?php echo htmlspecialchars($depto_usuario_mostrar); ?>
-                            <?php echo $cargo_usuario_mostrar ? ' &bull; ' . htmlspecialchars($cargo_usuario_mostrar) : ''; ?>
-                        </div>
-                        <span class="badge <?php echo $badge_rol_clase; ?> mt-1" style="font-size: 0.68rem;"><?php echo $badge_rol_texto; ?></span>
-                    </li>
-                    <li><hr class="dropdown-divider my-1"></li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 text-danger py-2" href="<?php echo $ruta_base; ?>logout.php">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span class="fw-semibold">Cerrar Sesión</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <!-- Derecha: Botón Salir para todas las vistas -->
+        <div class="d-flex justify-content-end align-items-center" style="min-width: 140px;">
+            <a href="<?php echo $ruta_base; ?>logout.php" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 fw-semibold border-secondary" title="Cerrar sesión institucional">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="d-none d-sm-inline">Salir</span>
+            </a>
         </div>
 
     </div>
@@ -276,48 +218,24 @@ foreach ($modulos_sistema as $clave => $mod) {
     
     <div class="offcanvas-body p-3 d-flex flex-column justify-content-between">
         <div class="d-flex flex-column gap-3">
-            
-            <!-- Tarjeta de Perfil del Usuario Activo -->
-            <div class="tarjeta-usuario-offcanvas">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="avatar-usuario-nav bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 0.95rem;">
-                            <i class="bi <?php echo $badge_rol_icono; ?>"></i>
-                        </span>
-                        <div>
-                            <div class="fw-bold text-white small lh-1"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></div>
-                            <small class="text-secondary" style="font-size: 0.72rem;"><?php echo htmlspecialchars($depto_usuario_mostrar); ?></small>
-                        </div>
-                    </div>
-                    <span class="badge <?php echo $badge_rol_clase; ?>" style="font-size: 0.68rem;"><?php echo $badge_rol_texto; ?></span>
-                </div>
-                <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
-                    <span class="text-secondary small" style="font-size: 0.72rem;">
-                        <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.45rem;"></i> Sesión Activa
-                    </span>
-                    <a href="<?php echo $ruta_base; ?>logout.php" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">
-                        <i class="bi bi-box-arrow-right me-1"></i> Salir
-                    </a>
-                </div>
-            </div>
 
             <?php if ($es_tecnico_o_admin): ?>
             <!-- ========================================================
-                 BOTÓN DESTACADO PARA ABRIR LA VENTANA MODAL "MÉTRICA"
+                 BOTÓN DESTACADO PARA IR A LA PANTALLA "MÉTRICA"
                  ======================================================== -->
             <div class="tarjeta-boton-metrica-menu">
                 <div class="small text-uppercase text-info fw-bold mb-2 px-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                     <i class="bi bi-speedometer2 me-1"></i> Centro de Estadísticas
                 </div>
-                <button type="button" class="btn btn-primary w-100 py-2 px-3 d-flex align-items-center justify-content-between rounded-3 shadow-sm fw-bold border-0 btn-abrir-metrica" data-bs-toggle="modal" data-bs-target="#modalDashboardMetricas" data-bs-dismiss="offcanvas" title="Abrir ventana de Dashboard y Métricas">
+                <a href="<?php echo $ruta_base; ?>metricas.php" class="btn btn-primary w-100 py-2 px-3 d-flex align-items-center justify-content-between rounded-3 shadow-sm fw-bold border-0 btn-abrir-metrica <?php echo ($pagina_activa === 'metricas') ? 'active' : ''; ?>" title="Ir a la pantalla de Métricas">
                     <span class="d-flex align-items-center gap-2">
                         <i class="bi bi-speedometer2 fs-5 text-warning"></i>
                         <span class="fs-6 letter-spacing-1">MÉTRICA</span>
                     </span>
                     <span class="badge bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.72rem;">
-                        Abrir Ventana <i class="bi bi-box-arrow-up-right ms-1"></i>
+                        Ver Pantalla <i class="bi bi-arrow-right-short ms-1"></i>
                     </span>
-                </button>
+                </a>
             </div>
             <?php endif; ?>
 
@@ -339,28 +257,21 @@ foreach ($modulos_sistema as $clave => $mod) {
                         $es_activo = ($clave === $clave_modulo_activo);
                         ?>
                         <div class="item-formulario-compacto <?php echo $es_activo ? 'activo' : ''; ?>">
-                            <div class="d-flex align-items-center gap-2">
+                            <!-- Enlace directo en el nombre e icono para entrar a rellenar el formulario -->
+                            <a href="<?php echo $mod['url_formulario']; ?>" class="d-flex align-items-center gap-2 text-decoration-none flex-grow-1 text-truncate" title="Rellenar <?php echo htmlspecialchars($mod['nombre']); ?>">
                                 <span class="badge bg-dark border border-secondary text-<?php echo $mod['color']; ?> p-1 rounded" style="font-size: 0.75rem;">
                                     <i class="bi <?php echo $mod['icono']; ?>"></i>
                                 </span>
-                                <div>
-                                    <div class="fw-semibold text-white" style="font-size: 0.78rem;">
-                                        <?php echo htmlspecialchars($mod['numero'] . '. ' . $mod['nombre']); ?>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-1">
-                                <!-- Botón 1 clic para Llenar Formulario -->
-                                <a href="<?php echo $mod['url_formulario']; ?>" class="btn btn-outline-light btn-sm py-0 px-2" style="font-size: 0.7rem;" title="Llenar Formulario">
-                                    <i class="bi bi-pencil-square"></i>
+                                <span class="fw-semibold text-white text-truncate link-nombre-formulario" style="font-size: 0.82rem;">
+                                    <?php echo htmlspecialchars($mod['numero'] . '. ' . $mod['nombre']); ?>
+                                </span>
+                            </a>
+                            <!-- Acceso secundario a bandeja técnica (solo admin/técnicos) -->
+                            <?php if ($es_tecnico_o_admin && $clave !== 'diagnostico'): ?>
+                                <a href="<?php echo $mod['url_gestion']; ?>" class="btn btn-outline-secondary text-light btn-sm py-0 px-2 ms-2" style="font-size: 0.7rem;" title="Bandeja de Gestión">
+                                    <i class="bi bi-card-checklist text-info"></i>
                                 </a>
-                                <!-- Botón 1 clic para Bandeja (solo personal técnico) -->
-                                <?php if ($es_tecnico_o_admin && $clave !== 'diagnostico'): ?>
-                                    <a href="<?php echo $mod['url_gestion']; ?>" class="btn btn-outline-secondary text-light btn-sm py-0 px-2" style="font-size: 0.7rem;" title="Bandeja de Gestión">
-                                        <i class="bi bi-card-checklist text-info"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -368,8 +279,35 @@ foreach ($modulos_sistema as $clave => $mod) {
 
         </div>
 
-        <!-- Pie del Panel Lateral: Enlace al Catálogo Detallado -->
+        <!-- Pie del Panel Lateral: Perfil del Usuario Activo (Ubicado abajo) y Enlace al Catálogo -->
         <div class="border-top border-secondary border-opacity-25 pt-3 mt-3">
+            
+            <!-- Tarjeta de Perfil del Usuario Activo (Reubicada abajo y sin botón salir) -->
+            <div class="tarjeta-usuario-offcanvas p-2 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="avatar-usuario-nav bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 0.95rem;">
+                            <i class="bi <?php echo $badge_rol_icono; ?>"></i>
+                        </span>
+                        <div>
+                            <div class="fw-bold text-white small lh-1"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></div>
+                            <small class="text-secondary" style="font-size: 0.72rem;"><?php echo htmlspecialchars($depto_usuario_mostrar); ?></small>
+                        </div>
+                    </div>
+                    <span class="badge <?php echo $badge_rol_clase; ?>" style="font-size: 0.68rem;"><?php echo $badge_rol_texto; ?></span>
+                </div>
+                <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small" style="font-size: 0.72rem;">
+                        <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.45rem;"></i> Sesión Activa
+                    </span>
+                    <?php if (!empty($cargo_usuario_mostrar)): ?>
+                    <span class="text-secondary small" style="font-size: 0.7rem;">
+                        <?php echo htmlspecialchars($cargo_usuario_mostrar); ?>
+                    </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <a href="<?php echo $ruta_base; ?>index.php" class="btn btn-outline-primary w-100 btn-sm py-2 d-flex align-items-center justify-content-center gap-2">
                 <i class="bi bi-grid-3x3-gap-fill"></i>
                 <span class="fw-semibold">Ver Catálogo Detallado de Formularios</span>
@@ -381,174 +319,3 @@ foreach ($modulos_sistema as $clave => $mod) {
     </div>
 </div>
 
-<?php if ($es_tecnico_o_admin): ?>
-<!-- ====================================================================
-     VENTANA MODAL: DASHBOARD DE MÉTRICAS Y FILTRACIÓN RÁPIDA DE TICKETS
-     ==================================================================== -->
-<div class="modal fade" id="modalDashboardMetricas" tabindex="-1" aria-labelledby="tituloModalMetricas" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg modal-dashboard-metricas-estilo">
-            
-            <!-- Cabecera de la Ventana Modal de Métricas -->
-            <div class="modal-header border-bottom border-secondary border-opacity-25 py-3">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-primary p-2 rounded-3">
-                        <i class="bi bi-speedometer2 fs-5"></i>
-                    </span>
-                    <div>
-                        <h5 class="modal-title fw-bold text-white mb-0" id="tituloModalMetricas">
-                            MÉTRICA &bull; Dashboard de Gestión Técnica
-                        </h5>
-                        <small class="text-secondary" style="font-size: 0.75rem;">Monitoreo en Tiempo Real y Filtrado Rápido &bull; Cosmol R.L.</small>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-outline-secondary text-light btn-sm py-1 px-2" onclick="clienteApi.actualizarKpisMenuOffcanvas()" title="Actualizar datos en vivo">
-                        <i class="bi bi-arrow-clockwise me-1"></i>
-                        <span class="d-none d-sm-inline small">Refrescar</span>
-                    </button>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-            </div>
-
-            <!-- Cuerpo de la Ventana Modal -->
-            <div class="modal-body p-4">
-                
-                <!-- 1. Cuadrícula de KPIs -->
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
-                        <span class="small text-uppercase text-info fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                            <i class="bi bi-graph-up me-1"></i> Indicadores Clave en Vivo (KPIs)
-                        </span>
-                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.7rem;">
-                            <i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i> Conexión Activa
-                        </span>
-                    </div>
-
-                    <div class="row g-3">
-                        <!-- 1. Tickets Pendientes (Badge ámbar) -->
-                        <div class="col-6 col-md-3">
-                            <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=pendiente" class="tarjeta-kpi-modal kpi-pendiente" title="Ver Tickets Abiertos/Pendientes">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <span class="kpi-valor" id="kpiTicketsPendientes">-</span>
-                                    <i class="bi bi-hourglass-split text-warning fs-5"></i>
-                                </div>
-                                <div class="kpi-etiqueta">Abiertos / Pendientes</div>
-                            </a>
-                        </div>
-
-                        <!-- 2. Tickets En Proceso (Badge celeste) -->
-                        <div class="col-6 col-md-3">
-                            <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=en_proceso" class="tarjeta-kpi-modal kpi-en-proceso" title="Ver Tickets En Proceso">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <span class="kpi-valor" id="kpiTicketsEnProceso">-</span>
-                                    <i class="bi bi-gear-wide-connected text-info fs-5"></i>
-                                </div>
-                                <div class="kpi-etiqueta">En Proceso</div>
-                            </a>
-                        </div>
-
-                        <!-- 3. Tickets Resueltos (Badge verde) -->
-                        <div class="col-6 col-md-3">
-                            <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=resuelto" class="tarjeta-kpi-modal kpi-resuelto" title="Ver Tickets Resueltos">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <span class="kpi-valor" id="kpiTicketsResueltos">-</span>
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                </div>
-                                <div class="kpi-etiqueta">Resueltos</div>
-                            </a>
-                        </div>
-
-                        <!-- 4. Fuerza Mayor (Badge púrpura) -->
-                        <div class="col-6 col-md-3">
-                            <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=fuerza_mayor" class="tarjeta-kpi-modal kpi-fuerza-mayor" title="Ver Casos de Fuerza Mayor">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <span class="kpi-valor" id="kpiTicketsFuerzaMayor">-</span>
-                                    <i class="bi bi-shield-slash fs-5" style="color: #c084fc;"></i>
-                                </div>
-                                <div class="kpi-etiqueta">Fuerza Mayor</div>
-                            </a>
-                        </div>
-
-                        <!-- 5. PCs en Alerta de Hardware (Auditoría SMART/CPU) -->
-                        <div class="col-12">
-                            <a href="<?php echo $ruta_base; ?>modulos/diagnostico/monitoreo_equipos.php" class="tarjeta-kpi-modal kpi-alerta-pc" title="Auditoría de PCs con Alertas de Hardware">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="p-2 bg-danger bg-opacity-25 rounded-3 border border-danger border-opacity-50">
-                                            <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
-                                        </div>
-                                        <div>
-                                            <div class="d-flex align-items-baseline gap-2">
-                                                <span class="kpi-valor" id="kpiPcsAlerta">-</span>
-                                                <span class="badge bg-danger text-white" style="font-size: 0.7rem;">Alerta SMART / CPU / Defender</span>
-                                            </div>
-                                            <div class="kpi-etiqueta text-light">Equipos con alertas técnicas detectadas por Agente PowerShell</div>
-                                        </div>
-                                    </div>
-                                    <span class="btn btn-outline-danger btn-sm d-none d-sm-inline-flex align-items-center gap-1">
-                                        <span>Auditar PCs</span>
-                                        <i class="bi bi-arrow-right"></i>
-                                    </span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Bandeja de Tickets con Filtración Rápida -->
-                <div class="mb-2">
-                    <div class="small text-uppercase text-secondary fw-bold mb-2 px-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                        <i class="bi bi-funnel-fill me-1 text-primary"></i> Bandeja y Filtración Rápida de Tickets
-                    </div>
-                    
-                    <div class="d-flex flex-column gap-2">
-                        <!-- Enlace Principal: Ver Tickets ABIERTOS -->
-                        <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=pendiente" class="btn-filtro-abiertos-principal d-flex align-items-center justify-content-between py-2 px-3">
-                            <span class="d-flex align-items-center gap-2 fs-6">
-                                <i class="bi bi-inbox-fill fs-5"></i>
-                                <span>Ver Tickets ABIERTOS (Prioritarios)</span>
-                            </span>
-                            <span class="badge bg-white text-primary fw-bold px-2 py-1">Ir a Bandeja &rarr;</span>
-                        </a>
-
-                        <!-- Fila de filtros secundarios -->
-                        <div class="row g-2 mt-1">
-                            <div class="col-4">
-                                <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=en_proceso" class="btn-filtro-secundario py-2 w-100" title="Tickets en proceso de atención">
-                                    <i class="bi bi-clock-history text-info fs-6"></i>
-                                    <span class="fw-semibold">En Proceso</span>
-                                </a>
-                            </div>
-                            <div class="col-4">
-                                <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=resuelto" class="btn-filtro-secundario py-2 w-100" title="Tickets resueltos y cerrados">
-                                    <i class="bi bi-check2-circle text-success fs-6"></i>
-                                    <span class="fw-semibold">Resueltos</span>
-                                </a>
-                            </div>
-                            <div class="col-4">
-                                <a href="<?php echo $ruta_base; ?>modulos/soporte_tecnico/gestion_tickets.php?estado=fuerza_mayor" class="btn-filtro-secundario py-2 w-100" title="Casos de fuerza mayor o contingencia">
-                                    <i class="bi bi-shield-slash text-warning fs-6"></i>
-                                    <span class="fw-semibold">Contingencia</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Pie de la Ventana Modal -->
-            <div class="modal-footer border-top border-secondary border-opacity-25 py-2 px-4 d-flex justify-content-between align-items-center">
-                <span class="text-secondary small" style="font-size: 0.75rem;">
-                    <i class="bi bi-shield-check text-success me-1"></i> Panel exclusivo de Administración y Soporte Técnico
-                </span>
-                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">
-                    Cerrar
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-<?php endif; ?>

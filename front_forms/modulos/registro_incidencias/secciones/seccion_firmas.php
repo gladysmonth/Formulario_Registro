@@ -14,9 +14,10 @@
         </div>
     </div>
 
+    <?php $es_tecnico_o_admin = function_exists('es_personal_tecnico') ? es_personal_tecnico() : false; ?>
     <div class="row g-4">
         <!-- CUADRO 1: RESPONSABLE DEL REPORTE -->
-        <div class="col-md-6">
+        <div class="<?php echo $es_tecnico_o_admin ? 'col-md-6' : 'col-md-8 mx-auto'; ?>">
             <div class="tarjeta-firma h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="badge bg-secondary-subtle text-dark border">
@@ -39,7 +40,8 @@
             </div>
         </div>
 
-        <!-- CUADRO 2: DEPARTAMENTO DE SISTEMAS -->
+        <?php if ($es_tecnico_o_admin): ?>
+        <!-- CUADRO 2: DEPARTAMENTO DE SISTEMAS (SÓLO PERSONAL TÉCNICO) -->
         <div class="col-md-6">
             <div class="tarjeta-firma h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -62,5 +64,6 @@
                 </div>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </div>
