@@ -25,13 +25,8 @@ $rol_actual = obtener_rol_actual();
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
-                    <li class="breadcrumb-item">
-                        <a href="index.php" class="text-decoration-none text-muted">
-                            <i class="bi bi-house-door me-1"></i>Catálogo
-                        </a>
-                    </li>
                     <li class="breadcrumb-item active text-primary fw-semibold" aria-current="page">
-                        MÉTRICA
+                        <i class="bi bi-speedometer2 me-1"></i>MÉTRICA &bull; Pantalla Principal
                     </li>
                 </ol>
             </nav>
@@ -55,10 +50,6 @@ $rol_actual = obtener_rol_actual();
                 <i class="bi bi-arrow-clockwise fs-6" id="iconoRefrescarMetricas"></i>
                 <span class="fw-semibold">Actualizar Datos</span>
             </button>
-            <a href="index.php" class="btn btn-outline-secondary btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3" title="Volver al Catálogo de Formularios">
-                <i class="bi bi-arrow-left"></i>
-                <span>Catálogo</span>
-            </a>
         </div>
     </div>
 

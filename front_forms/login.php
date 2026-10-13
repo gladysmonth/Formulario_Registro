@@ -7,9 +7,14 @@
 
 require_once __DIR__ . '/componentes/control_sesion.php';
 
-// Si el usuario ya tiene sesión iniciada, redirigir al portal principal
+// Si el usuario ya tiene sesión iniciada, redirigir a su pantalla principal según su rol
 if (esta_autenticado()) {
-    header('Location: index.php');
+    $rol_sesion = obtener_rol_actual();
+    if (in_array($rol_sesion, array('admin', 'tecnico'))) {
+        header('Location: metricas.php');
+    } else {
+        header('Location: index.php');
+    }
     exit();
 }
 
@@ -24,7 +29,14 @@ if (isset($_GET['accion']) && $_GET['accion'] === 'guardar_sesion') {
     
     if (is_array($datos) && !empty($datos['id'])) {
         establecer_sesion_usuario($datos);
-        $url_destino = isset($_SESSION['url_redireccion']) ? $_SESSION['url_redireccion'] : 'index.php';
+        $rol = isset($datos['rol']) ? $datos['rol'] : 'usuario';
+        $es_admin_tecnico = in_array($rol, array('admin', 'tecnico'));
+        $destino_defecto = $es_admin_tecnico ? 'metricas.php' : 'index.php';
+        
+        $url_destino = isset($_SESSION['url_redireccion']) ? $_SESSION['url_redireccion'] : $destino_defecto;
+        if ($es_admin_tecnico && ($url_destino === 'index.php' || empty($url_destino))) {
+            $url_destino = 'metricas.php';
+        }
         unset($_SESSION['url_redireccion']);
         echo json_encode(array('exito' => true, 'url_destino' => $url_destino));
     } else {

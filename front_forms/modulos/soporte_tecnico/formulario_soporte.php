@@ -102,19 +102,13 @@ $es_tecnico_o_admin = es_personal_tecnico();
 
             <!-- BOTONES DE ACCIÓN -->
             <div class="col-12">
-                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 p-3 bg-white border rounded-3">
-                    <a href="../../index.php" class="btn btn-outline-secondary px-4">
-                        <i class="bi bi-arrow-left me-1"></i> Volver al Catálogo
-                    </a>
-
-                    <div class="d-flex gap-2 w-100 w-sm-auto justify-content-end">
-                        <button type="reset" class="btn btn-light border px-3">
-                            <i class="bi bi-eraser me-1"></i> Limpiar
-                        </button>
-                        <button type="submit" id="btnGuardarTicket" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
-                            <i class="bi bi-send-check me-2"></i> Registrar Ticket de Soporte
-                        </button>
-                    </div>
+                <div class="d-flex flex-column flex-sm-row justify-content-end align-items-center gap-2 p-3 bg-white border rounded-3">
+                    <button type="reset" class="btn btn-light border px-3">
+                        <i class="bi bi-eraser me-1"></i> Limpiar
+                    </button>
+                    <button type="submit" id="btnGuardarTicket" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-send-check me-2"></i> Registrar Ticket de Soporte
+                    </button>
                 </div>
             </div>
 

@@ -9,6 +9,14 @@ $titulo_pagina = 'Catálogo de Formularios de Registro';
 $pagina_activa = 'inicio';
 $nivel_ruta = '';
 
+require_once __DIR__ . '/componentes/control_sesion.php';
+
+// Si el usuario es administrador o técnico, su pantalla principal es MÉTRICA
+if (es_personal_tecnico() && !isset($_GET['ver_catalogo'])) {
+    header('Location: metricas.php');
+    exit();
+}
+
 require_once __DIR__ . '/componentes/encabezado.php';
 require_once __DIR__ . '/componentes/barra_navegacion.php';
 

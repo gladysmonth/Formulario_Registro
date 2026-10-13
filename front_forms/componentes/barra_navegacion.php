@@ -161,16 +161,12 @@ foreach ($modulos_sistema as $clave => $mod) {
 <nav class="navbar navbar-dark bg-dark shadow-sm sticky-top py-2 py-md-3">
     <div class="container-fluid px-3 px-lg-4 d-flex align-items-center justify-content-between">
         
-        <!-- Izquierda: Botón Menú 3 Rayas (☰) y Botón Catálogo para volver -->
-        <div class="d-flex align-items-center gap-2" style="min-width: 140px;">
+        <!-- Izquierda: Botón Menú 3 Rayas (☰) -->
+        <div class="d-flex align-items-center" style="min-width: 90px;">
             <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuFormulariosLateral" aria-controls="menuFormulariosLateral" title="Abrir Menú Lateral">
                 <i class="bi bi-list fs-5"></i>
                 <span class="d-none d-md-inline small fw-semibold">Menú</span>
             </button>
-            <a href="<?php echo $ruta_base; ?>index.php" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-secondary" title="Volver al Catálogo de Formularios">
-                <i class="bi bi-arrow-left"></i>
-                <span class="fw-semibold d-none d-sm-inline">Catálogo</span>
-            </a>
         </div>
 
         <!-- Centro: Título Oficial de la Vista -->
@@ -185,7 +181,7 @@ foreach ($modulos_sistema as $clave => $mod) {
         </div>
 
         <!-- Derecha: Botón Salir para todas las vistas -->
-        <div class="d-flex justify-content-end align-items-center" style="min-width: 140px;">
+        <div class="d-flex justify-content-end align-items-center" style="min-width: 90px;">
             <a href="<?php echo $ruta_base; ?>logout.php" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 fw-semibold border-secondary" title="Cerrar sesión institucional">
                 <i class="bi bi-box-arrow-right"></i>
                 <span class="d-none d-sm-inline">Salir</span>
@@ -221,7 +217,7 @@ foreach ($modulos_sistema as $clave => $mod) {
 
             <?php if ($es_tecnico_o_admin): ?>
             <!-- ========================================================
-                 BOTÓN DESTACADO PARA IR A LA PANTALLA "MÉTRICA"
+                 BOTÓN DESTACADO PARA EL ADMINISTRADOR: "MÉTRICA"
                  ======================================================== -->
             <div class="tarjeta-boton-metrica-menu">
                 <div class="small text-uppercase text-info fw-bold mb-2 px-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
@@ -234,6 +230,24 @@ foreach ($modulos_sistema as $clave => $mod) {
                     </span>
                     <span class="badge bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.72rem;">
                         Ver Pantalla <i class="bi bi-arrow-right-short ms-1"></i>
+                    </span>
+                </a>
+            </div>
+            <?php else: ?>
+            <!-- ========================================================
+                 BOTÓN DESTACADO PARA EL PERSONAL: "FORMULARIO DETALLADO"
+                 ======================================================== -->
+            <div class="tarjeta-boton-catalogo-menu">
+                <div class="small text-uppercase text-info fw-bold mb-2 px-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                    <i class="bi bi-grid-3x3-gap-fill me-1 text-primary"></i> Portal Central
+                </div>
+                <a href="<?php echo $ruta_base; ?>index.php" class="btn btn-primary w-100 py-2 px-3 d-flex align-items-center justify-content-between rounded-3 shadow-sm fw-bold border-0 <?php echo ($pagina_activa === 'inicio') ? 'active' : ''; ?>" title="Ir a Formulario Detallado">
+                    <span class="d-flex align-items-center gap-2">
+                        <i class="bi bi-grid-3x3-gap-fill fs-5 text-warning"></i>
+                        <span class="fs-6 letter-spacing-1">Formulario Detallado</span>
+                    </span>
+                    <span class="badge bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.72rem;">
+                        Ver Portal <i class="bi bi-arrow-right-short ms-1"></i>
                     </span>
                 </a>
             </div>
@@ -266,12 +280,6 @@ foreach ($modulos_sistema as $clave => $mod) {
                                     <?php echo htmlspecialchars($mod['numero'] . '. ' . $mod['nombre']); ?>
                                 </span>
                             </a>
-                            <!-- Acceso secundario a bandeja técnica (solo admin/técnicos) -->
-                            <?php if ($es_tecnico_o_admin && $clave !== 'diagnostico'): ?>
-                                <a href="<?php echo $mod['url_gestion']; ?>" class="btn btn-outline-secondary text-light btn-sm py-0 px-2 ms-2" style="font-size: 0.7rem;" title="Bandeja de Gestión">
-                                    <i class="bi bi-card-checklist text-info"></i>
-                                </a>
-                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -308,10 +316,7 @@ foreach ($modulos_sistema as $clave => $mod) {
                 </div>
             </div>
 
-            <a href="<?php echo $ruta_base; ?>index.php" class="btn btn-outline-primary w-100 btn-sm py-2 d-flex align-items-center justify-content-center gap-2">
-                <i class="bi bi-grid-3x3-gap-fill"></i>
-                <span class="fw-semibold">Ver Catálogo Detallado de Formularios</span>
-            </a>
+
             <div class="text-center text-secondary small mt-2" style="font-size: 0.72rem;">
                 Cosmol R.L. &bull; Departamento de Sistemas
             </div>
