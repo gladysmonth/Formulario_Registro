@@ -139,7 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <small class="text-secondary">${ticket.tecnico_asignado ? escapeHtml(ticket.tecnico_asignado) : '<em class="text-muted">Sin asignar</em>'}</small>
                     </td>
                     <td class="text-end text-nowrap">
-                        ${ticket.estado === 'resuelto' ? `
+                        ${ticket.direccion_mac ? `
+                            <a href="../diagnostico/detalle_equipo.php?mac=${encodeURIComponent(ticket.direccion_mac)}" class="btn btn-sm btn-outline-info me-1" title="Ver telemetría y salud de PC en vivo">
+                                <i class="bi bi-cpu"></i>
+                            </a>
+                        ` : ''}
+                        ${(ticket.estado === 'resuelto' || ticket.estado === 'fuerza_mayor') ? `
                             <button class="btn btn-sm btn-outline-secondary btn-atender" data-id="${ticket.id}" data-modo="lectura" title="Ver ficha técnica completa del ticket">
                                 <i class="bi bi-eye me-1"></i> Ver Ficha
                             </button>
@@ -270,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const camposEditables = [
         'atencion_prioridad',
         'atencion_estado',
+        'atencion_motivo_imposibilidad',
         'atencion_fecha_hora',
         'atencion_tecnico',
         'atencion_tipo_resolucion',
@@ -410,6 +416,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Mostrar u ocultar bloque de telemetría de PC (Agente Cosmol)
+        const contTelemetria = document.getElementById('contenedorTelemetriaPcModal');
+        const badgeSalud = document.getElementById('badgeSaludPcModal');
+        const elCpu = document.getElementById('telemetriaCpuModal');
+        const elRam = document.getElementById('telemetriaRamModal');
+        const elDisco = document.getElementById('telemetriaDiscoModal');
+        const btnHistorialMac = document.getElementById('btnVerHistorialMacModal');
+
+        if (contTelemetria) {
+            if (ticket.direccion_mac) {
+                contTelemetria.classList.remove('d-none');
+                if (btnHistorialMac) {
+                    btnHistorialMac.href = `../diagnostico/detalle_equipo.php?mac=${encodeURIComponent(ticket.direccion_mac)}`;
+                }
+                if (badgeSalud) {
+                    const salud = (ticket.estado_salud_pc || 'optimo').toLowerCase();
+                    if (salud === 'critico') {
+                        badgeSalud.className = 'badge bg-danger';
+                        badgeSalud.textContent = 'Crítico';
+                    } else if (salud === 'advertencia') {
+                        badgeSalud.className = 'badge bg-warning text-dark';
+                        badgeSalud.textContent = 'Advertencia';
+                    } else {
+                        badgeSalud.className = 'badge bg-success';
+                        badgeSalud.textContent = 'Óptimo';
+                    }
+                }
+                if (elCpu) {
+                    elCpu.textContent = (ticket.temperatura_cpu_pc !== null && ticket.temperatura_cpu_pc !== undefined) ? `${ticket.temperatura_cpu_pc} °C` : 'N/D';
+                }
+                if (elRam) {
+                    elRam.textContent = ticket.uso_ram_porcentaje ? `${ticket.uso_ram_porcentaje}%` : 'N/D';
+                }
+                if (elDisco) {
+                    elDisco.textContent = ticket.salud_disco_smart_pc ? ticket.salud_disco_smart_pc : 'N/D';
+                }
+            } else {
+                contTelemetria.classList.add('d-none');
+            }
+        }
+
+        // Mostrar u ocultar motivo de imposibilidad (Fuerza Mayor)
+        const contMotivo = document.getElementById('contenedorMotivoImposibilidad');
+        const inputMotivo = document.getElementById('atencion_motivo_imposibilidad');
+        if (contMotivo && inputMotivo) {
+            if (ticket.estado === 'fuerza_mayor') {
+                contMotivo.classList.remove('d-none');
+                inputMotivo.value = ticket.motivo_imposibilidad || '';
+            } else {
+                contMotivo.classList.add('d-none');
+                inputMotivo.value = '';
+            }
+        }
+
         // Llenar campos editables
         document.getElementById('atencion_ticket_id').value = ticket.id;
         document.getElementById('atencion_prioridad').value = ticket.prioridad || 'media';
@@ -434,11 +494,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('atencion_tipo_resolucion').value = ticket.tipo_resolucion || '';
         document.getElementById('atencion_observaciones').value = ticket.observaciones_recomendacion || '';
 
-        // Configurar modo (Lectura si fue solicitado o si el ticket está resuelto por defecto)
-        const modoFinal = modo || (ticket.estado === 'resuelto' ? 'lectura' : 'edicion');
+        // Configurar modo (Lectura si fue solicitado o si el ticket está resuelto o en fuerza mayor por defecto)
+        const modoFinal = modo || ((ticket.estado === 'resuelto' || ticket.estado === 'fuerza_mayor') ? 'lectura' : 'edicion');
         configurarModoModal(modoFinal);
 
         modalAtencion.show();
+    }
+
+    // Escuchar cambio dinámico de estado en el modal para alternar motivo de imposibilidad
+    const selectEstadoAtencion = document.getElementById('atencion_estado');
+    if (selectEstadoAtencion) {
+        selectEstadoAtencion.addEventListener('change', () => {
+            const contMotivo = document.getElementById('contenedorMotivoImposibilidad');
+            if (contMotivo) {
+                if (selectEstadoAtencion.value === 'fuerza_mayor') {
+                    contMotivo.classList.remove('d-none');
+                } else {
+                    contMotivo.classList.add('d-none');
+                }
+            }
+        });
     }
 
     if (formAtencion) {
@@ -466,10 +541,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Validar motivo si es fuerza mayor
+            if (estadoSeleccionado === 'fuerza_mayor') {
+                const inputMotivo = document.getElementById('atencion_motivo_imposibilidad');
+                const motivoVal = inputMotivo ? inputMotivo.value.trim() : '';
+                if (!motivoVal) {
+                    Swal.fire({
+                        title: 'Motivo Requerido',
+                        text: 'Debe especificar el motivo de imposibilidad o fuerza mayor para registrar este estado.',
+                        icon: 'warning',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    if (inputMotivo) inputMotivo.focus();
+                    return;
+                }
+            }
+
             const datosActualizados = {
                 id: document.getElementById('atencion_ticket_id').value,
                 prioridad: document.getElementById('atencion_prioridad').value,
                 estado: estadoSeleccionado,
+                motivo_imposibilidad: document.getElementById('atencion_motivo_imposibilidad') ? document.getElementById('atencion_motivo_imposibilidad').value.trim() : null,
                 tecnico_asignado: document.getElementById('atencion_tecnico').value,
                 fecha_hora_atencion: document.getElementById('atencion_fecha_hora').value,
                 diagnostico: document.getElementById('atencion_diagnostico').value,
@@ -531,6 +623,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return '<span class="badge badge-en-proceso"><i class="bi bi-gear me-1"></i>En Proceso</span>';
             case 'resuelto':
                 return '<span class="badge badge-resuelto"><i class="bi bi-check2-circle me-1"></i>Resuelto</span>';
+            case 'fuerza_mayor':
+                return '<span class="badge" style="background-color: #a855f7; color: white;"><i class="bi bi-shield-slash me-1"></i>Fuerza Mayor</span>';
             case 'cancelado':
                 return '<span class="badge badge-cancelado"><i class="bi bi-x-circle me-1"></i>Cancelado</span>';
             default:

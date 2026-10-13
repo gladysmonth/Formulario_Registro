@@ -20,6 +20,7 @@
                 <option value="pendiente">Solo Pendientes</option>
                 <option value="en_proceso">Solo En Proceso</option>
                 <option value="resuelto">Solo Resueltos</option>
+                <option value="fuerza_mayor">Solo Fuerza Mayor</option>
                 <option value="cancelado">Solo Cancelados</option>
             </select>
         </div>
