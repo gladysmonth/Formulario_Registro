@@ -7,13 +7,14 @@ services:
     container_name: contenedor_db_formularios
     restart: unless-stopped
     environment:
-      POSTGRES_DB: formularios_db
-      POSTGRES_USER: postgres_usuario
-      POSTGRES_PASSWORD: postgres_clave_secreta
+      POSTGRES_DB: ${DB_NAME:-formularios_db}
+      POSTGRES_USER: ${DB_USER:-postgres_usuario}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres_clave_secreta}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/formularios_inicial.sql:/docker-entrypoint-initdb.d/01_formularios_inicial.sql:ro
+      - ./database/diagnostico.sql:/docker-entrypoint-initdb.d/02_diagnostico.sql:ro
       - datos_postgres:/var/lib/postgresql/data
     networks:
       - red_formularios
@@ -28,13 +29,13 @@ services:
     container_name: contenedor_back_form
     restart: unless-stopped
     ports:
-      - "83:80"
+      - "${BACK_PORT:-83}:80"
     environment:
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_NAME: formularios_db
-      DB_USER: postgres_usuario
-      DB_PASS: postgres_clave_secreta
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: "${DB_PORT:-5432}"
+      DB_NAME: ${DB_NAME:-formularios_db}
+      DB_USER: ${DB_USER:-postgres_usuario}
+      DB_PASS: ${DB_PASS:-postgres_clave_secreta}
     volumes:
       - ./back_form:/var/www/html
     depends_on:
@@ -52,9 +53,9 @@ services:
     container_name: contenedor_front_forms
     restart: unless-stopped
     ports:
-      - "82:80"
+      - "${FRONT_PORT:-82}:80"
     environment:
-      URL_BACKEND: http://192.168.11.70:83
+      URL_BACKEND: ${URL_BACKEND:-http://192.168.11.75:83}
     volumes:
       - ./front_forms:/var/www/html
     depends_on:
