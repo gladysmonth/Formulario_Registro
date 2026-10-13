@@ -187,9 +187,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const resp = await fetch(urlApiListar);
             const data = await resp.json();
 
-            if (data.exito && Array.isArray(data.datos)) {
-                equiposDatos = data.datos;
-                actualizarKPIs(equiposDatos);
+            if (data.exito && data.datos) {
+                const lista = Array.isArray(data.datos.equipos) ? data.datos.equipos : (Array.isArray(data.datos) ? data.datos : []);
+                equiposDatos = lista;
+                if (data.datos.metricas) {
+                    kpiTotal.textContent = data.datos.metricas.total || lista.length;
+                    kpiOptimos.textContent = (parseInt(data.datos.metricas.optimos, 10) || 0) + (parseInt(data.datos.metricas.buenos, 10) || 0);
+                    kpiAdvertencias.textContent = data.datos.metricas.advertencias || 0;
+                    kpiCriticos.textContent = data.datos.metricas.criticos || 0;
+                } else {
+                    actualizarKPIs(equiposDatos);
+                }
                 renderizarTabla();
             } else {
                 cuerpoTabla.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-1"></i> No se pudo cargar la información: ${data.mensaje || 'Error desconocido'}</td></tr>`;

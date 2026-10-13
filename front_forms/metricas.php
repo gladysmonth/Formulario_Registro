@@ -175,6 +175,73 @@ $rol_actual = obtener_rol_actual();
             </div>
         </div>
     </div>
+
+    <!-- ====================================================================
+         2. TELEMETRÍA Y AUDITORÍA DE PCs (INTEGRACIÓN COSMOL-DIAGNOSTICOP)
+         ==================================================================== -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-cpu text-warning"></i>
+                <span>Telemetría y Salud de Hardware &bull; Agente Cosmol</span>
+            </h2>
+        </div>
+
+        <div class="row g-3">
+            <!-- Tarjeta: PCs en Alerta Técnica -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger rounded-3 bg-white">
+                    <div class="card-body p-3 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-danger bg-opacity-25 text-danger fw-semibold small mb-1">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Hardware Crítico / Advertencia
+                                </span>
+                                <div class="text-secondary small fw-medium">PCs en Alerta de Hardware</div>
+                            </div>
+                            <div class="p-2 rounded-circle bg-danger bg-opacity-10 text-danger">
+                                <i class="bi bi-pc-display-horizontal fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-baseline gap-2 my-2">
+                            <span class="display-5 fw-bold text-dark" id="kpiPcsAlerta">-</span>
+                            <span class="text-muted small">equipos</span>
+                        </div>
+                        <a href="modulos/diagnostico/monitoreo_equipos.php?estado_salud=advertencia" class="btn btn-sm btn-outline-danger w-100 mt-2 fw-semibold d-flex align-items-center justify-content-center gap-1">
+                            <span>Ver Equipos en Alerta</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta: Tablero General de PCs Auditadas -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-4 border-primary rounded-3 bg-white">
+                    <div class="card-body p-3 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-primary bg-opacity-25 text-primary fw-semibold small mb-1">
+                                    <i class="bi bi-activity me-1"></i>Monitoreo en Red
+                                </span>
+                                <div class="text-secondary small fw-medium">Auditoría Total de Computadoras</div>
+                            </div>
+                            <div class="p-2 rounded-circle bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-motherboard fs-4"></i>
+                            </div>
+                        </div>
+                        <p class="text-muted small my-2">
+                            Inspección profunda de procesadores, SMART de almacenamiento, memoria y antivirus de toda la red institucional.
+                        </p>
+                        <a href="modulos/diagnostico/monitoreo_equipos.php" class="btn btn-sm btn-outline-primary w-100 mt-2 fw-semibold d-flex align-items-center justify-content-center gap-1">
+                            <span>Abrir Tablero de PCs</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 <script>

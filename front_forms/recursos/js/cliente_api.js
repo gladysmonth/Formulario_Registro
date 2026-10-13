@@ -280,12 +280,19 @@ const clienteApi = {
         try {
             // 2. Obtener recuento de PCs con alertas técnicas de hardware
             const respPcs = await this.peticion('/api/diagnostico/listar.php');
-            if (respPcs.exito && Array.isArray(respPcs.datos)) {
-                resultado.pcsAlerta = respPcs.datos.filter(pc => {
-                    const esCritico = (pc.estado_salud_general === 'critico' || pc.estado_salud_general === 'alerta');
-                    const tieneAlertas = (Array.isArray(pc.alertas_detectadas) && pc.alertas_detectadas.length > 0);
-                    return esCritico || tieneAlertas;
-                }).length;
+            if (respPcs.exito && respPcs.datos) {
+                if (respPcs.datos.metricas) {
+                    const m = respPcs.datos.metricas;
+                    const criticos = parseInt(m.criticos, 10) || 0;
+                    const advertencias = parseInt(m.advertencias, 10) || 0;
+                    resultado.pcsAlerta = criticos + advertencias;
+                } else if (Array.isArray(respPcs.datos.equipos)) {
+                    resultado.pcsAlerta = respPcs.datos.equipos.filter(pc => {
+                        const esAlerta = (pc.estado_salud_general === 'critico' || pc.estado_salud_general === 'advertencia');
+                        const tieneAlertas = (Array.isArray(pc.alertas_detectadas) && pc.alertas_detectadas.length > 0);
+                        return esAlerta || tieneAlertas;
+                    }).length;
+                }
             }
         } catch (e) {
             // Si el usuario no tiene permisos o no está disponible, mantener en 0

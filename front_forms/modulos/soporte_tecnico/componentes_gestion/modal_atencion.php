@@ -53,6 +53,27 @@
                     </div>
                 </div>
 
+                <!-- Tarjeta de Telemetría de la PC (Visible si el ticket tiene diagnóstico o MAC) -->
+                <div id="contenedorTelemetriaPcModal" class="p-3 rounded-3 border mb-4 bg-light border-info d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="bi bi-cpu text-info fs-5"></i>
+                            <span>Telemetría de la Computadora (Agente Cosmol)</span>
+                        </span>
+                        <span id="badgeSaludPcModal" class="badge bg-success">Óptimo</span>
+                    </div>
+                    <div class="row g-2 small text-secondary">
+                        <div class="col-sm-4"><strong>CPU / Temp:</strong> <span id="telemetriaCpuModal">-</span></div>
+                        <div class="col-sm-4"><strong>Uso RAM:</strong> <span id="telemetriaRamModal">-</span></div>
+                        <div class="col-sm-4"><strong>Disco C: Libre:</strong> <span id="telemetriaDiscoModal">-</span></div>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <a id="btnVerHistorialMacModal" href="#" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.75rem;">
+                            <i class="bi bi-clock-history me-1"></i>Ver historial completo de la PC
+                        </a>
+                    </div>
+                </div>
+
                 <!-- SECCIÓN 4: PRIORIDAD Y ESTADO -->
                 <div class="mb-4">
                     <div class="d-flex align-items-center mb-3">
@@ -76,8 +97,17 @@
                                 <option value="pendiente">Pendiente</option>
                                 <option value="en_proceso">En Proceso</option>
                                 <option value="resuelto">Resuelto</option>
+                                <option value="fuerza_mayor">Fuerza Mayor / Impedimento</option>
                                 <option value="cancelado">Cancelado</option>
                             </select>
+                        </div>
+                        <!-- Campo para motivo de imposibilidad (Fuerza Mayor) -->
+                        <div class="col-12 d-none" id="contenedorMotivoImposibilidad">
+                            <label for="atencion_motivo_imposibilidad" class="form-label small fw-semibold text-danger">
+                                <i class="bi bi-shield-exclamation me-1"></i>Motivo de Imposibilidad / Fuerza Mayor <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control form-control-sm border-danger" id="atencion_motivo_imposibilidad" rows="2" placeholder="Detalle por qué no fue posible resolver el ticket (ej. falta de repuestos, proveedor externo, etc.)..."></textarea>
+                            <div class="form-text small text-danger">Obligatorio cuando el estado es Fuerza Mayor.</div>
                         </div>
                     </div>
                 </div>
