@@ -92,37 +92,33 @@ $url_backend = !empty($host_cliente) ? ('http://' . $host_cliente . ':83') : (ge
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            padding: 1.5rem;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            padding: 1.25rem;
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
         .tarjeta-login {
             width: 100%;
-            max-width: 440px;
+            max-width: 420px;
             background: #ffffff;
-            border-radius: 18px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
             overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .cabecera-login {
-            background: linear-gradient(135deg, #0d6efd 0%, #0052cc 100%);
-            color: #ffffff;
-            padding: 2.25rem 2rem 1.75rem 2rem;
-            text-align: center;
-        }
-        .icono-escudo {
-            width: 64px;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.18);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 0.85rem;
+        .logo-login {
+            max-height: 54px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.04));
         }
         .cuerpo-login {
-            padding: 2.25rem 2rem;
+            padding: 1.5rem 2rem 2rem 2rem;
+        }
+        .form-control {
+            border-radius: 8px;
+            font-size: 0.92rem;
+            padding: 0.6rem 0.75rem;
         }
         .form-control:focus {
             border-color: #0d6efd;
@@ -132,6 +128,35 @@ $url_backend = !empty($host_cliente) ? ('http://' . $host_cliente . ':83') : (ge
             background-color: #f8fafc;
             border-color: #dee2e6;
             color: #64748b;
+            border-radius: 8px 0 0 8px;
+        }
+        .btn-primary {
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0b5ed7 0%, #0a58ca 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
+        }
+
+        /* Optimización Responsive para Móviles y Teléfonos */
+        @media (max-width: 576px) {
+            body {
+                padding: 0.85rem;
+            }
+            .tarjeta-login {
+                border-radius: 16px;
+                max-width: 100%;
+            }
+            .cuerpo-login {
+                padding: 1.25rem 1.25rem 1.5rem 1.25rem;
+            }
+            .logo-login {
+                max-height: 46px;
+            }
         }
     </style>
 
@@ -142,13 +167,14 @@ $url_backend = !empty($host_cliente) ? ('http://' . $host_cliente . ':83') : (ge
 <body>
 
 <main class="tarjeta-login">
-    <!-- Encabezado Institucional -->
-    <header class="cabecera-login">
-        <div class="icono-escudo shadow-sm">
-            <i class="bi bi-shield-lock-fill fs-2"></i>
+    <!-- Encabezado con Logo Oficial de COSMOL -->
+    <header class="text-center pt-4 pb-2 px-3">
+        <div class="mb-2 d-flex justify-content-center align-items-center">
+            <img src="recursos/img/logo_cosmol.png" alt="COSMOL R.L." class="img-fluid logo-login">
         </div>
-        <h1 class="h4 fw-bold mb-1">COSMOL R.L.</h1>
-        <p class="small text-white-50 mb-0">Sistema Modular de Formularios y Soporte</p>
+        <h1 class="h6 text-secondary fw-semibold mb-0" style="font-size: 0.95rem; letter-spacing: 0.2px;">
+            Sistema Modular de Formularios
+        </h1>
     </header>
 
     <!-- Cuerpo del Formulario de Ingreso -->
@@ -172,19 +198,19 @@ $url_backend = !empty($host_cliente) ? ('http://' . $host_cliente . ':83') : (ge
             <!-- Campo: Nombre de Usuario -->
             <div class="mb-3">
                 <label for="campoUsuario" class="form-label small fw-semibold text-secondary">
-                    Usuario Institucional
+                    Usuario:
                 </label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
                     <input type="text" class="form-control" id="campoUsuario" name="usuario" 
-                           placeholder="Ej: admin, tecnico, personal" required autofocus>
+                           placeholder="Ingresa tu usuario" required autofocus>
                 </div>
             </div>
 
             <!-- Campo: Contraseña -->
             <div class="mb-4">
                 <label for="campoClave" class="form-label small fw-semibold text-secondary">
-                    Contraseña
+                    Contraseña:
                 </label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
@@ -196,10 +222,10 @@ $url_backend = !empty($host_cliente) ? ('http://' . $host_cliente . ':83') : (ge
                 </div>
             </div>
 
-            <!-- Botón de Envío -->
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2" id="btnEnviarLogin">
+            <!-- Botón de Envío: INICIAR SESIÓN -->
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2" id="btnEnviarLogin" style="letter-spacing: 0.5px;">
                 <i class="bi bi-box-arrow-in-right fs-5"></i>
-                <span>Iniciar Sesión</span>
+                <span>INICIAR SESIÓN</span>
             </button>
 
             <!-- Nota Informativa: Asignación por Administrador -->
@@ -209,13 +235,10 @@ $url_backend = !empty($host_cliente) ? ('http://' . $host_cliente . ':83') : (ge
             </div>
         </form>
 
-        <!-- Pie de Información Institucional -->
+        <!-- Pie Institucional -->
         <footer class="text-center pt-3 border-top">
-            <small class="text-muted d-block" style="font-size: 0.75rem;">
+            <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">
                 Cooperativa de Servicios Públicos "Montero" R.L.
-            </small>
-            <small class="text-secondary" style="font-size: 0.7rem;">
-                Departamento de Sistemas e Informática &bull; 2026
             </small>
         </footer>
     </div>
@@ -308,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alertaError.classList.remove('d-none');
             alertaError.classList.add('d-flex');
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="bi bi-box-arrow-in-right fs-5"></i> <span>Iniciar Sesión</span>';
+            btnSubmit.innerHTML = '<i class="bi bi-box-arrow-in-right fs-5"></i> <span>INICIAR SESIÓN</span>';
             inputClave.value = '';
             inputClave.focus();
         }

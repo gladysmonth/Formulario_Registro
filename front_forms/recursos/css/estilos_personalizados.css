@@ -705,3 +705,351 @@ body {
     color: #ffffff;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
+
+/* ==========================================================
+ * BARRA LATERAL COSMOL (SIDEBAR COLAPSABLE CON DIBUJITOS)
+ * ========================================================== */
+
+:root {
+    --cosmol-sidebar-bg: #0b1727; /* Dark navy corporativo idéntico a la imagen */
+    --cosmol-sidebar-ancho-colapsado: 68px;
+    --cosmol-sidebar-ancho-expandido: 260px;
+    --cosmol-azul-metrica: #0284c7; /* Azul vibrante Sky 600 idéntico al botón Dashboard */
+    --cosmol-azul-metrica-hover: #0369a1;
+}
+
+/* Espaciado del Body para alojar la barra de iconos ("dibujitos") fija y persistente en TODO dispositivo */
+body.con-sidebar-cosmol {
+    padding-left: var(--cosmol-sidebar-ancho-colapsado);
+    transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 992px) {
+    body.con-sidebar-cosmol.sidebar-expandida {
+        padding-left: var(--cosmol-sidebar-ancho-expandido);
+    }
+}
+
+/* Estructura Principal de la Barra Lateral */
+.barra-lateral-cosmol {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    width: var(--cosmol-sidebar-ancho-colapsado);
+    background-color: var(--cosmol-sidebar-bg);
+    color: #cbd5e1;
+    z-index: 1045;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 3px 0 16px rgba(0, 0, 0, 0.35);
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.barra-lateral-cosmol.expandida {
+    width: var(--cosmol-sidebar-ancho-expandido);
+}
+
+/* Cabecera del Menú Lateral (MENÚ y Botón <) */
+.sidebar-header-cosmol {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0.75rem 0.75rem 0.75rem;
+    min-height: 56px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-header-cosmol {
+    justify-content: center;
+    padding: 1rem 0.5rem 0.75rem 0.5rem;
+}
+
+.sidebar-label-menu {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-label-menu {
+    display: none;
+}
+
+.btn-toggle-chevron-sidebar {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-toggle-chevron-sidebar:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* ==========================================================
+ * BOTÓN "MÉTRICA / DASHBOARD" (UN SOLO CUADRADO INDEPENDIENTE)
+ * ========================================================== */
+.seccion-boton-dashboard {
+    padding: 0.75rem 0.65rem 0.5rem 0.65rem;
+}
+
+.barra-lateral-cosmol:not(.expandida) .seccion-boton-dashboard {
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-dashboard-sidebar {
+    background-color: var(--cosmol-azul-metrica);
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.barra-lateral-cosmol:not(.expandida) .btn-dashboard-sidebar {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.barra-lateral-cosmol.expandida .btn-dashboard-sidebar {
+    width: 100%;
+    height: 44px;
+    padding: 0.65rem 0.85rem;
+    gap: 0.75rem;
+    justify-content: flex-start;
+}
+
+.btn-dashboard-sidebar:hover {
+    background-color: var(--cosmol-azul-metrica-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.45);
+}
+
+.btn-dashboard-sidebar.activo {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 1px;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-item-texto,
+.barra-lateral-cosmol:not(.expandida) .link-nombre-formulario {
+    display: none !important;
+}
+
+/* ==========================================================
+ * TÍTULO DE SECCIONES (CATEGORÍAS)
+ * ========================================================== */
+.sidebar-categoria-header {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    padding: 0.85rem 0.75rem 0.35rem 0.85rem;
+    white-space: nowrap;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-categoria-header {
+    display: none;
+}
+
+/* ==========================================================
+ * ITEMS DE NAVEGACIÓN A FORMULARIOS (DIBUJITOS CLICKEABLES)
+ * ========================================================== */
+.sidebar-lista-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0 0.65rem;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-lista-items {
+    padding: 0 0.5rem;
+    align-items: center;
+}
+
+.sidebar-item-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none !important;
+    color: #cbd5e1;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-item-link {
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.barra-lateral-cosmol.expandida .sidebar-item-link {
+    width: 100%;
+    height: 42px;
+    padding: 0.5rem 0.75rem;
+    gap: 0.75rem;
+}
+
+.sidebar-item-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-item-link.activo {
+    background-color: rgba(2, 132, 199, 0.18);
+    color: #ffffff;
+    border-left: 3px solid var(--cosmol-azul-metrica);
+}
+
+.sidebar-item-icono {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+}
+
+.sidebar-item-texto,
+.link-nombre-formulario {
+    font-size: 0.75rem !important;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+    letter-spacing: 0.15px;
+}
+
+/* ==========================================================
+ * PERFIL DE USUARIO AL PIE DEL MENÚ LATERAL
+ * ========================================================== */
+.sidebar-pie-usuario {
+    padding: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-pie-usuario {
+    padding: 0.75rem 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar-usuario-contenedor {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-usuario-contenedor {
+    justify-content: center;
+}
+
+.avatar-sidebar-circulo {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: var(--cosmol-azul-metrica);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-info-usuario {
+    overflow: hidden;
+    line-height: 1.2;
+}
+
+.barra-lateral-cosmol:not(.expandida) .sidebar-info-usuario {
+    display: none;
+}
+
+.sidebar-usuario-nombre {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-usuario-rol {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Telón de fondo móvil y tablet */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(2px);
+    z-index: 1055;
+}
+
+/* Adaptabilidad Responsiva: Celulares y Tablets (< 992px) */
+@media (max-width: 991.98px) {
+    /* La barra de iconos ("dibujitos") permanece SIEMPRE visible en su ancho colapsado (68px), idéntica a la PC */
+    .barra-lateral-cosmol {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100vh;
+        width: var(--cosmol-sidebar-ancho-colapsado);
+        transform: none !important; /* NUNCA esconderse fuera de pantalla */
+        z-index: 1045;
+    }
+
+    /* Al tocar '>' en móvil/tablet, se despliega flotando a 260px sobre el contenido */
+    .barra-lateral-cosmol.expandida {
+        width: var(--cosmol-sidebar-ancho-expandido) !important;
+        z-index: 1060 !important;
+        box-shadow: 6px 0 25px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .barra-lateral-cosmol.expandida ~ .sidebar-backdrop,
+    body.sidebar-expandida .sidebar-backdrop {
+        display: block !important;
+    }
+}

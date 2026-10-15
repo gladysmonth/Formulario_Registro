@@ -135,13 +135,8 @@ foreach ($modulos_sistema as $clave => $mod) {
 <!-- Barra de Navegación para el Portal Central (Catálogo de Formularios) -->
 <nav class="navbar navbar-dark bg-dark shadow-sm sticky-top py-2 py-md-3">
     <div class="container-fluid px-3 px-lg-4 d-flex align-items-center justify-content-between">
-        <!-- Izquierda: Botón Menú 3 Rayas (☰) -->
-        <div class="d-flex align-items-center" style="min-width: 90px;">
-            <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuFormulariosLateral" aria-controls="menuFormulariosLateral" title="Abrir Menú Lateral">
-                <i class="bi bi-list fs-5"></i>
-                <span class="d-none d-md-inline small fw-semibold">Menú</span>
-            </button>
-        </div>
+        <!-- Espacio izquierdo equilibrado para centrar el título -->
+        <div style="min-width: 90px;" class="d-none d-sm-block"></div>
 
         <!-- Centro: CATALOGO DETALLADO DE FORMULARIO -->
         <div class="text-center flex-grow-1 px-2">
@@ -166,13 +161,8 @@ foreach ($modulos_sistema as $clave => $mod) {
 <nav class="navbar navbar-dark bg-dark shadow-sm sticky-top py-2 py-md-3">
     <div class="container-fluid px-3 px-lg-4 d-flex align-items-center justify-content-between">
         
-        <!-- Izquierda: Botón Menú 3 Rayas (☰) -->
-        <div class="d-flex align-items-center" style="min-width: 90px;">
-            <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 py-1 px-2 px-md-3 border-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuFormulariosLateral" aria-controls="menuFormulariosLateral" title="Abrir Menú Lateral">
-                <i class="bi bi-list fs-5"></i>
-                <span class="d-none d-md-inline small fw-semibold">Menú</span>
-            </button>
-        </div>
+        <!-- Espacio izquierdo equilibrado para centrar el título -->
+        <div style="min-width: 90px;" class="d-none d-sm-block"></div>
 
         <!-- Centro: Título Oficial de la Vista -->
         <div class="text-center flex-grow-1 px-2 text-truncate">
@@ -197,136 +187,152 @@ foreach ($modulos_sistema as $clave => $mod) {
 </nav>
 <?php endif; ?>
 
+<?php
+$inicial_usuario = !empty($nombre_usuario_mostrar) ? strtoupper(substr(trim($nombre_usuario_mostrar), 0, 1)) : 'U';
+?>
 <!-- ====================================================================
-     PANEL LATERAL OFFCANVAS IZQUIERDO (CENTRO DE NAVEGACIÓN Y ACCESOS)
+     BARRA LATERAL COSMOL PERSISTENTE (CON DIBUJITOS Y COLAPSABLE)
      ==================================================================== -->
-<div class="offcanvas offcanvas-start offcanvas-modulos shadow-lg" tabindex="-1" id="menuFormulariosLateral" aria-labelledby="tituloOffcanvasModulos">
-    <!-- Cabecera del Panel Lateral Izquierdo -->
-    <div class="offcanvas-header border-bottom border-secondary border-opacity-25 py-3">
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary p-2 rounded-3">
-                <i class="bi bi-ui-checks-grid fs-5"></i>
-            </span>
-            <div>
-                <h5 class="offcanvas-title fw-bold text-white mb-0" id="tituloOffcanvasModulos">
-                    Menú del Sistema
-                </h5>
-                <small class="text-secondary" style="font-size: 0.75rem;">Cosmol R.L. &bull; Navegación</small>
-            </div>
+<aside class="barra-lateral-cosmol" id="barraLateralCosmol" aria-label="Menú Principal">
+    <!-- Parte Superior: Header, Botón Dashboard/Métrica y Formularios -->
+    <div class="d-flex flex-column">
+        <!-- 1. Cabecera del Menú: MENÚ y Botón < -->
+        <div class="sidebar-header-cosmol" id="sidebarHeaderToggle" style="cursor: pointer;" title="Alternar menú">
+            <span class="sidebar-label-menu" id="sidebarLabelMenu">MENÚ</span>
+            <button type="button" class="btn-toggle-chevron-sidebar" id="btnToggleChevronSidebar" aria-label="Alternar menú">
+                <i class="bi bi-chevron-right" id="iconoChevronSidebar"></i>
+            </button>
         </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-    </div>
-    
-    <div class="offcanvas-body p-3 d-flex flex-column justify-content-between">
-        <div class="d-flex flex-column gap-3">
 
+        <!-- 2. Botón Unificado "MÉTRICA / DASHBOARD" (Un solo cuadrado sin contenedores anidados) -->
+        <div class="seccion-boton-dashboard">
             <?php if ($es_tecnico_o_admin): ?>
-            <!-- ========================================================
-                 BOTÓN DESTACADO PARA EL ADMINISTRADOR: "MÉTRICA"
-                 ======================================================== -->
-            <div class="tarjeta-boton-metrica-menu">
-                <div class="small text-uppercase text-info fw-bold mb-2 px-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-speedometer2 me-1"></i> Centro de Estadísticas
-                </div>
-                <a href="<?php echo $ruta_base; ?>metricas.php" class="btn btn-primary w-100 py-2 px-3 d-flex align-items-center justify-content-between rounded-3 shadow-sm fw-bold border-0 btn-abrir-metrica <?php echo ($pagina_activa === 'metricas') ? 'active' : ''; ?>" title="Ir a la pantalla de Métricas">
-                    <span class="d-flex align-items-center gap-2">
-                        <i class="bi bi-speedometer2 fs-5 text-warning"></i>
-                        <span class="fs-6 letter-spacing-1">MÉTRICA</span>
-                    </span>
-                    <span class="badge bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.72rem;">
-                        Ver Pantalla <i class="bi bi-arrow-right-short ms-1"></i>
-                    </span>
-                </a>
-            </div>
+            <a href="<?php echo $ruta_base; ?>metricas.php" class="btn-dashboard-sidebar <?php echo ($pagina_activa === 'metricas') ? 'activo' : ''; ?>" title="MÉTRICA &bull; Dashboard de Gestión Técnica">
+                <i class="bi bi-speedometer2 fs-5"></i>
+                <span class="sidebar-item-texto">Dashboard</span>
+            </a>
             <?php else: ?>
-            <!-- ========================================================
-                 BOTÓN DESTACADO PARA EL PERSONAL: "FORMULARIO DETALLADO"
-                 ======================================================== -->
-            <div class="tarjeta-boton-catalogo-menu">
-                <div class="small text-uppercase text-info fw-bold mb-2 px-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-grid-3x3-gap-fill me-1 text-primary"></i> Portal Central
-                </div>
-                <a href="<?php echo $ruta_base; ?>index.php" class="btn btn-primary w-100 py-2 px-3 d-flex align-items-center justify-content-between rounded-3 shadow-sm fw-bold border-0 <?php echo ($pagina_activa === 'inicio') ? 'active' : ''; ?>" title="Ir a Formulario Detallado">
-                    <span class="d-flex align-items-center gap-2">
-                        <i class="bi bi-grid-3x3-gap-fill fs-5 text-warning"></i>
-                        <span class="fs-6 letter-spacing-1">Formulario Detallado</span>
-                    </span>
-                    <span class="badge bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.72rem;">
-                        Ver Portal <i class="bi bi-arrow-right-short ms-1"></i>
-                    </span>
-                </a>
-            </div>
+            <a href="<?php echo $ruta_base; ?>index.php" class="btn-dashboard-sidebar <?php echo ($pagina_activa === 'inicio') ? 'activo' : ''; ?>" title="Formulario Detallado &bull; Portal Central">
+                <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
+                <span class="sidebar-item-texto">Formulario Detallado</span>
+            </a>
             <?php endif; ?>
-
-            <!-- ========================================================
-                 ACCESOS A FORMULARIOS INSTITUCIONALES (Compactos de 1 clic)
-                 ======================================================== -->
-            <div>
-                <div class="small text-uppercase text-secondary fw-bold mb-2 px-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-ui-checks-grid me-1 text-primary"></i> Formularios Institucionales
-                </div>
-                
-                <div class="lista-formularios-compacta">
-                    <?php foreach ($modulos_sistema as $clave => $mod): ?>
-                        <?php 
-                        // Si el módulo es técnico y el usuario es solicitante, ocultarlo
-                        if (!empty($mod['solo_tecnico']) && !$es_tecnico_o_admin) {
-                            continue;
-                        }
-                        $es_activo = ($clave === $clave_modulo_activo);
-                        $numero_mostrar = ($es_tecnico_o_admin || empty($mod['numero_personal'])) ? $mod['numero'] : $mod['numero_personal'];
-                        ?>
-                        <div class="item-formulario-compacto <?php echo $es_activo ? 'activo' : ''; ?>">
-                            <!-- Enlace directo en el nombre e icono para entrar a rellenar el formulario -->
-                            <a href="<?php echo $mod['url_formulario']; ?>" class="d-flex align-items-center gap-2 text-decoration-none flex-grow-1 text-truncate" title="Rellenar <?php echo htmlspecialchars($mod['nombre']); ?>">
-                                <span class="badge bg-dark border border-secondary text-<?php echo $mod['color']; ?> p-1 rounded" style="font-size: 0.75rem;">
-                                    <i class="bi <?php echo $mod['icono']; ?>"></i>
-                                </span>
-                                <span class="fw-semibold text-white text-truncate link-nombre-formulario" style="font-size: 0.82rem;">
-                                    <?php echo htmlspecialchars($numero_mostrar . '. ' . $mod['nombre']); ?>
-                                </span>
-                            </a>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Pie del Panel Lateral: Perfil del Usuario Activo (Ubicado abajo) y Enlace al Catálogo -->
-        <div class="border-top border-secondary border-opacity-25 pt-3 mt-3">
-            
-            <!-- Tarjeta de Perfil del Usuario Activo (Reubicada abajo y sin botón salir) -->
-            <div class="tarjeta-usuario-offcanvas p-2 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 mb-3">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="avatar-usuario-nav bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 0.95rem;">
-                            <i class="bi <?php echo $badge_rol_icono; ?>"></i>
-                        </span>
-                        <div>
-                            <div class="fw-bold text-white small lh-1"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></div>
-                            <small class="text-secondary" style="font-size: 0.72rem;"><?php echo htmlspecialchars($depto_usuario_mostrar); ?></small>
-                        </div>
-                    </div>
-                    <span class="badge <?php echo $badge_rol_clase; ?>" style="font-size: 0.68rem;"><?php echo $badge_rol_texto; ?></span>
-                </div>
-                <div class="pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
-                    <span class="text-secondary small" style="font-size: 0.72rem;">
-                        <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.45rem;"></i> Sesión Activa
-                    </span>
-                    <?php if (!empty($cargo_usuario_mostrar)): ?>
-                    <span class="text-secondary small" style="font-size: 0.7rem;">
-                        <?php echo htmlspecialchars($cargo_usuario_mostrar); ?>
-                    </span>
-                    <?php endif; ?>
-                </div>
-            </div>
+        <!-- 3. Título de Categoría: FORMULARIOS -->
+        <div class="sidebar-categoria-header">
+            FORMULARIOS
+        </div>
 
+        <!-- 4. Lista de Formularios con sus dibujitos clickeables -->
+        <nav class="sidebar-lista-items">
+            <?php foreach ($modulos_sistema as $clave => $mod): ?>
+                <?php 
+                // Si el módulo es técnico y el usuario es solicitante, ocultarlo
+                if (!empty($mod['solo_tecnico']) && !$es_tecnico_o_admin) {
+                    continue;
+                }
+                $es_activo = ($clave === $clave_modulo_activo);
+                $numero_mostrar = ($es_tecnico_o_admin || empty($mod['numero_personal'])) ? $mod['numero'] : $mod['numero_personal'];
+                ?>
+                <a href="<?php echo $mod['url_formulario']; ?>" class="sidebar-item-link <?php echo $es_activo ? 'activo' : ''; ?>" title="<?php echo htmlspecialchars($numero_mostrar . '. ' . $mod['nombre']); ?>">
+                    <span class="sidebar-item-icono text-<?php echo $mod['color']; ?>">
+                        <i class="bi <?php echo $mod['icono']; ?>"></i>
+                    </span>
+                    <span class="fw-semibold text-white text-truncate link-nombre-formulario">
+                        <?php echo htmlspecialchars($numero_mostrar . '. ' . $mod['nombre']); ?>
+                    </span>
+                </a>
+            <?php endforeach; ?>
+        </nav>
+    </div>
 
-            <div class="text-center text-secondary small mt-2" style="font-size: 0.72rem;">
-                Cosmol R.L. &bull; Departamento de Sistemas
+    <!-- Parte Inferior: Perfil de Usuario con Avatar Circular -->
+    <div class="sidebar-pie-usuario">
+        <div class="sidebar-usuario-contenedor" title="<?php echo htmlspecialchars($nombre_usuario_mostrar . ' (' . $badge_rol_texto . ')'); ?>">
+            <span class="avatar-sidebar-circulo">
+                <?php echo htmlspecialchars($inicial_usuario); ?>
+            </span>
+            <div class="sidebar-info-usuario">
+                <div class="sidebar-usuario-nombre"><?php echo htmlspecialchars($nombre_usuario_mostrar); ?></div>
+                <div class="sidebar-usuario-rol"><?php echo htmlspecialchars($badge_rol_texto); ?></div>
             </div>
         </div>
     </div>
-</div>
+</aside>
+
+<!-- Telón de Fondo para Pantallas Móviles -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<!-- Script de Control del Menú Lateral Colapsable -->
+<script>
+(function() {
+    function initSidebarCosmol() {
+        var sidebar = document.getElementById('barraLateralCosmol');
+        var backdrop = document.getElementById('sidebarBackdrop');
+        var btnChevron = document.getElementById('btnToggleChevronSidebar');
+        var headerToggle = document.getElementById('sidebarHeaderToggle');
+        var iconoChevron = document.getElementById('iconoChevronSidebar');
+
+        if (!sidebar) return;
+
+        function alternarSidebar() {
+            var estaExpandida = sidebar.classList.toggle('expandida');
+            document.body.classList.toggle('sidebar-expandida', estaExpandida);
+            
+            if (iconoChevron) {
+                if (estaExpandida) {
+                    iconoChevron.className = 'bi bi-chevron-left';
+                } else {
+                    iconoChevron.className = 'bi bi-chevron-right';
+                }
+            }
+        }
+
+        function cerrarSidebar() {
+            sidebar.classList.remove('expandida');
+            document.body.classList.remove('sidebar-expandida');
+            if (iconoChevron) {
+                iconoChevron.className = 'bi bi-chevron-right';
+            }
+        }
+
+        if (btnChevron) {
+            btnChevron.addEventListener('click', function(e) {
+                e.stopPropagation();
+                alternarSidebar();
+            });
+        }
+        if (headerToggle) {
+            headerToggle.addEventListener('click', function(e) {
+                if (e.target !== btnChevron && !btnChevron.contains(e.target)) {
+                    alternarSidebar();
+                }
+            });
+        }
+        if (backdrop) backdrop.addEventListener('click', cerrarSidebar);
+
+        // Al hacer clic en un enlace del menú en móvil o tablet, cerrar automáticamente si estaba expandido
+        var linksSidebar = sidebar.querySelectorAll('a');
+        linksSidebar.forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    cerrarSidebar();
+                }
+            });
+        });
+
+        // En pantallas grandes y móviles, iniciar con icono bi-chevron-right si está colapsado
+        if (iconoChevron && !sidebar.classList.contains('expandida')) {
+            iconoChevron.className = 'bi bi-chevron-right';
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebarCosmol);
+    } else {
+        initSidebarCosmol();
+    }
+})();
+</script>
 

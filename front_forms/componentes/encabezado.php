@@ -63,4 +63,4 @@ $usuario_actual_sesion = obtener_usuario_sesion();
         window.USUARIO_SESION = <?php echo json_encode($usuario_actual_sesion); ?>;
     </script>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="bg-light d-flex flex-column min-vh-100 con-sidebar-cosmol">
