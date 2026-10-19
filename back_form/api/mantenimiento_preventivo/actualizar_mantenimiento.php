@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT
     responder_error('Método no permitido. Utilice POST o PUT', 405);
 }
 
-$datos = obtener_cuerpo_json();
+$datos = obtener_cuerpo_json(); 
 
 $id = !empty($datos['id']) ? (int)$datos['id'] : null;
 
