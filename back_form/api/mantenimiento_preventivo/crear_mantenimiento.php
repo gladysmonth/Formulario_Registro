@@ -13,6 +13,7 @@ require_once __DIR__ . '/../../configuracion/conexion_bd.php';
 require_once __DIR__ . '/servicios/servicio_equipo_mp.php';
 require_once __DIR__ . '/servicios/servicio_checklist_mp.php';
 require_once __DIR__ . '/servicios/servicio_firmas_mp.php';
+require_once __DIR__ . '/servicios/servicio_codigo_mp.php';
 
 configurar_cors();
 
@@ -25,12 +26,12 @@ $datos = obtener_cuerpo_json();
 // 1. Validar Sección 1: Datos Generales
 $errores = array();
 
-$tecnico_responsable = trim($datos['tecnico_responsable'] ?? '');
+$tecnico_responsable = isset($datos['tecnico_responsable']) ? trim($datos['tecnico_responsable']) : '';
 if (empty($tecnico_responsable)) {
     $errores[] = 'El campo Técnico Responsable es obligatorio.';
 }
 
-$ubicacion_equipo = trim($datos['ubicacion_equipo'] ?? '');
+$ubicacion_equipo = isset($datos['ubicacion_equipo']) ? trim($datos['ubicacion_equipo']) : '';
 if (empty($ubicacion_equipo)) {
     $errores[] = 'El campo Ubicación del Equipo es obligatorio.';
 }
@@ -61,16 +62,14 @@ try {
     $chk = procesar_checklist_mantenimiento($datos);
 
     // 5. Sección 6: Observaciones
-    $observaciones_incidencias = !empty(trim($datos['observaciones_incidencias'] ?? '')) 
+    $observaciones_incidencias = isset($datos['observaciones_incidencias']) && trim($datos['observaciones_incidencias']) !== '' 
         ? trim($datos['observaciones_incidencias']) 
         : null;
 
     $conexion->beginTransaction();
 
     // 6. Generar código único correlativo (Ej: MP-2026-0001)
-    $stmt_sec = $conexion->query("SELECT COALESCE(MAX(id), 0) + 1 AS siguiente FROM mantenimientos_preventivos");
-    $fila_sec = $stmt_sec->fetch();
-    $codigo_mantenimiento = sprintf('MP-%s-%04d', date('Y'), $fila_sec['siguiente']);
+    $codigo_mantenimiento = generar_codigo_mantenimiento($conexion);
 
     // 7. Insertar registro completo
     $sql = "INSERT INTO mantenimientos_preventivos (

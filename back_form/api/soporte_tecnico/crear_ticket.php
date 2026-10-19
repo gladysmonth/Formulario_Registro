@@ -13,6 +13,8 @@ require_once __DIR__ . '/../../configuracion/conexion_bd.php';
 require_once __DIR__ . '/servicios/servicio_equipos.php';
 require_once __DIR__ . '/servicios/servicio_firmas.php';
 require_once __DIR__ . '/servicios/servicio_atencion.php';
+require_once __DIR__ . '/servicios/servicio_codigo_soporte.php';
+require_once __DIR__ . '/servicios/servicio_telemetria_soporte.php';
 
 configurar_cors();
 
@@ -25,15 +27,19 @@ $datos = obtener_cuerpo_json();
 // 1. Validar requerimientos obligatorios generales
 $errores = array();
 
-if (empty(trim($datos['nombre_solicitante'] ?? ''))) {
+$nombre_solicitante = isset($datos['nombre_solicitante']) ? trim($datos['nombre_solicitante']) : '';
+$departamento_area  = isset($datos['departamento_area']) ? trim($datos['departamento_area']) : '';
+$descripcion_prob   = isset($datos['descripcion_problema']) ? trim($datos['descripcion_problema']) : '';
+
+if (empty($nombre_solicitante)) {
     $errores[] = 'El campo Nombre del Solicitante es obligatorio.';
 }
 
-if (empty(trim($datos['departamento_area'] ?? ''))) {
+if (empty($departamento_area)) {
     $errores[] = 'El campo Departamento / Área es obligatorio.';
 }
 
-if (empty(trim($datos['descripcion_problema'] ?? ''))) {
+if (empty($descripcion_prob)) {
     $errores[] = 'El campo Descripción Detallada del Problema es obligatorio.';
 }
 
@@ -49,13 +55,12 @@ $rol_usuario = !empty($datos['rol_usuario']) ? strtolower(trim($datos['rol_usuar
 $es_personal_tecnico = in_array($rol_usuario, array('admin', 'tecnico'));
 
 if (!$es_personal_tecnico) {
-    // Un usuario solicitante no puede auto-resolver tickets ni registrar atenciones técnicas
-    $datos['solucion_aplicada'] = null;
-    $datos['diagnostico'] = null;
-    $datos['firma_sistemas'] = null;
-    $datos['tecnico_asignado'] = null;
+    $datos['solucion_aplicada']   = null;
+    $datos['diagnostico']         = null;
+    $datos['firma_sistemas']      = null;
+    $datos['tecnico_asignado']    = null;
     $datos['tecnico_asignado_id'] = null;
-    $datos['estado'] = 'pendiente';
+    $datos['estado']              = 'pendiente';
 }
 
 $es_resolucion = $es_personal_tecnico && (!empty($datos['solucion_aplicada']) || (!empty($datos['estado']) && strtolower($datos['estado']) === 'resuelto'));
@@ -69,14 +74,9 @@ if (!empty($errores)) {
 }
 
 // 3. Extraer y sanear valores
-$nombre_solicitante     = trim($datos['nombre_solicitante']);
 $fecha_solicitud        = !empty($datos['fecha_solicitud']) ? $datos['fecha_solicitud'] : date('Y-m-d');
-$departamento_area      = trim($datos['departamento_area']);
-$descripcion_problema   = trim($datos['descripcion_problema']);
 $usuario_solicitante_id = !empty($datos['usuario_solicitante_id']) ? (int)$datos['usuario_solicitante_id'] : (!empty($datos['usuario_id']) ? (int)$datos['usuario_id'] : null);
 $tecnico_asignado_id    = !empty($datos['tecnico_asignado_id']) ? (int)$datos['tecnico_asignado_id'] : null;
-$direccion_mac          = !empty($datos['direccion_mac']) ? trim($datos['direccion_mac']) : null;
-$diagnostico_id         = !empty($datos['diagnostico_id']) ? (int)$datos['diagnostico_id'] : null;
 
 $prioridades_validas  = array('urgente', 'alta', 'media', 'baja');
 $prioridad            = !empty($datos['prioridad']) && in_array(strtolower($datos['prioridad']), $prioridades_validas) 
@@ -98,97 +98,15 @@ try {
     // 4. Submódulo de Equipos: Verificar o registrar en inventario
     $equipo = procesar_equipo_en_inventario($conexion, $datos);
 
-    // 4.1. Respaldo de MAC desde el equipo si no fue enviada explícitamente
-    if (empty($direccion_mac) && !empty($equipo['equipo_id'])) {
-        $stmt_eq_mac = $conexion->prepare("SELECT direccion_mac FROM equipos_inventario WHERE id = :id");
-        $stmt_eq_mac->execute(array(':id' => $equipo['equipo_id']));
-        $eq_mac = $stmt_eq_mac->fetchColumn();
-        if (!empty($eq_mac)) {
-            $direccion_mac = trim($eq_mac);
-        }
-    }
+    // 5. Submódulo de Telemetría: Resolver MAC y vincular último diagnóstico
+    $info_telemetria = resolver_telemetria_soporte($conexion, $datos, $equipo);
+    $direccion_mac   = $info_telemetria['direccion_mac'];
+    $diagnostico_id  = $info_telemetria['diagnostico_id'];
 
-    // 4.2. Respaldo por IP del cliente (si no se indicó MAC y no vino vinculada por equipo)
-    if (empty($direccion_mac)) {
-        $ip_cliente = '';
-        if (!empty($datos['ip_cliente'])) {
-            $ip_cliente = trim($datos['ip_cliente']);
-        } elseif (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-            $ip_cliente = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $partes_ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            $ip_cliente = trim($partes_ip[0]);
-        } elseif (!empty($_SERVER['HTTP_X_REAL_IP'])) {
-            $ip_cliente = trim($_SERVER['HTTP_X_REAL_IP']);
-        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-            $ip_cliente = trim($_SERVER['REMOTE_ADDR']);
-        }
+    // 6. Submódulo de Código: Generar correlativo institucional
+    $codigo_ticket = generar_codigo_ticket($conexion);
 
-        if ($ip_cliente === '::1') {
-            $ip_cliente = '127.0.0.1';
-        }
-
-        if (!empty($ip_cliente)) {
-            // Buscar si hay diagnóstico previo con esa IP local
-            $stmt_ip = $conexion->prepare("
-                SELECT d.id AS diagnostico_id, d.direccion_mac, d.equipo_id,
-                       eq.marca_modelo, eq.sistema_operativo, eq.numero_serie, eq.tipo_equipo
-                FROM historial_diagnosticos d
-                LEFT JOIN equipos_inventario eq ON eq.id = d.equipo_id OR eq.direccion_mac = d.direccion_mac
-                WHERE d.ip_local = :ip
-                ORDER BY d.fecha_diagnostico DESC
-                LIMIT 1
-            ");
-            $stmt_ip->execute(array(':ip' => $ip_cliente));
-            $hallado_ip = $stmt_ip->fetch(PDO::FETCH_ASSOC);
-
-            if ($hallado_ip) {
-                $direccion_mac = $hallado_ip['direccion_mac'];
-                if (empty($diagnostico_id)) {
-                    $diagnostico_id = (int)$hallado_ip['diagnostico_id'];
-                }
-                if (empty($equipo['equipo_id']) && !empty($hallado_ip['equipo_id'])) {
-                    $equipo['equipo_id'] = (int)$hallado_ip['equipo_id'];
-                }
-                if (empty($equipo['marca_modelo']) && !empty($hallado_ip['marca_modelo'])) {
-                    $equipo['marca_modelo'] = $hallado_ip['marca_modelo'];
-                }
-                if (empty($equipo['sistema_operativo']) && !empty($hallado_ip['sistema_operativo'])) {
-                    $equipo['sistema_operativo'] = $hallado_ip['sistema_operativo'];
-                }
-            }
-        }
-    }
-
-    // 4.3. Auto-vinculación de telemetría (último diagnóstico reportado por agente Cosmol)
-    if (empty($diagnostico_id) && (!empty($direccion_mac) || !empty($equipo['equipo_id']))) {
-        $stmt_diag = $conexion->prepare("
-            SELECT id, direccion_mac 
-            FROM historial_diagnosticos 
-            WHERE (direccion_mac = :mac AND :mac != '') 
-               OR (equipo_id = :eq_id AND :eq_id > 0)
-            ORDER BY fecha_diagnostico DESC 
-            LIMIT 1
-        ");
-        $stmt_diag->execute(array(
-            ':mac'   => $direccion_mac ? $direccion_mac : '',
-            ':eq_id' => !empty($equipo['equipo_id']) ? (int)$equipo['equipo_id'] : 0
-        ));
-        $diag_encontrado = $stmt_diag->fetch(PDO::FETCH_ASSOC);
-        if ($diag_encontrado) {
-            $diagnostico_id = (int)$diag_encontrado['id'];
-            if (empty($direccion_mac)) {
-                $direccion_mac = $diag_encontrado['direccion_mac'];
-            }
-        }
-    }
-
-    // 5. Generar código correlativo de ticket (ej: SOP-2026-0001)
-    $stmt_sec = $conexion->query("SELECT COALESCE(MAX(id), 0) + 1 AS siguiente FROM tickets_soporte");
-    $fila_sec = $stmt_sec->fetch();
-    $codigo_ticket = sprintf('SOP-%s-%04d', date('Y'), $fila_sec['siguiente']);
-
-    // 6. Insertar ticket principal en tickets_soporte
+    // 7. Insertar ticket principal
     $sql_ticket = "INSERT INTO tickets_soporte (
                 codigo_ticket,
                 nombre_solicitante,
@@ -250,7 +168,7 @@ try {
         ':departamento_area'      => $departamento_area,
         ':soporte_hardware'       => $soporte_hardware ? 'true' : 'false',
         ':soporte_software'       => $soporte_software ? 'true' : 'false',
-        ':descripcion_problema'   => $descripcion_problema,
+        ':descripcion_problema'   => $descripcion_prob,
         ':equipo_id'              => $equipo['equipo_id'],
         ':codigo_activo'          => $equipo['codigo_activo'],
         ':numero_serie'           => $equipo['numero_serie'],
@@ -272,7 +190,7 @@ try {
     $resultado = $stmt_ticket->fetch();
     $ticket_id = (int)$resultado['id'];
 
-    // 7. Submódulo de Atención: Registrar atención técnica si se proporcionaron datos válidos por un técnico
+    // 8. Submódulo de Atención: Registrar atención técnica si aplica
     if ($es_personal_tecnico) {
         $datos_atencion = $datos;
         if (!empty($tecnico_asignado_id)) {

@@ -31,11 +31,14 @@
                     <i class="bi bi-laptop text-primary fs-5"></i>
                     <h3 class="h6 fw-bold mb-0 text-dark">Equipo Afectado <span class="fw-normal text-muted small">(Inventario y Registro Técnico)</span></h3>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" id="btnLimpiarEquipo" class="btn btn-outline-secondary btn-sm py-0 px-2 d-none" title="Limpiar selección para registrar nuevo">
-                        <i class="bi bi-x-circle me-1"></i> Desvincular equipo
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm" id="btnAutoDetectarPC_Soporte" title="Detectar automáticamente esta PC">
+                        <i class="bi bi-cpu"></i> Auto-detectar PC
                     </button>
-                    <span id="badgeEstadoEquipo" class="badge bg-secondary-subtle text-secondary border">Equipo nuevo</span>
+                    <button type="button" id="btnLimpiarEquipo" class="btn btn-outline-secondary btn-sm py-1 px-2 d-none" title="Limpiar selección para registrar nuevo">
+                        <i class="bi bi-x-circle me-1"></i> Desvincular
+                    </button>
+                    <span id="badgeEstadoEquipo" class="badge bg-secondary-subtle text-secondary border py-2">Equipo nuevo</span>
                 </div>
             </div>
 
@@ -138,11 +141,18 @@
         <?php else: ?>
         <!-- Sub-bloque: Equipo Afectado (Para el Solicitante: Preguntas Simples y Humanas) -->
         <div class="bloque-equipo-afectado p-3 rounded-3 bg-light border">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-laptop text-primary fs-5"></i>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-laptop text-primary fs-5"></i>
+                    <div>
+                        <h3 class="h6 fw-bold mb-0 text-dark">¿En qué equipo ocurre la falla?</h3>
+                        <small class="text-muted">Indique el tipo de equipo para que el técnico acuda con los repuestos o herramientas adecuadas</small>
+                    </div>
+                </div>
                 <div>
-                    <h3 class="h6 fw-bold mb-0 text-dark">¿En qué equipo ocurre la falla?</h3>
-                    <small class="text-muted">Indique el tipo de equipo para que el técnico acuda con los repuestos o herramientas adecuadas</small>
+                    <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm" id="btnAutoDetectarPC_Usuario" title="Detectar automáticamente mi equipo actual">
+                        <i class="bi bi-cpu"></i> Auto-detectar Mi PC
+                    </button>
                 </div>
             </div>
 

@@ -85,6 +85,13 @@ const clienteApi = {
         });
     },
 
+    async detectarMiPC(ipOpcional = '') {
+        const query = ipOpcional ? `?ip=${encodeURIComponent(ipOpcional)}` : '';
+        return await this.peticion(`/api/diagnostico/detectar_mi_pc.php${query}`, {
+            method: 'GET'
+        });
+    },
+
     async crearTicketSoporte(datos) {
         return await this.peticion('/api/soporte_tecnico/crear_ticket.php', {
             method: 'POST',
@@ -142,6 +149,13 @@ const clienteApi = {
     async obtenerMantenimientoPreventivo(id) {
         return await this.peticion(`/api/mantenimiento_preventivo/obtener_mantenimiento.php?id=${encodeURIComponent(id)}`, {
             method: 'GET'
+        });
+    },
+
+    async actualizarMantenimientoPreventivo(datos) {
+        return await this.peticion('/api/mantenimiento_preventivo/actualizar_mantenimiento.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
         });
     },
 
@@ -216,6 +230,23 @@ const clienteApi = {
         });
     },
 
+    // ==========================================================
+    // 6. MÓDULO: AUDITORÍA Y TRAZABILIDAD
+    // ==========================================================
+    async listarAuditoria(filtros = {}) {
+        const query = new URLSearchParams();
+        if (filtros.modulo) query.append('modulo', filtros.modulo);
+        if (filtros.registro_id) query.append('registro_id', filtros.registro_id);
+        if (filtros.codigo) query.append('codigo', filtros.codigo);
+        if (filtros.limite) query.append('limite', filtros.limite);
+        if (filtros.offset) query.append('offset', filtros.offset);
+
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        return await this.peticion(`/api/auditoria/listar.php${qs}`, {
+            method: 'GET'
+        });
+    },
+
     /**
      * Muestra una notificación Toast flotante
      */
@@ -263,39 +294,21 @@ const clienteApi = {
         };
 
         try {
-            // 1. Obtener métricas consolidadas de tickets
-            const respTickets = await this.peticion('/api/soporte_tecnico/listar_tickets.php?limite=1');
-            if (respTickets.exito && respTickets.datos && respTickets.datos.metricas) {
-                const m = respTickets.datos.metricas;
-                resultado.tickets.total = parseInt(m.total, 10) || 0;
-                resultado.tickets.pendientes = parseInt(m.pendientes, 10) || 0;
-                resultado.tickets.en_proceso = parseInt(m.en_proceso, 10) || 0;
-                resultado.tickets.resueltos = parseInt(m.resueltos, 10) || 0;
-                resultado.tickets.fuerza_mayor = parseInt(m.fuerza_mayor, 10) || 0;
-            }
-        } catch (e) {
-            console.warn('[Dashboard] No se pudieron obtener métricas de tickets:', e);
-        }
+            const resp = await this.peticion('/api/metricas/dashboard.php');
+            if (resp && resp.exito && resp.datos) {
+                const k = resp.datos.kpis_globales || {};
+                const d = k.desglose_pendientes || {};
+                const t = resp.datos.telemetria_hardware || {};
 
-        try {
-            // 2. Obtener recuento de PCs con alertas técnicas de hardware
-            const respPcs = await this.peticion('/api/diagnostico/listar.php');
-            if (respPcs.exito && respPcs.datos) {
-                if (respPcs.datos.metricas) {
-                    const m = respPcs.datos.metricas;
-                    const criticos = parseInt(m.criticos, 10) || 0;
-                    const advertencias = parseInt(m.advertencias, 10) || 0;
-                    resultado.pcsAlerta = criticos + advertencias;
-                } else if (Array.isArray(respPcs.datos.equipos)) {
-                    resultado.pcsAlerta = respPcs.datos.equipos.filter(pc => {
-                        const esAlerta = (pc.estado_salud_general === 'critico' || pc.estado_salud_general === 'advertencia');
-                        const tieneAlertas = (Array.isArray(pc.alertas_detectadas) && pc.alertas_detectadas.length > 0);
-                        return esAlerta || tieneAlertas;
-                    }).length;
-                }
+                resultado.tickets.total = (k.total_abiertos || 0) + (k.total_resueltos || 0);
+                resultado.tickets.pendientes = d.soporte || 0;
+                resultado.tickets.en_proceso = 0;
+                resultado.tickets.resueltos = k.total_resueltos || 0;
+                resultado.tickets.fuerza_mayor = 0;
+                resultado.pcsAlerta = (t.criticos || 0) + (t.advertencias || 0);
             }
         } catch (e) {
-            // Si el usuario no tiene permisos o no está disponible, mantener en 0
+            console.warn('[Dashboard] Error al obtener métricas consolidadas:', e);
         }
 
         return resultado;
@@ -328,59 +341,72 @@ const clienteApi = {
     },
 
     _offsetMesDashboard: 0,
-    _cacheDashboardRegistros: null,
     _instanciaGraficoDona: null,
 
     /**
-     * Calcula el rango de fechas para el mes según el offset:
-     * 0 = mes actual, -1 = mes anterior, +1 = mes siguiente
+     * Calcula el mes y año objetivo según el offset
      */
-    obtenerRangoMes(offsetMeses = 0) {
+    obtenerPeriodoSeleccionado(offsetMeses = 0) {
         const ahora = new Date();
-        const anio = ahora.getFullYear();
-        const mesIndex = ahora.getMonth() + (offsetMeses || 0);
-
-        const inicio = new Date(anio, mesIndex, 1, 0, 0, 0, 0);
-        const fin = new Date(anio, mesIndex + 1, 0, 23, 59, 59, 999);
-
-        return { inicio, fin };
+        const fechaTarget = new Date(ahora.getFullYear(), ahora.getMonth() + (offsetMeses || 0), 1);
+        return {
+            mes: fechaTarget.getMonth() + 1,
+            anio: fechaTarget.getFullYear()
+        };
     },
 
     /**
      * Permite avanzar o retroceder de mes en la Dona de Distribución Mensual
-     * 0 = volver al mes actual, -1 = mes anterior, +1 = mes siguiente
      */
-    cambiarMesDashboard(direccion) {
+    async cambiarMesDashboard(direccion) {
         if (direccion === 0) {
             this._offsetMesDashboard = 0;
         } else {
             this._offsetMesDashboard += direccion;
         }
-        this.renderizarDonaMensual();
+        await this.cargarDashboardGestionTecnica();
     },
 
     /**
-     * Renderiza la Dona Mensual de los 4 Formularios con navegación por meses,
-     * tooltips interactivos con porcentajes y cantidades, y contador central.
+     * Carga y orquesta en vivo todos los indicadores del Dashboard de Gestión Técnica (Bloques A, B y C)
+     * Consumiendo directamente el endpoint unificado de alto rendimiento: GET /api/metricas/dashboard.php
      */
-    renderizarDonaMensual() {
-        if (!this._cacheDashboardRegistros) return;
+    async cargarDashboardGestionTecnica() {
+        const periodo = this.obtenerPeriodoSeleccionado(this._offsetMesDashboard);
+        const urlDashboard = `/api/metricas/dashboard.php?mes=${periodo.mes}&anio=${periodo.anio}`;
 
-        const rango = this.obtenerRangoMes(this._offsetMesDashboard);
-        const nombresMeses = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ];
-        const nombreMes = nombresMeses[rango.inicio.getMonth()];
-        const anio = rango.inicio.getFullYear();
+        let datosDashboard = null;
+        try {
+            const resp = await this.peticion(urlDashboard);
+            if (resp && resp.exito && resp.datos) {
+                datosDashboard = resp.datos;
+            }
+        } catch (err) {
+            console.error('[Dashboard] Error al consultar /api/metricas/dashboard.php:', err);
+            return;
+        }
 
-        let textoMes = `${nombreMes} ${anio}`;
-        if (this._offsetMesDashboard === 0) {
+        if (!datosDashboard) return;
+
+        const kpis = datosDashboard.kpis_globales || {};
+        const desglose = kpis.desglose_pendientes || {};
+        const distMensual = datosDashboard.distribucion_mensual || {};
+        const topDeptos = datosDashboard.top_departamentos || {};
+        const telemetria = datosDashboard.telemetria_hardware || {};
+        const alerta = datosDashboard.alerta_temprana || {};
+        const infoPeriodo = datosDashboard.periodo || {};
+
+        // ====================================================================
+        // RENDERIZADO: SELECTOR DE PERÍODO / MES
+        // ====================================================================
+        const elTextoMes = document.getElementById('textoMesSeleccionado');
+        const elBtnVolver = document.getElementById('btnVolverMesActual');
+
+        let textoMes = `${infoPeriodo.nombre_mes || 'Mes'} ${infoPeriodo.anio || ''}`;
+        if (infoPeriodo.es_actual) {
             textoMes += ' (Actual)';
         }
 
-        const elTextoMes = document.getElementById('textoMesSeleccionado');
-        const elBtnVolver = document.getElementById('btnVolverMesActual');
         if (elTextoMes) {
             elTextoMes.innerHTML = `<i class="bi bi-calendar3 text-primary me-1"></i>${textoMes}`;
         }
@@ -388,37 +414,150 @@ const clienteApi = {
             elBtnVolver.classList.toggle('d-none', this._offsetMesDashboard === 0);
         }
 
-        // Conteo por formulario dentro del mes seleccionado
-        let conteo = { sop: 0, inc: 0, acc: 0, mp: 0 };
+        // ====================================================================
+        // RENDERIZADO: BLOQUE A (KPIS EJECUTIVOS)
+        // ====================================================================
+        // KPI 1: Carga de Trabajo y Desglose de Pendientes por Formulario
+        const elTotAb = document.getElementById('kpiTotalAbiertos');
+        const elAbEst = document.getElementById('kpiAbiertosEstatus');
+        const elAbDesglose = document.getElementById('kpiAbiertosDesglose');
+        const totalAbiertos = kpis.total_abiertos || 0;
 
-        function estaEnRango(fechaStr) {
-            if (!fechaStr) return false;
-            const f = new Date(fechaStr.indexOf(' ') !== -1 ? fechaStr.replace(' ', 'T') : fechaStr);
-            if (isNaN(f.getTime())) return false;
-            return (f >= rango.inicio && f <= rango.fin);
+        if (elTotAb) elTotAb.textContent = totalAbiertos;
+        if (elAbEst) {
+            elAbEst.textContent = totalAbiertos > 0 ? (totalAbiertos + ' pendientes') : 'Al día';
+            elAbEst.className = totalAbiertos > 0 ? 'badge bg-primary bg-opacity-15 text-primary fw-bold' : 'badge bg-success bg-opacity-15 text-success fw-bold';
+        }
+        if (elAbDesglose) {
+            elAbDesglose.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-headset text-info me-1"></i>Soporte Técnico:</span>
+                    <strong class="text-dark">${desglose.soporte || 0} de Soporte</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-exclamation-triangle text-danger me-1"></i>Incidencias:</span>
+                    <strong class="text-danger">${desglose.incidencias || 0} de Incidencias</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-key text-primary me-1"></i>Accesos:</span>
+                    <strong class="text-primary">${desglose.accesos || 0} de Accesos</strong>
+                </div>
+            `;
         }
 
-        const reg = this._cacheDashboardRegistros;
-        (reg.soporte || []).forEach(t => {
-            if (estaEnRango(t.fecha_solicitud || t.creado_en)) conteo.sop++;
-        });
-        (reg.incidencias || []).forEach(i => {
-            if (estaEnRango(i.fecha_hora_reporte || i.creado_en)) conteo.inc++;
-        });
-        (reg.accesos || []).forEach(a => {
-            if (estaEnRango(a.fecha_solicitud || a.creado_en)) conteo.acc++;
-        });
-        (reg.mantenimiento || []).forEach(mp => {
-            if (estaEnRango(mp.fecha_mantenimiento || mp.creado_en)) conteo.mp++;
-        });
+        // KPI 2: Criticidad Alta
+        const elTotCrit = document.getElementById('kpiTotalCriticos');
+        const elCritBadge = document.getElementById('kpiCriticosBadge');
+        const elCritEst = document.getElementById('kpiCriticosEstatus');
+        const elCritDetalleTexto = document.getElementById('kpiCriticosDetalleTexto');
+        const totalCriticos = kpis.total_criticos || 0;
 
-        const totalMes = conteo.sop + conteo.inc + conteo.acc + conteo.mp;
+        if (elTotCrit) elTotCrit.textContent = totalCriticos;
+        if (elCritBadge) elCritBadge.textContent = totalCriticos + ' Críticas';
+        if (elCritEst) {
+            if (totalCriticos > 0) {
+                elCritEst.className = 'badge bg-danger bg-opacity-15 text-danger fw-bold';
+                elCritEst.textContent = 'Atención Urgente';
+            } else {
+                elCritEst.className = 'badge bg-success bg-opacity-15 text-success fw-bold';
+                elCritEst.textContent = 'Estable';
+            }
+        }
+        if (elCritDetalleTexto) {
+            if (kpis.sistema_critico) {
+                elCritDetalleTexto.innerHTML = `<span class="badge bg-danger bg-opacity-15 text-danger px-1 py-0">${totalCriticos} Crítica(s)</span> en <strong>${kpis.sistema_critico}</strong>`;
+            } else {
+                elCritDetalleTexto.innerHTML = `<span class="badge bg-success bg-opacity-15 text-success px-1 py-0">0 Críticas</span> en plataformas`;
+            }
+        }
 
-        // Cálculo de porcentajes para tooltips y leyendas
-        const pctSop = totalMes > 0 ? Math.round((conteo.sop / totalMes) * 100) : 0;
-        const pctInc = totalMes > 0 ? Math.round((conteo.inc / totalMes) * 100) : 0;
-        const pctAcc = totalMes > 0 ? Math.round((conteo.acc / totalMes) * 100) : 0;
-        const pctMp  = totalMes > 0 ? Math.max(0, 100 - (pctSop + pctInc + pctAcc)) : 0;
+        // KPI 3: Tickets Resueltos y Atendidos
+        const elTotRes = document.getElementById('kpiTotalResueltos');
+        const elResDetalle = document.getElementById('kpiResueltosDetalle');
+        const elResEst = document.getElementById('kpiResueltosEstatus');
+        const totalResueltos = kpis.total_resueltos || 0;
+
+        if (elTotRes) elTotRes.textContent = totalResueltos;
+        if (elResDetalle) {
+            elResDetalle.textContent = `${totalResueltos} tickets cerrados con éxito en la plataforma`;
+        }
+        if (elResEst) {
+            elResEst.textContent = totalResueltos > 0 ? (totalResueltos + ' atendidos') : 'Sin cierres';
+            elResEst.className = totalResueltos > 0 ? 'badge bg-success bg-opacity-15 text-success fw-bold' : 'badge bg-secondary bg-opacity-15 text-secondary fw-bold';
+        }
+
+        // KPI 4: Mantenimientos Preventivos Realizados
+        const elTotMp = document.getElementById('kpiTotalMantenimientos');
+        const elMpDetalle = document.getElementById('kpiMantenimientoDetalle');
+        const elMpEst = document.getElementById('kpiMantenimientoEstatus');
+        const totalMp = kpis.total_mantenimientos || 0;
+
+        if (elTotMp) elTotMp.textContent = totalMp;
+        if (elMpDetalle) {
+            elMpDetalle.textContent = `${totalMp} fichas técnicas registradas y firmadas`;
+        }
+        if (elMpEst) {
+            elMpEst.textContent = totalMp > 0 ? (totalMp + ' fichas OK') : 'Sin fichas';
+            elMpEst.className = totalMp > 0 ? 'badge bg-info bg-opacity-15 text-info fw-bold' : 'badge bg-secondary bg-opacity-15 text-secondary fw-bold';
+        }
+
+        // ====================================================================
+        // RENDERIZADO: BANNER DE ALERTA TEMPRANA
+        // ====================================================================
+        const bannerEl = document.getElementById('bannerAlertaDashboard');
+        const iconoAlerta = document.getElementById('iconoBannerAlerta');
+        const textoAlerta = document.getElementById('textoBannerAlerta');
+        const badgeEstado = document.getElementById('badgeEstadoGeneral');
+        const btnAccion = document.getElementById('btnAccionAlerta');
+
+        if (bannerEl && textoAlerta) {
+            if (alerta.hay_alerta) {
+                if (alerta.tipo === 'danger') {
+                    bannerEl.className = 'alert alert-danger border-0 shadow-sm rounded-3 py-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0';
+                    if (iconoAlerta) iconoAlerta.className = 'bi bi-exclamation-octagon-fill fs-5 text-danger';
+                    textoAlerta.innerHTML = `<strong>${alerta.titulo}</strong> ${alerta.mensaje}`;
+                    if (badgeEstado) {
+                        badgeEstado.className = 'badge bg-danger text-white small px-2 py-1';
+                        badgeEstado.textContent = 'Alerta Crítica';
+                    }
+                    if (btnAccion && alerta.url_accion) {
+                        btnAccion.href = alerta.url_accion;
+                        btnAccion.className = 'btn btn-danger btn-sm px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm';
+                        btnAccion.innerHTML = `<span>${alerta.texto_boton_accion || 'Ir a atender'}</span><i class="bi bi-arrow-right"></i>`;
+                    }
+                } else if (alerta.tipo === 'warning') {
+                    bannerEl.className = 'alert alert-warning border-0 shadow-sm rounded-3 py-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0';
+                    if (iconoAlerta) iconoAlerta.className = 'bi bi-cpu-fill fs-5 text-warning';
+                    textoAlerta.innerHTML = `<strong>${alerta.titulo}</strong> ${alerta.mensaje}`;
+                    if (badgeEstado) {
+                        badgeEstado.className = 'badge bg-warning text-dark small px-2 py-1';
+                        badgeEstado.textContent = 'Alerta Hardware';
+                    }
+                    if (btnAccion && alerta.url_accion) {
+                        btnAccion.href = alerta.url_accion;
+                        btnAccion.className = 'btn btn-warning btn-sm px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm text-dark';
+                        btnAccion.innerHTML = `<span>${alerta.texto_boton_accion || 'Ver Equipos'}</span><i class="bi bi-arrow-right"></i>`;
+                    }
+                }
+            } else {
+                bannerEl.className = 'alert alert-success border-0 shadow-sm rounded-3 py-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0';
+                if (iconoAlerta) iconoAlerta.className = 'bi bi-check-circle-fill fs-5 text-success';
+                textoAlerta.innerHTML = `<strong>${alerta.titulo || 'Sistemas Institucionales Estables:'}</strong> ${alerta.mensaje || 'No se registran incidencias críticas ni alertas de hardware pendientes en este momento.'}`;
+                if (badgeEstado) {
+                    badgeEstado.className = 'badge bg-success bg-opacity-25 text-success small px-2 py-1';
+                    badgeEstado.textContent = 'Operativo';
+                }
+                if (btnAccion) {
+                    btnAccion.className = 'btn btn-danger btn-sm px-3 py-1 fw-semibold d-none align-items-center gap-1 shadow-sm';
+                }
+            }
+        }
+
+        // ====================================================================
+        // RENDERIZADO: BLOQUE B (DISTRIBUCIÓN MENSUAL POR FORMULARIO EN DONA)
+        // ====================================================================
+        const conteosDona = distMensual.conteos || { soporte: 0, incidencias: 0, accesos: 0, mantenimiento: 0 };
+        const totalMes = distMensual.total_mes || 0;
 
         // Actualizar textos centrales de la dona
         const elTotalCentro = document.getElementById('donaTotalTicketsCentro');
@@ -426,28 +565,19 @@ const clienteApi = {
         if (elTotalCentro) elTotalCentro.textContent = totalMes;
         if (elTextoCentro) elTextoCentro.textContent = totalMes === 1 ? 'ticket' : 'tickets';
 
-        // Actualizar pie inferior de la tarjeta: solo Mayor Demanda
+        // Actualizar pie inferior de la tarjeta: Mayor Demanda
         const elMayorPie = document.getElementById('formularioMayorUsoMes');
         if (elMayorPie) {
             if (totalMes === 0) {
                 elMayorPie.textContent = 'Sin actividad registrada';
             } else {
-                const lista = [
-                    { nombre: 'Soporte Tecn.', cant: conteo.sop },
-                    { nombre: 'Incidencias', cant: conteo.inc },
-                    { nombre: 'Accesos', cant: conteo.acc },
-                    { nombre: 'Mant.Preventivo', cant: conteo.mp }
-                ].sort((a, b) => b.cant - a.cant);
-
-                elMayorPie.innerHTML = `<span class="text-primary">${lista[0].nombre}</span> (${lista[0].cant} tickets)`;
+                const may = distMensual.mayor_demanda || {};
+                elMayorPie.innerHTML = `<span class="text-primary">${may.formulario || 'Soporte'}</span> (${may.cantidad || 0} tickets)`;
             }
         }
 
-        // Renderizado del Gráfico de Dona con Chart.js
-        const canvas = document.getElementById('graficoDonaFormularios');
-        if (!canvas) return;
-
-        if (typeof Chart !== 'undefined') {
+        const canvas = document.getElementById('graficoDonaFormularios') || document.getElementById('graficaDonaFormularios');
+        if (canvas && typeof Chart !== 'undefined') {
             if (this._instanciaGraficoDona) {
                 try { this._instanciaGraficoDona.destroy(); } catch (e) {}
                 this._instanciaGraficoDona = null;
@@ -494,7 +624,12 @@ const clienteApi = {
                             'Mant.Preventivo'
                         ],
                         datasets: [{
-                            data: [conteo.sop, conteo.inc, conteo.acc, conteo.mp],
+                            data: [
+                                conteosDona.soporte || 0,
+                                conteosDona.incidencias || 0,
+                                conteosDona.accesos || 0,
+                                conteosDona.mantenimiento || 0
+                            ],
                             backgroundColor: [
                                 '#0dcaf0', // Cyan (Soporte)
                                 '#dc3545', // Danger Red (Incidencias)
@@ -537,324 +672,6 @@ const clienteApi = {
                 });
             }
         }
-    },
-
-    /**
-     * Carga y orquesta en vivo todos los indicadores del Dashboard de Gestión Técnica (Bloques A, B y C)
-     */
-    async cargarDashboardGestionTecnica() {
-        const [resSoporte, resIncidencias, resAccesos, resMantenimiento, resDiag] = await Promise.allSettled([
-            this.peticion('/api/soporte_tecnico/listar_tickets.php?limite=50'),
-            this.peticion('/api/registro_incidencias/listar_incidencias.php?limite=50'),
-            this.peticion('/api/asignacion_accesos/listar_solicitudes.php?limite=50'),
-            this.peticion('/api/mantenimiento_preventivo/listar_mantenimientos.php?limite=50'),
-            this.peticion('/api/diagnostico/listar.php?limite=50')
-        ]);
-
-        let totales = { soporte: 0, incidencias: 0, accesos: 0, mantenimiento: 0 };
-        let pendientesPorModulo = { sop: 0, inc: 0, acc: 0 };
-        let conteoDepartamentos = {};
-
-        let totalAbiertos = 0;
-        let totalCriticos = 0;
-        let totalResueltos = 0;
-
-        let hayAlertaCritica = false;
-        let primerIncidenciaCritica = null;
-
-        function registrarEstado(estado, esCritico, claveModulo) {
-            const est = (estado || '').toLowerCase();
-            const esCerrado = (est === 'resuelto' || est === 'atendido' || est === 'completado' || est === 'cerrada');
-
-            if (!esCerrado) {
-                totalAbiertos++;
-                if (esCritico) totalCriticos++;
-                if (claveModulo && pendientesPorModulo[claveModulo] !== undefined) {
-                    pendientesPorModulo[claveModulo]++;
-                }
-            } else {
-                totalResueltos++;
-            }
-        }
-
-        function registrarDemandaArea(areaTexto) {
-            if (!areaTexto || typeof areaTexto !== 'string') return;
-            let limpia = areaTexto.trim();
-            if (!limpia || limpia.length < 2) return;
-            limpia = limpia.charAt(0).toUpperCase() + limpia.slice(1);
-            conteoDepartamentos[limpia] = (conteoDepartamentos[limpia] || 0) + 1;
-        }
-
-        // Cache de registros para navegación de semanas en vivo
-        const ticketsSop = (resSoporte.status === 'fulfilled' && resSoporte.value && resSoporte.value.exito && Array.isArray(resSoporte.value.datos.tickets)) ? resSoporte.value.datos.tickets : [];
-        const regInc = (resIncidencias.status === 'fulfilled' && resIncidencias.value && resIncidencias.value.exito && Array.isArray(resIncidencias.value.datos.registros)) ? resIncidencias.value.datos.registros : [];
-        const regAcc = (resAccesos.status === 'fulfilled' && resAccesos.value && resAccesos.value.exito && Array.isArray(resAccesos.value.datos.registros)) ? resAccesos.value.datos.registros : [];
-        const regMp = (resMantenimiento.status === 'fulfilled' && resMantenimiento.value && resMantenimiento.value.exito && Array.isArray(resMantenimiento.value.datos.registros)) ? resMantenimiento.value.datos.registros : [];
-
-        this._cacheDashboardRegistros = {
-            soporte: ticketsSop,
-            incidencias: regInc,
-            accesos: regAcc,
-            mantenimiento: regMp
-        };
-
-        // 1. Procesar Soporte Técnico
-        if (resSoporte.status === 'fulfilled' && resSoporte.value && resSoporte.value.exito) {
-            const d = resSoporte.value.datos;
-            const m = d.metricas || {};
-            totales.soporte = parseInt(m.total, 10) || 0;
-
-            if (Array.isArray(d.tickets)) {
-                d.tickets.forEach(t => {
-                    const esUrgente = (t.prioridad === 'urgente' || t.prioridad === 'alta');
-                    registrarEstado(t.estado, esUrgente, 'sop');
-                    registrarDemandaArea(t.departamento_area || 'Área General');
-                });
-            }
-        }
-
-        // 2. Procesar Incidencias de Sistemas
-        if (resIncidencias.status === 'fulfilled' && resIncidencias.value && resIncidencias.value.exito) {
-            const d = resIncidencias.value.datos;
-            const m = d.metricas || {};
-            totales.incidencias = parseInt(m.total, 10) || 0;
-
-            if (Array.isArray(d.registros)) {
-                d.registros.forEach(i => {
-                    const critStr = (i.nivel_criticidad || '').toLowerCase();
-                    const esCrit = (critStr === 'critica_nivel_1' || critStr === 'alta_nivel_2');
-                    const est = (i.estado || '').toLowerCase();
-                    const noCerrada = (est !== 'resuelta' && est !== 'cerrada');
-
-                    if (esCrit && noCerrada && !primerIncidenciaCritica) {
-                        hayAlertaCritica = true;
-                        primerIncidenciaCritica = {
-                            codigo: i.nro_incidencia || 'INC-CRÍTICA',
-                            sistema: i.sistema_erp_sai ? 'ERP - SAI (Facturación)' : (i.sistema_cobranzas_netcob ? 'Cobranzas - NETCOB' : (i.sistema_otros_detalle || 'Plataforma Crítica'))
-                        };
-                    }
-
-                    registrarEstado(i.estado, esCrit, 'inc');
-
-                    const areaInc = i.sistema_erp_sai ? 'ERP - SAI (Facturación)' : (i.sistema_cobranzas_netcob ? 'Cobranzas - NETCOB' : (i.sistema_otros_detalle || i.responsable_reporte || 'Infraestructura TI'));
-                    registrarDemandaArea(areaInc);
-                });
-            }
-        }
-
-        // 3. Procesar Asignación de Accesos
-        if (resAccesos.status === 'fulfilled' && resAccesos.value && resAccesos.value.exito) {
-            const d = resAccesos.value.datos;
-            const m = d.metricas || {};
-            totales.accesos = parseInt(m.total, 10) || 0;
-
-            if (Array.isArray(d.registros)) {
-                d.registros.forEach(a => {
-                    registrarEstado(a.estado, false, 'acc');
-                    registrarDemandaArea(a.area_departamento || 'Institucional');
-                });
-            }
-        }
-
-        // 4. Procesar Mantenimiento Preventivo
-        if (resMantenimiento.status === 'fulfilled' && resMantenimiento.value && resMantenimiento.value.exito) {
-            const d = resMantenimiento.value.datos;
-            const m = d.metricas || {};
-            totales.mantenimiento = parseInt(m.total || m.total_mantenimientos, 10) || 0;
-
-            if (Array.isArray(d.registros)) {
-                d.registros.forEach(mp => {
-                    registrarEstado('completado', false, 'mp');
-                    registrarDemandaArea(mp.ubicacion_equipo || 'Oficinas / Equipos');
-                });
-            }
-        }
-
-        // 5. Procesar Telemetría PC (Bloque C)
-        let optimosPc = 0;
-        let advertenciasPc = 0;
-        let criticosPc = 0;
-        let totalPcs = 0;
-        let antivirusActivos = 0;
-        let alertasHardware = [];
-
-        if (resDiag.status === 'fulfilled' && resDiag.value && resDiag.value.exito) {
-            const d = resDiag.value.datos;
-            const m = d.metricas || {};
-            optimosPc = (parseInt(m.optimos, 10) || 0) + (parseInt(m.buenos, 10) || 0);
-            advertenciasPc = parseInt(m.advertencias, 10) || 0;
-            criticosPc = parseInt(m.criticos, 10) || 0;
-            totalPcs = parseInt(m.total, 10) || 0;
-
-            if (criticosPc > 0 && !hayAlertaCritica) {
-                hayAlertaCritica = true;
-            }
-
-            if (Array.isArray(d.equipos)) {
-                d.equipos.forEach(eq => {
-                    if (eq.antivirus_activo === true || eq.antivirus_activo === 't' || eq.antivirus_activo === 1) {
-                        antivirusActivos++;
-                    }
-
-                    const esCrit = (eq.estado_salud_general === 'critico');
-                    const esAdv = (eq.estado_salud_general === 'advertencia');
-                    const smartFalla = (eq.salud_disco_smart && eq.salud_disco_smart.toLowerCase().indexOf('falla') !== -1);
-                    const pocoDisco = (eq.espacio_libre_c_gb !== null && parseFloat(eq.espacio_libre_c_gb) < 15);
-
-                    if (esCrit || smartFalla || pocoDisco) {
-                        alertasHardware.push({
-                            hostname: eq.hostname || 'PC sin nombre',
-                            area: eq.area || eq.usuario_windows || 'Oficina',
-                            motivo: smartFalla ? 'Fallo SMART en Disco' : (pocoDisco ? `Disco C crítico (${eq.espacio_libre_c_gb}GB libres)` : 'Alerta crítica de HW'),
-                            tipo: 'danger'
-                        });
-                    } else if (esAdv && alertasHardware.length < 3) {
-                        alertasHardware.push({
-                            hostname: eq.hostname || 'PC',
-                            area: eq.area || 'Oficina',
-                            motivo: `Memoria elevada (${eq.uso_ram_porcentaje || 85}% RAM)`,
-                            tipo: 'warning'
-                        });
-                    }
-                });
-            }
-        }
-
-        // ====================================================================
-        // RENDERIZADO: BLOQUE A (KPIS EJECUTIVOS)
-        // ====================================================================
-        // KPI 1: Carga de Trabajo y Desglose de Pendientes por Formulario
-        const elTotAb = document.getElementById('kpiTotalAbiertos');
-        const elAbEst = document.getElementById('kpiAbiertosEstatus');
-        const elAbDesglose = document.getElementById('kpiAbiertosDesglose');
-
-        if (elTotAb) elTotAb.textContent = totalAbiertos;
-        if (elAbEst) {
-            elAbEst.textContent = totalAbiertos > 0 ? (totalAbiertos + ' pendientes') : 'Al día';
-            elAbEst.className = totalAbiertos > 0 ? 'badge bg-primary bg-opacity-15 text-primary fw-bold' : 'badge bg-success bg-opacity-15 text-success fw-bold';
-        }
-        if (elAbDesglose) {
-            elAbDesglose.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-headset text-info me-1"></i>Soporte Técnico:</span>
-                    <strong class="text-dark">${pendientesPorModulo.sop} de Soporte</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-exclamation-triangle text-danger me-1"></i>Incidencias:</span>
-                    <strong class="text-danger">${pendientesPorModulo.inc} de Incidencias</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-key text-primary me-1"></i>Accesos:</span>
-                    <strong class="text-primary">${pendientesPorModulo.acc} de Accesos</strong>
-                </div>
-            `;
-        }
-
-        // KPI 2: Criticidad Alta
-        const elTotCrit = document.getElementById('kpiTotalCriticos');
-        const elCritBadge = document.getElementById('kpiCriticosBadge');
-        const elCritEst = document.getElementById('kpiCriticosEstatus');
-        const elCritDetalleTexto = document.getElementById('kpiCriticosDetalleTexto');
-
-        if (elTotCrit) elTotCrit.textContent = totalCriticos;
-        if (elCritBadge) elCritBadge.textContent = totalCriticos + ' Críticas';
-        if (elCritEst) {
-            if (totalCriticos > 0) {
-                elCritEst.className = 'badge bg-danger bg-opacity-15 text-danger fw-bold';
-                elCritEst.textContent = 'Atención Urgente';
-            } else {
-                elCritEst.className = 'badge bg-success bg-opacity-15 text-success fw-bold';
-                elCritEst.textContent = 'Estable';
-            }
-        }
-        if (elCritDetalleTexto) {
-            if (primerIncidenciaCritica) {
-                elCritDetalleTexto.innerHTML = `<span class="badge bg-danger bg-opacity-15 text-danger px-1 py-0">${totalCriticos} Crítica(s)</span> en <strong>${primerIncidenciaCritica.sistema}</strong>`;
-            } else {
-                elCritDetalleTexto.innerHTML = `<span class="badge bg-success bg-opacity-15 text-success px-1 py-0">0 Críticas</span> en plataformas`;
-            }
-        }
-
-        // KPI 3: Tickets Resueltos y Atendidos
-        const elTotRes = document.getElementById('kpiTotalResueltos');
-        const elResDetalle = document.getElementById('kpiResueltosDetalle');
-        const elResEst = document.getElementById('kpiResueltosEstatus');
-        if (elTotRes) elTotRes.textContent = totalResueltos;
-        if (elResDetalle) {
-            elResDetalle.textContent = `${totalResueltos} tickets cerrados con éxito en la plataforma`;
-        }
-        if (elResEst) {
-            elResEst.textContent = totalResueltos > 0 ? (totalResueltos + ' atendidos') : 'Sin cierres';
-            elResEst.className = totalResueltos > 0 ? 'badge bg-success bg-opacity-15 text-success fw-bold' : 'badge bg-secondary bg-opacity-15 text-secondary fw-bold';
-        }
-
-        // KPI 4: Mantenimientos Preventivos Realizados
-        const elTotMp = document.getElementById('kpiTotalMantenimientos');
-        const elMpDetalle = document.getElementById('kpiMantenimientoDetalle');
-        const elMpEst = document.getElementById('kpiMantenimientoEstatus');
-        if (elTotMp) elTotMp.textContent = totales.mantenimiento;
-        if (elMpDetalle) {
-            elMpDetalle.textContent = `${totales.mantenimiento} fichas técnicas registradas y firmadas`;
-        }
-        if (elMpEst) {
-            elMpEst.textContent = totales.mantenimiento > 0 ? (totales.mantenimiento + ' fichas OK') : 'Sin fichas';
-            elMpEst.className = totales.mantenimiento > 0 ? 'badge bg-info bg-opacity-15 text-info fw-bold' : 'badge bg-secondary bg-opacity-15 text-secondary fw-bold';
-        }
-
-        // ====================================================================
-        // RENDERIZADO: BANNER DE ALERTA TEMPRANA
-        // ====================================================================
-        const bannerEl = document.getElementById('bannerAlertaDashboard');
-        const iconoAlerta = document.getElementById('iconoBannerAlerta');
-        const textoAlerta = document.getElementById('textoBannerAlerta');
-        const badgeEstado = document.getElementById('badgeEstadoGeneral');
-        const btnAccion = document.getElementById('btnAccionAlerta');
-
-        if (bannerEl && textoAlerta) {
-            if (hayAlertaCritica && primerIncidenciaCritica) {
-                bannerEl.className = 'alert alert-danger border-0 shadow-sm rounded-3 py-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0';
-                if (iconoAlerta) iconoAlerta.className = 'bi bi-exclamation-octagon-fill fs-5 text-danger';
-                textoAlerta.innerHTML = `<strong>Atención Inmediata en Formulario de Incidencias:</strong> Incidencia Crítica <strong>[${primerIncidenciaCritica.codigo}]</strong> en <strong>${primerIncidenciaCritica.sistema}</strong> requiere atención técnica.`;
-                if (badgeEstado) {
-                    badgeEstado.className = 'badge bg-danger text-white small px-2 py-1';
-                    badgeEstado.textContent = 'Alerta Crítica';
-                }
-                if (btnAccion) {
-                    btnAccion.href = 'modulos/registro_incidencias/gestion_incidencias.php';
-                    btnAccion.className = 'btn btn-danger btn-sm px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm';
-                    btnAccion.innerHTML = '<span>Ir a atender</span><i class="bi bi-arrow-right"></i>';
-                }
-            } else if (hayAlertaCritica && criticosPc > 0) {
-                bannerEl.className = 'alert alert-warning border-0 shadow-sm rounded-3 py-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0';
-                if (iconoAlerta) iconoAlerta.className = 'bi bi-cpu-fill fs-5 text-warning';
-                textoAlerta.innerHTML = `<strong>Atención de Hardware:</strong> Se detectaron <strong>${criticosPc}</strong> equipos con fallas críticas de SMART o temperatura en la red.`;
-                if (badgeEstado) {
-                    badgeEstado.className = 'badge bg-warning text-dark small px-2 py-1';
-                    badgeEstado.textContent = 'Alerta Hardware';
-                }
-                if (btnAccion) {
-                    btnAccion.href = 'modulos/diagnostico/monitoreo_equipos.php';
-                    btnAccion.className = 'btn btn-warning btn-sm px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm text-dark';
-                    btnAccion.innerHTML = '<span>Ver Equipos</span><i class="bi bi-arrow-right"></i>';
-                }
-            } else {
-                bannerEl.className = 'alert alert-success border-0 shadow-sm rounded-3 py-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0';
-                if (iconoAlerta) iconoAlerta.className = 'bi bi-check-circle-fill fs-5 text-success';
-                textoAlerta.innerHTML = '<strong>Sistemas Institucionales Estables:</strong> No se registran incidencias críticas ni alertas de hardware pendientes en este momento.';
-                if (badgeEstado) {
-                    badgeEstado.className = 'badge bg-success bg-opacity-25 text-success small px-2 py-1';
-                    badgeEstado.textContent = 'Operativo';
-                }
-                if (btnAccion) {
-                    btnAccion.className = 'btn btn-danger btn-sm px-3 py-1 fw-semibold d-none align-items-center gap-1 shadow-sm';
-                }
-            }
-        }
-
-        // ====================================================================
-        // RENDERIZADO: BLOQUE B (DISTRIBUCIÓN MENSUAL POR FORMULARIO EN DONA)
-        // ====================================================================
-        this.renderizarDonaMensual();
 
         // Top Departamentos
         const contenedorTop = document.getElementById('contenedorTopDepartamentos');
@@ -862,14 +679,10 @@ const clienteApi = {
         const elTotalAreas = document.getElementById('totalAreasAtendidas');
 
         if (contenedorTop) {
-            const listaDeptos = Object.keys(conteoDepartamentos).map(k => ({
-                nombre: k,
-                total: conteoDepartamentos[k]
-            })).sort((a, b) => b.total - a.total);
+            const ranking = topDeptos.ranking || [];
+            if (elTotalAreas) elTotalAreas.textContent = topDeptos.total_areas || 0;
 
-            if (elTotalAreas) elTotalAreas.textContent = listaDeptos.length;
-
-            if (listaDeptos.length === 0) {
+            if (ranking.length === 0) {
                 contenedorTop.innerHTML = `
                     <div class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-3 d-block mb-2 text-secondary opacity-50"></i>
@@ -878,11 +691,8 @@ const clienteApi = {
                 `;
                 if (elAreaMayor) elAreaMayor.textContent = 'Ninguna';
             } else {
-                const totalDemandaAreas = listaDeptos.reduce((acc, curr) => acc + curr.total, 0);
-                const top5 = listaDeptos.slice(0, 5);
-
                 if (elAreaMayor) {
-                    elAreaMayor.innerHTML = `<strong>${top5[0].nombre}</strong> (${top5[0].total} tickets)`;
+                    elAreaMayor.innerHTML = `<strong>${topDeptos.area_mayor || 'Ninguna'}</strong> (${ranking[0].total} tickets)`;
                 }
 
                 const coloresBarras = [
@@ -894,10 +704,8 @@ const clienteApi = {
                 ];
 
                 let html = '';
-                top5.forEach((dep, index) => {
-                    const pct = totalDemandaAreas > 0 ? Math.round((dep.total / totalDemandaAreas) * 100) : 0;
+                ranking.forEach((dep, index) => {
                     const estilo = coloresBarras[index] || { barra: 'bg-primary', badge: 'bg-primary text-white' };
-
                     html += `
                         <div class="p-2 rounded-2 bg-light bg-opacity-75 border border-light">
                             <div class="d-flex justify-content-between align-items-center mb-1">
@@ -907,11 +715,11 @@ const clienteApi = {
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="text-muted small">${dep.total} ${dep.total === 1 ? 'ticket' : 'tickets'}</span>
-                                    <span class="badge ${estilo.badge} px-2 py-1" style="font-size: 0.72rem;">${pct}%</span>
+                                    <span class="badge ${estilo.badge} px-2 py-1" style="font-size: 0.72rem;">${dep.porcentaje}%</span>
                                 </div>
                             </div>
                             <div class="progress" style="height: 7px; border-radius: 4px; background-color: #e2e8f0;">
-                                <div class="progress-bar ${estilo.barra}" role="progressbar" style="width: ${pct}%;" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar ${estilo.barra}" role="progressbar" style="width: ${dep.porcentaje}%;" aria-valuenow="${dep.porcentaje}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </div>
                     `;
@@ -929,17 +737,20 @@ const clienteApi = {
         const elAntivirusTxt = document.getElementById('telemetriaAntivirusTexto');
         const contenedorAlertasHw = document.getElementById('contenedorAlertasHardware');
 
-        if (elOptimos) elOptimos.textContent = optimosPc;
-        if (elAdvertencias) elAdvertencias.textContent = advertenciasPc;
-        if (elCriticos) elCriticos.textContent = criticosPc;
+        if (elOptimos) elOptimos.textContent = telemetria.optimos || 0;
+        if (elAdvertencias) elAdvertencias.textContent = telemetria.advertencias || 0;
+        if (elCriticos) elCriticos.textContent = telemetria.criticos || 0;
 
         if (elAntivirusTxt) {
-            const pctAntivirus = totalPcs > 0 ? Math.round((antivirusActivos / totalPcs) * 100) : 100;
-            elAntivirusTxt.textContent = `${pctAntivirus}% Protegido (${antivirusActivos}/${totalPcs} PCs)`;
+            const totalPcs = telemetria.total_pcs || 0;
+            const act = telemetria.antivirus_activos || 0;
+            const pct = telemetria.porcentaje_antivirus !== undefined ? telemetria.porcentaje_antivirus : 100;
+            elAntivirusTxt.textContent = `${pct}% Protegido (${act}/${totalPcs} PCs)`;
         }
 
         if (contenedorAlertasHw) {
-            if (alertasHardware.length === 0) {
+            const alertas = telemetria.alertas || [];
+            if (alertas.length === 0) {
                 contenedorAlertasHw.innerHTML = `
                     <div class="p-3 rounded-3 bg-light border text-center text-muted small">
                         <i class="bi bi-check-circle-fill text-success fs-5 d-block mb-1"></i>
@@ -948,7 +759,7 @@ const clienteApi = {
                 `;
             } else {
                 let htmlHw = '';
-                alertasHardware.slice(0, 3).forEach(al => {
+                alertas.forEach(al => {
                     const badgeClase = al.tipo === 'danger' ? 'bg-danger text-white' : 'bg-warning text-dark';
                     htmlHw += `
                         <div class="p-2 rounded-2 bg-light border d-flex align-items-center justify-content-between gap-2 small">

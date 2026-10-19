@@ -1,358 +1,96 @@
 # AGENTS.md - Guía de Desarrollo y Convenciones del Proyecto
 
 Bienvenido al repositorio del **Sistema Modular de Formularios de Registro**.
-Este documento define la arquitectura, normas de codificación, estructura de directorios y directrices para agentes de IA y desarrolladores que interactúan con este código.
+Este documento define la arquitectura general, normas de codificación, estructura del proyecto y directrices obligatorias para agentes de IA y desarrolladores.
 
 ---
 
-## 1. Visión General del Proyecto
+## 1. Visión General y Pila Tecnológica
 
-El objetivo del sistema es gestionar múltiples formularios de registro organizacionales de manera modular. Inicialmente el sistema contempla **4 formularios**, comenzando por:
-
-1. **Formulario 1 (Activo): Soporte Técnico**
-2. **Formulario 2 (Activo): Mantenimiento Preventivo (Equipos: PC / Laptop)**
-3. **Formulario 3 (Activo): Registro de Incidencias de Sistemas**
-4. **Formulario 4 (Activo): Creación y Asignación de Accesos**
-5. **Formulario 5 (Futuro):** Requerimiento de Compras / Suministros
-
-Cada formulario debe funcionar de manera autónoma como un módulo, compartiendo la misma infraestructura tecnológica base.
-
----
-
-## 2. Pila Tecnológica (Stack)
-
+El sistema gestiona de forma modular y autónoma los formularios de registro y telemetría institucional:
 - **Backend:** PHP 7.3 con Apache (Extensión `pdo_pgsql`).
 - **Frontend:** PHP 7.3 con Apache y componentes de interfaz con **Bootstrap 5**.
 - **Base de Datos:** PostgreSQL 13+.
-- **Contenedores:** Docker & Docker Compose con 3 servicios independientes:
-  - Base de datos (`db`)
-  - Backend API (`back_form`)
-  - Frontend (`front_forms`)
+- **Infraestructura:** Docker Compose con 3 servicios (`db`, `back_form` en puerto 83, `front_forms` en puerto 82).
 
 ---
 
-## 3. Reglas Críticas de Desarrollo
+## 2. Reglas Críticas de Desarrollo
 
-### 3.1. Nombres de Archivos y Carpetas en Español
-- Todos los directorios y archivos de lógica, configuración, componentes, recursos y endpoints **deben nombrarse en español**.
-- **Excepciones exclusivas para archivos base del ecosistema:**
-  - `docker-compose.yml`
-  - `Dockerfile`
-  - `database/formularios_inicial.sql`
-  - `AGENTS.md`
-  - `index.php` (punto de entrada estándar del servidor web)
-
-### 3.2. Compatibilidad Estricta con PHP 7.3
-- **NO USAR** características de PHP 8+ como:
-  - Argumentos nombrados (`func(name: $val)`)
-  - Expresión `match` (usar `switch` o `if/else`)
-  - Tipos de unión (`int|string`)
-  - Promoción de propiedades en constructor
-  - Operador nullsafe (`?->`)
-- Usar sintaxis compatible con PHP 7.3 (`array()`, `[]`, operadores ternarios estándar, tipado simple).
-
-### 3.3. Separación Modular de Responsabilidades
-- **`front_forms/`**: No realiza consultas SQL directas. Se comunica exclusivamente con el backend mediante peticiones HTTP (Fetch API / cURL) a `back_form/`.
-- **`back_form/`**: Recibe peticiones HTTP, valida datos, procesa la lógica e interactúa con la base de datos PostgreSQL retornando respuestas JSON estandarizadas.
-- **`init.sql`**: Es el archivo físico único de inicialización de esquemas, tablas, restricciones e índices. Cualquier cambio estructural en la base de datos debe reflejarse en este script.
-
-### 3.4. Regla Estricta de Modificación Modular por Secciones (Vistas de Formulario)
-Cada vez que se modifique o estructure código en `formulario_soporte.php` o en cualquier vista de formulario:
-1. **No generar código monolítico ni archivos gigantes:** Prohibido crear bloques masivos e interminables de código de una sola vez.
-2. **Respetar la modularidad por secciones:** El formulario debe mantenerse dividido lógicamente en sus secciones ordenadas (Datos Generales, Tipo de Soporte, Detalle, Prioridad, Datos del Técnico y Observaciones).
-3. **Modificaciones quirúrgicas:** Cuando se solicite un cambio, editar **únicamente** la sección o el bloque específico solicitado, sin tocar, reescribir ni alterar el resto del archivo funcional.
-4. **Proteger el entorno:** Mantener siempre la compatibilidad estricta con PHP 7.3, la estructura de Bootstrap 5 y la arquitectura definida en el proyecto.
-5. **Aislamiento de componentes extensos:** Si la lógica de una sección o bloque requiere crecer demasiado, aislarla de forma limpia manteniendo la separación estricta para evitar archivos robustos y facilitar futuros cambios.
+1. **Nombres de Archivos y Carpetas en Español:**
+   - Todos los archivos, directorios, funciones y tablas deben nombrarse en español (excepto `docker-compose.yml`, `Dockerfile`, `index.php` y `AGENTS.md`).
+2. **Compatibilidad Estricta con PHP 7.3:**
+   - **Prohibido** usar sintaxis de PHP 8+ (no argumentos nombrados, no `match`, no tipos de unión, no operador nullsafe `?->`).
+3. **Separación Modular de Responsabilidades:**
+   - `front_forms/`: No realiza consultas SQL directas; se comunica exclusivamente mediante peticiones HTTP (Fetch API / cURL) a `back_form/`.
+   - `back_form/`: Procesa validaciones, reglas de negocio e interactúa con PostgreSQL retornando JSON estandarizado.
+   - `init.sql`: Archivo físico único de inicialización DDL del esquema relacional.
+4. **Modificación Modular y Aislamiento de Código:**
+   - **Prohibido generar código monolítico o archivos gigantes.**
+   - Mantener las vistas y endpoints divididos en submódulos, servicios y componentes independientes (`servicios/`, `componentes/`, `recursos/js/`).
+   - Las modificaciones deben ser quirúrgicas: alterar únicamente la sección o componente requerido sin desestabilizar el resto.
 
 ---
 
-## 4. Estructura de Directorios
+## 3. Convención de Respuestas JSON de la API
+
+Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8`:
+
+```json
+// Éxito:
+{ "exito": true, "mensaje": "Operación exitosa", "datos": { ... } }
+
+// Error:
+{ "exito": false, "mensaje": "Descripción clara del error", "errores": [ ... ] }
+```
+
+---
+
+## 4. Estructura General del Proyecto
 
 ```text
 Formulario_Registro/
-├── AGENTS.md                          # Este documento de reglas y arquitectura
+├── AGENTS.md                          # Este documento raíz de directrices
 ├── docker-compose.yml                 # Orquestador de contenedores
 ├── init.sql                           # Script físico DDL para PostgreSQL
-│
-├── back_form/                         # Backend (PHP 7.3 API)
-│   ├── Dockerfile                     # Configuración del contenedor PHP 7.3 con pdo_pgsql
-│   ├── index.php                      # Estado del servicio API (Healthcheck)
-│   ├── configuracion/
-│   │   ├── conexion_bd.php            # Conexión PDO a PostgreSQL
-│   │   └── respuestas_api.php         # Respuestas JSON y cabeceras CORS
-│   └── api/
-│       ├── soporte_tecnico/           # Endpoints del Módulo de Soporte
-│       │   ├── crear_ticket.php       # POST: Orquestador registrar ticket
-│       │   ├── listar_tickets.php     # GET: Listado con filtros
-│       │   ├── obtener_ticket.php     # GET: Detalle de un ticket
-│       │   ├── actualizar_ticket.php  # POST: Actualizar atención/resolución
-│       │   ├── buscar_equipos.php     # GET: Búsqueda de equipos en catálogo
-│       │   └── servicios/             # Submódulos de negocio especializados
-│       │       ├── servicio_equipos.php   # Lógica de búsqueda y alta en inventario
-│       │       ├── servicio_firmas.php    # Validación de firmas manuscritas (Base64)
-│       │       └── servicio_atencion.php  # Registro de atención técnica y cierre
-│       │
-│       └── mantenimiento_preventivo/  # Endpoints del Módulo de Mantenimiento (PC/Laptop)
-│           ├── crear_mantenimiento.php  # POST: Registrar mantenimiento
-│           ├── listar_mantenimientos.php# GET: Listado con filtros y métricas
-│           ├── obtener_mantenimiento.php# GET: Detalle completo de ficha técnica
-│           └── servicios/             # Submódulos de negocio
-│               ├── servicio_equipo_mp.php    # Validación y procesamiento de equipo
-│               ├── servicio_checklist_mp.php # Normalización de checklists
-│               └── servicio_firmas_mp.php    # Validación de doble firma digital
-│
-└── front_forms/                       # Frontend (PHP 7.3 + Bootstrap)
-    ├── Dockerfile                     # Configuración del contenedor PHP 7.3 Apache
-    ├── index.php                      # Portal central (Módulos 1 y 2 activos, 3-4 próximos)
-    ├── componentes/
-    │   ├── encabezado.php             # Head HTML y estilos Bootstrap
-    │   ├── barra_navegacion.php       # Barra superior de navegación
-    │   └── pie_pagina.php             # Scripts y cierre de documento
-    ├── recursos/
-    │   ├── css/
-    │   │   └── estilos_personalizados.css  # Reglas visuales y diseño
-    │   └── js/
-    │       ├── cliente_api.js                 # Cliente central de comunicación API
-    │       ├── formulario_soporte.js          # Lógica del formulario de soporte
-    │       ├── gestion_tickets.js             # Lógica del panel de soporte
-    │       ├── formulario_mantenimiento.js    # Lógica de mantenimiento preventivo
-    │       └── gestion_mantenimientos.js      # Lógica del panel de mantenimiento
-    └── modulos/
-        ├── soporte_tecnico/
-        │   ├── index.php              # Punto de entrada del módulo
-        │   ├── formulario_soporte.php # Formulario orquestador
-        │   ├── gestion_tickets.php    # Panel orquestador maestro
-        │   ├── secciones/             # Subcomponentes del formulario de registro
-        │   └── componentes_gestion/   # Subcomponentes del panel de gestión
-        │
-        └── mantenimiento_preventivo/
-            ├── index.php                       # Redirección a formulario
-            ├── formulario_mantenimiento.php    # Formulario orquestador limpio
-            ├── gestion_mantenimientos.php      # Panel orquestador maestro
-            ├── secciones/                      # Subcomponentes (6 secciones + firmas)
-            │   ├── seccion_1_datos_generales.php
-            │   ├── seccion_2_informacion_equipo.php
-            │   ├── seccion_3_mantenimiento_externo.php
-            │   ├── seccion_4_mantenimiento_interno.php
-            │   ├── seccion_5_verificacion_funcionamiento.php
-            │   ├── seccion_6_observaciones.php
-            │   └── seccion_firmas.php
-            └── componentes_gestion/            # Subcomponentes del panel de gestión
-                ├── panel_encabezado.php        # Cabecera y botón nuevo
-                ├── panel_metricas.php          # 4 tarjetas de indicadores KPI
-                ├── panel_filtros.php           # Buscador y filtro por tipo
-                ├── panel_tabla.php             # Tabla responsiva
-                └── modal_detalle.php           # Ficha técnica imprimible y firmas
+├── documentacion/                     # Especificaciones modulares detalladas
+│   ├── 01_soporte_tecnico.md
+│   ├── 02_mantenimiento_preventivo.md
+│   ├── 03_registro_incidencias.md
+│   ├── 04_asignacion_accesos.md
+│   └── 05_telemetria_diagnostico.md
+├── back_form/                         # Backend API (PHP 7.3)
+│   ├── index.php                      # Healthcheck del servicio
+│   ├── configuracion/                 # Conexión PDO, respuestas API y seguridad RBAC
+│   └── api/                           # auth/, soporte_tecnico/, mantenimiento_preventivo/,
+│                                      # registro_incidencias/, asignacion_accesos/, diagnostico/,
+│                                      # metricas/ y auditoria/
+└── front_forms/                       # Frontend (PHP 7.3 + Bootstrap 5)
+    ├── index.php                      # Portal central de selección de módulos
+    ├── login.php                      # Autenticación institucional
+    ├── metricas.php                   # Tablero global de indicadores y KPIs
+    ├── componentes/                   # Encabezado, navegación, pie y control de sesión
+    ├── recursos/                      # Estilos CSS y controladores JS modulares
+    └── modulos/                       # Vistas modulares por formulario y telemetría
 ```
 
 ---
 
-## 5. Especificación del Formulario de Soporte Técnico
+## 5. Índice de Documentación por Módulo
 
-El formulario consta de las siguientes 6 secciones:
+Para consultar campos de formulario, modelos de datos, endpoints específicos y componentes frontend de cada módulo, remitirse a la documentación dedicada:
 
-1. **Datos Generales:**
-   - Nombre del solicitante (`nombre_solicitante`)
-   - Fecha de registro (`fecha_solicitud`)
-   - Departamento o área (`departamento_area`)
-2. **Tipo de Soporte Requerido (Marcar lo que corresponda):**
-   - Hardware: equipo, periférico (`soporte_hardware`)
-   - Software: aplicaciones, sistema (`soporte_software`)
-3. **Detalle del Problema / Requerimiento:**
-   - Descripción detallada (`descripcion_problema`)
-   - Equipo afectado (si aplica):
-     - Número de serie / inventario (`numero_serie`)
-     - Marca / modelo (`marca_modelo`)
-     - Sistema operativo (`sistema_operativo`)
-4. **Prioridad (A definir por el área de soporte):**
-   - Urgente (afecta operaciones críticas)
-   - Alta (afecta productividad significativa)
-   - Media (molestia operativa pero no detiene trabajo)
-   - Baja (requerimiento rutinario/menor)
-5. **Datos del Técnico (Para completar por soporte):**
-   - Fecha / hora de atención (`fecha_hora_atencion`)
-   - Técnico asignado (`tecnico_asignado`)
-   - Diagnóstico (`diagnostico`)
-   - Solución aplicada (`solucion_aplicada`)
-   - Tipo de resolución (`tipo_resolucion`)
-6. **Observaciones / Recomendaciones:**
-   - Observaciones y sugerencias (`observaciones_recomendacion`)
-
-> **Estructura en Base de Datos (Modelo Relacional):**
-> - **Tabla `tickets_soporte`:** Almacena las Secciones 1 a 4 (solicitud, prioridad, estado y auditoría).
-> - **Tabla `atenciones_soporte`:** Almacena las Secciones 5 y 6 (datos del técnico, resolución y observaciones) vinculada por `ticket_id` (FK).
+- [Módulo 1: Soporte Técnico](file:///d:/RESPALDO%20DISCO%20C/Documents/FormularioRegistroCosmol/Formulario_Registro/documentacion/01_soporte_tecnico.md) - Ticket `SOP-YYYY-XXXX`, atención técnica y telemetría de PC.
+- [Módulo 2: Mantenimiento Preventivo](file:///d:/RESPALDO%20DISCO%20C/Documents/FormularioRegistroCosmol/Formulario_Registro/documentacion/02_mantenimiento_preventivo.md) - Ficha `MP-YYYY-XXXX`, checklist físico/lógico y firmas canvas.
+- [Módulo 3: Registro de Incidencias](file:///d:/RESPALDO%20DISCO%20C/Documents/FormularioRegistroCosmol/Formulario_Registro/documentacion/03_registro_incidencias.md) - Incidencias `INC-YYYY-XXXX`, criticidad, plataformas ERP/Cobranzas y cierre.
+- [Módulo 4: Asignación de Accesos](file:///d:/RESPALDO%20DISCO%20C/Documents/FormularioRegistroCosmol/Formulario_Registro/documentacion/04_asignacion_accesos.md) - Solicitudes `ACC-YYYY-XXXX`, perfiles de usuario y triple firma.
+- [Módulo 5: Telemetría y Diagnóstico de PCs](file:///d:/RESPALDO%20DISCO%20C/Documents/FormularioRegistroCosmol/Formulario_Registro/documentacion/05_telemetria_diagnostico.md) - Agente Cosmol, auto-detección en vivo y monitoreo de salud.
 
 ---
 
-## 6. Convención de Respuestas JSON de la API
+## 6. Procedimiento para Agregar Nuevos Módulos
 
-Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
-
----
-
-## 6. Especificación del Formulario de Mantenimiento Preventivo (PC / Laptop)
-
-El formulario consta de las siguientes 6 secciones y firmas:
-
-1. **Datos Generales:**
-   - Técnico responsable (`tecnico_responsable`)
-   - Fecha de mantenimiento (`fecha_mantenimiento`)
-   - Ubicación del equipo (`ubicacion_equipo`)
-2. **Información del Equipo:**
-   - Tipo de equipo: PC o LAPTOP (`tipo_equipo`)
-   - Nombre de equipo / hostname (`nombre_equipo`)
-   - Código de activo (`codigo_activo`)
-   - Memoria RAM (`memoria_ram`)
-   - Tipo de red: LAN o WIFI (`tipo_red`)
-   - Marca / modelo (`marca_modelo`)
-   - Sistema operativo (`sistema_operativo`)
-   - Procesador (`procesador`)
-   - Almacenamiento (`almacenamiento`)
-   - Dirección IP (`direccion_ip`)
-   - Vinculación opcional a catálogo (`equipo_id` -> `equipos_inventario`)
-3. **Mantenimiento Externo (Limpieza Física):**
-   - Limpieza de carcasa, ventiladores y componentes (`limpieza_carcasa_componentes`)
-   - Limpieza de pantalla, teclado y touchpad (`limpieza_pantalla_teclado`)
-   - Verificación de conectores USB/HDMI (`verificacion_conectores`)
-   - Otros aspectos físicos (`limpieza_otros`)
-4. **Mantenimiento Interno (Software / Configuración):**
-   - Actualización del sistema operativo (`actualizacion_so`)
-   - Eliminación de archivos temporales/caché (`eliminacion_temporales`)
-   - Desfragmentación / optimización de unidades (`desfragmentacion_optimizacion`)
-   - Escaneo antivirus/anti-malware (`escaneo_antivirus`)
-   - Verificación de drivers y actualizaciones (`verificacion_drivers`)
-   - Copia de seguridad de datos críticos (`copia_seguridad`)
-   - Otros aspectos lógicos (`mantenimiento_interno_otros`)
-5. **Verificación de Funcionamiento:**
-   - Encendido / apagado correcto (`verificacion_encendido_apagado`)
-   - Rendimiento general fluido (`verificacion_rendimiento`)
-   - Conectividad Wi-Fi / red funcional (`verificacion_red`)
-   - Periféricos operativos (`verificacion_perifericos`)
-   - Sin sobrecalentamiento / anomalías térmicas (`verificacion_temperatura_anomalias`)
-6. **Observaciones / Incidencias:**
-   - Notas y recomendaciones preventivas (`observaciones_incidencias`)
-7. **Firmas Digitales (Lienzos Canvas):**
-   - Firma del responsable del equipo (`firma_responsable_equipo`)
-   - Firma del Dpto. de Sistemas (`firma_sistemas`)
-
-> **Estructura en Base de Datos:** Tabla única `mantenimientos_preventivos` con campos booleanos para cada chequeo e imágenes Base64 de firmas.
-
----
-
-## 7. Especificación del Formulario de Registro de Incidencias de Sistemas
-
-El formulario consta de las siguientes 7 secciones y doble firma digital:
-
-1. **Datos Generales de la Incidencia:**
-   - Nro. de Incidencia (`nro_incidencia`) -> Ej: `INC-YYYY-XXXX`
-   - Fecha y hora del Reporte (`fecha_hora_reporte`)
-   - Responsable del Reporte (`responsable_reporte`)
-2. **Plataforma / Sistema Afectado:**
-   - SISTEMA ERP - SAI (`sistema_erp_sai`)
-   - SISTEMA DE COBRANZAS - NETCOB (`sistema_cobranzas_netcob`)
-   - OTROS SISTEMAS / COMPLEMENTOS (`sistema_otros` y `sistema_otros_detalle`)
-3. **Naturaleza Técnica del Fallo (Marcar y rellenar al marcado):**
-   - Base de Datos (`fallo_base_datos` y `detalle_base_datos`)
-   - Infraestructura / Servidor (`fallo_infraestructura_servidor` y `detalle_infraestructura_servidor`)
-   - Enlaces / Conectividad (`fallo_enlaces_conectividad` y `detalle_enlaces_conectividad`)
-4. **Nivel de Criticidad Institucional (A definir por Sistemas):**
-   - Crítica (Nivel 1): Paralización del ciclo de facturación (`critica_nivel_1`)
-   - Alta (Nivel 2): Falla en un módulo importante pero permite trabajar (`alta_nivel_2`)
-   - Media / Baja (Nivel 3): Error estético, lentitud o cambios menores (`media_baja_nivel_3`)
-5. **Descripción Técnica y Logs de Error:**
-   - Trazas de logs, excepciones o detalle del comportamiento anómalo (`descripcion_tecnica_logs`)
-6. **Solución Aplicada y Tiempos:**
-   - Acción Realizada (`accion_realizada`)
-   - Detalle Técnico (`detalle_tecnico`)
-   - Fecha y Hora de Cierre (`fecha_hora_cierre`)
-   - Estado de la Incidencia (`estado`: 'abierta', 'en_atencion', 'resuelta', 'cerrada')
-7. **Seguimiento y Recomendaciones:**
-   - Medidas preventivas post-incidente (`observaciones_recomendaciones`)
-8. **Firmas Digitales (Lienzos Canvas):**
-   - Firma del Responsable del Reporte (`firma_responsable_reporte`)
-   - Firma del Dpto. de Sistemas (`firma_sistemas`)
-
-> **Estructura en Base de Datos:** Tabla `incidencias_sistemas` en `database/formularios_inicial.sql` con índices en código, criticidad, estado, fecha y responsable.
-
----
-
-## 8. Especificación del Formulario de Creación y Asignación de Accesos
-
-El formulario consta de las siguientes 6 secciones y triple firma digital:
-
-1. **Datos Generales:**
-   - Nro. de Solicitud (`nro_solicitud`) -> Ej: `ACC-YYYY-XXXX`
-   - Fecha de Solicitud (`fecha_solicitud`)
-   - Nombre del Solicitante (`nombre_solicitante`)
-   - Cargo del Solicitante (`cargo_solicitante`)
-   - Área / Departamento (`area_departamento`)
-2. **Plataforma / Sistema Afectado:**
-   - SISTEMA ERP - SAI (`sistema_erp_sai`)
-   - SISTEMA DE COBRANZAS - NETCOB (`sistema_cobranzas_netcob`)
-   - OTROS SISTEMAS / COMPLEMENTOS (`sistema_otros` y `sistema_otros_detalle`)
-3. **Datos del Usuario:**
-   - Usuario Nuevo (`es_usuario_nuevo`: boolean)
-   - Username / Detalles de cuenta (`nombre_usuario_detalles`)
-4. **Requerimientos de Accesos:**
-   - Detalle amplio de perfiles, permisos específicos o módulos solicitados (`requerimientos_accesos`: text)
-5. **Departamento de Sistemas (Atención y Comentarios):**
-   - Atendido por: Técnico responsable (`atendido_por`)
-   - Fecha y Hora de Atención (`fecha_hora_atencion`)
-   - Estado de la Solicitud (`estado`: 'pendiente', 'en_proceso', 'atendido', 'rechazado')
-   - Comentarios técnicos / Restricciones (`comentarios_sistemas`)
-6. **Firmas / Validaciones Institucionales (Lienzos Canvas):**
-   - Firma del Solicitante (`firma_solicitante`)
-   - Nombre y Firma de Autorización / Jefatura (`nombre_autoriza`, `firma_autoriza`)
-   - Firma del Dpto. de Sistemas (`firma_sistemas`)
-
-> **Estructura en Base de Datos:** Tabla `solicitudes_accesos` en `database/formularios_inicial.sql` con índices en nro_solicitud, estado, fecha, área y solicitante.
-
----
-
-## 9. Convención de Respuestas JSON de la API
-
-Todas las respuestas del backend deben emitir el encabezado `Content-Type: application/json; charset=utf-8` y seguir la estructura:
-
-```json
-{
-  "exito": true,
-  "mensaje": "Mensaje descriptivo en español",
-  "datos": { ... }
-}
-```
-
-En caso de error:
-```json
-{
-  "exito": false,
-  "mensaje": "Descripción clara del error ocurrido",
-  "errores": [ ... ]
-}
-```
-
----
-
-## 10. Instrucciones para Agregar un Nuevo Formulario
-
-Cuando se implementen los formularios restantes (5 o futuro):
-1. **Base de Datos:** Añadir la nueva tabla en `database/formularios_inicial.sql` con prefijo descriptivo (ej. `compras_suministros`).
-2. **Backend:** Crear la carpeta en `back_form/api/<nombre_modulo>/` con los scripts correspondientes (`crear_registro.php`, `listar_registros.php`, etc.).
-3. **Frontend:** Crear la carpeta en `front_forms/modulos/<nombre_modulo>/` reutilizando `componentes/encabezado.php`, `barra_navegacion.php` y `pie_pagina.php`.
-4. **Portal Principal:** Actualizar `front_forms/index.php` cambiando el estado del módulo de "En desarrollo" a "Activo".
-
-
----
-
-## 11. Módulo de Diagnóstico, Telemetría y Auditoría de PCs (Integración Cosmol)
-
-### 11.1. Arquitectura del Módulo
-El sistema integra telemetría desatendida desde las PCs institucionales mediante el agente PowerShell nativo de `Cosmol-DiagnosticoP`.
-- **Backend API:** `back_form/api/diagnostico/`
-  - `recibir.php` (POST): Recibe payload JSON del agente (`metadatos`, `resumen_salud`, `hardware`, `software_y_seguridad`).
-  - `listar.php` (GET): Retorna lista consolidada de equipos auditados desde `vista_ultimo_diagnostico_pc`.
-  - `detalle.php` (GET): Retorna el historial cronológico y último diagnóstico detallado de una PC por dirección MAC.
-  - `detectar_mi_pc.php` (GET): Auto-detecta en vivo el equipo del usuario a través de su IP en la red local (`REMOTE_ADDR`), retornando MAC, Hostname y métricas de salud.
-- **Frontend:** `front_forms/modulos/diagnostico/`
-  - `monitoreo_equipos.php`: Vista de tablero con tarjetas de salud, filtros y contadores de alerta.
-  - `detalle_equipo.php`: Vista de inspección profunda (CPU, RAM, discos con SMART, Prefetch y Defender).
-- **Control de Acceso:** Exclusivo para el rol `admin` / `tecnico`. Oculto para usuarios solicitantes.
+1. **Base de Datos:** Añadir la tabla del módulo en `init.sql` con prefijo institucional y campos estándar de auditoría (`fecha_creacion`, `creado_por`, etc.).
+2. **Backend:** Crear la ruta en `back_form/api/<nombre_modulo>/` con sus endpoints CRUD y carpeta interna `servicios/` para la lógica aislada.
+3. **Frontend:** Crear la carpeta en `front_forms/modulos/<nombre_modulo>/` reutilizando los componentes base y separando la lógica en `recursos/js/`.
+4. **Portal y Navegación:** Activar el acceso correspondiente en `front_forms/index.php` y `front_forms/componentes/barra_navegacion.php`.

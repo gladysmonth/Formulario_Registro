@@ -394,3 +394,27 @@ FOR EACH ROW
 EXECUTE FUNCTION actualizar_marca_tiempo();
 
 
+-- ==========================================================
+-- TABLA DE AUDITORÍA GENERAL DE OPERACIONES Y TRAZABILIDAD
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS auditoria_operaciones (
+    id BIGSERIAL PRIMARY KEY,
+    modulo VARCHAR(50) NOT NULL,
+    registro_id BIGINT,
+    codigo_registro VARCHAR(50),
+    accion VARCHAR(50) NOT NULL,
+    estado_anterior VARCHAR(50),
+    estado_nuevo VARCHAR(50),
+    usuario_id INT REFERENCES usuarios(id) ON DELETE SET NULL,
+    usuario_nombre VARCHAR(150),
+    ip_origen VARCHAR(50),
+    detalles JSONB,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_auditoria_modulo ON auditoria_operaciones (modulo, registro_id);
+CREATE INDEX IF NOT EXISTS idx_auditoria_creado_en ON auditoria_operaciones (creado_en DESC);
+CREATE INDEX IF NOT EXISTS idx_auditoria_usuario ON auditoria_operaciones (usuario_id);
+
+
+

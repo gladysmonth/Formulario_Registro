@@ -210,6 +210,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Auto-detección de PC por telemetría IP en red
+    const btnAutoDetectarPC_MP = document.getElementById('btnAutoDetectarPC_MP');
+    if (btnAutoDetectarPC_MP) {
+        btnAutoDetectarPC_MP.addEventListener('click', async () => {
+            btnAutoDetectarPC_MP.disabled = true;
+            btnAutoDetectarPC_MP.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Detectando...';
+
+            try {
+                const res = await clienteApi.detectarMiPC();
+                if (res.exito && res.datos && res.datos.detectado) {
+                    const d = res.datos;
+                    
+                    const inputNom = document.getElementById('nombre_equipo');
+                    if (inputNom && (d.nombre_equipo || d.hostname)) {
+                        inputNom.value = d.nombre_equipo || d.hostname;
+                    }
+                    const inputCod = document.getElementById('codigo_activo');
+                    if (inputCod && d.codigo_activo) {
+                        inputCod.value = d.codigo_activo;
+                    }
+                    const inputMM = document.getElementById('marca_modelo');
+                    if (inputMM && d.marca_modelo) {
+                        inputMM.value = d.marca_modelo;
+                    }
+                    const inputSO = document.getElementById('sistema_operativo');
+                    if (inputSO && d.sistema_operativo) {
+                        inputSO.value = d.sistema_operativo;
+                    }
+                    const inputIP = document.getElementById('direccion_ip');
+                    if (inputIP && (d.ip || d.ip_local)) {
+                        inputIP.value = d.ip || d.ip_local;
+                    }
+                    const inputProc = document.getElementById('procesador');
+                    if (inputProc && (d.procesador || d.detalle_cpu)) {
+                        inputProc.value = d.procesador || (d.detalle_cpu ? d.detalle_cpu.nombre : '');
+                    }
+                    const inputRAM = document.getElementById('memoria_ram');
+                    if (inputRAM && (d.memoria_ram || d.detalle_ram)) {
+                        inputRAM.value = d.memoria_ram || (d.detalle_ram ? `${d.detalle_ram.total_gb || ''} GB` : '');
+                    }
+                    const inputUb = document.getElementById('ubicacion_equipo');
+                    if (inputUb && (d.area || d.ubicacion) && !inputUb.value) {
+                        inputUb.value = d.area || d.ubicacion;
+                    }
+
+                    if (badgeEstadoEquipo) {
+                        badgeEstadoEquipo.className = 'badge bg-info-subtle text-info border';
+                        badgeEstadoEquipo.textContent = 'Auto-detectado por Red';
+                    }
+
+                    clienteApi.mostrarToast(`¡Equipo detectado: ${d.hostname || 'PC'} (${d.ip || 'Red'})!`, 'exito');
+                } else {
+                    clienteApi.mostrarToast('No se encontró telemetría activa para la IP actual. Ingrese los datos manualmente.', 'advertencia');
+                }
+            } catch (err) {
+                clienteApi.mostrarToast('Error al intentar auto-detectar el equipo.', 'error');
+            } finally {
+                btnAutoDetectarPC_MP.disabled = false;
+                btnAutoDetectarPC_MP.innerHTML = '<i class="bi bi-cpu"></i> Auto-detectar PC';
+            }
+        });
+    }
+
     // ==========================================================
     // 3. ENVÍO DEL FORMULARIO DE MANTENIMIENTO
     // ==========================================================

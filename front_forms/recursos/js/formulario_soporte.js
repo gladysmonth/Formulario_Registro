@@ -135,6 +135,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Auto-detección de PC por telemetría IP en red
+    const btnAutoDetectarPC_Soporte = document.getElementById('btnAutoDetectarPC_Soporte');
+    if (btnAutoDetectarPC_Soporte) {
+        btnAutoDetectarPC_Soporte.addEventListener('click', async () => {
+            btnAutoDetectarPC_Soporte.disabled = true;
+            btnAutoDetectarPC_Soporte.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Detectando...';
+
+            try {
+                const res = await clienteApi.detectarMiPC();
+                if (res.exito && res.datos && res.datos.detectado) {
+                    const d = res.datos;
+
+                    if (inputCodigoActivo && d.codigo_activo) inputCodigoActivo.value = d.codigo_activo;
+                    if (inputNumeroSerie && (d.numero_serie || d.direccion_mac)) inputNumeroSerie.value = d.numero_serie || d.direccion_mac;
+                    if (inputMarcaModelo && (d.marca_modelo || d.hostname)) inputMarcaModelo.value = d.marca_modelo || d.hostname;
+                    if (inputSistemaOperativo && d.sistema_operativo) inputSistemaOperativo.value = d.sistema_operativo;
+                    if (inputAreaEquipo && (d.area || d.ubicacion) && !inputAreaEquipo.value) inputAreaEquipo.value = d.area || d.ubicacion;
+                    if (inputEncargadoEquipo && (d.encargado || d.usuario_windows) && !inputEncargadoEquipo.value) inputEncargadoEquipo.value = d.encargado || d.usuario_windows;
+
+                    if (selectTipoEquipo && d.tipo_equipo) {
+                        selectTipoEquipo.value = d.tipo_equipo;
+                    }
+
+                    if (badgeEstadoEquipo) {
+                        badgeEstadoEquipo.className = 'badge bg-info-subtle text-info border py-2';
+                        badgeEstadoEquipo.textContent = 'Auto-detectado por Red';
+                    }
+                    if (btnLimpiarEquipo) {
+                        btnLimpiarEquipo.classList.remove('d-none');
+                    }
+
+                    clienteApi.mostrarToast(`¡Equipo detectado: ${d.hostname || 'PC'} (${d.ip || 'Red'})!`, 'exito');
+                } else {
+                    clienteApi.mostrarToast('No se encontró telemetría activa para la IP actual. Ingrese los datos manualmente.', 'advertencia');
+                }
+            } catch (err) {
+                clienteApi.mostrarToast('Error al intentar auto-detectar el equipo.', 'error');
+            } finally {
+                btnAutoDetectarPC_Soporte.disabled = false;
+                btnAutoDetectarPC_Soporte.innerHTML = '<i class="bi bi-cpu"></i> Auto-detectar PC';
+            }
+        });
+    }
+
+    // Auto-detección de PC para usuario solicitante común
+    const btnAutoDetectarPC_Usuario = document.getElementById('btnAutoDetectarPC_Usuario');
+    if (btnAutoDetectarPC_Usuario) {
+        btnAutoDetectarPC_Usuario.addEventListener('click', async () => {
+            btnAutoDetectarPC_Usuario.disabled = true;
+            btnAutoDetectarPC_Usuario.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Detectando...';
+
+            try {
+                const res = await clienteApi.detectarMiPC();
+                if (res.exito && res.datos && res.datos.detectado) {
+                    const d = res.datos;
+                    if (inputMarcaModelo) {
+                        const modelo = d.marca_modelo || '';
+                        const host = d.hostname || '';
+                        inputMarcaModelo.value = `${modelo} ${host}`.trim() || 'PC Institucional';
+                    }
+                    if (inputCodigoActivo && d.codigo_activo) inputCodigoActivo.value = d.codigo_activo;
+                    if (inputNumeroSerie && (d.numero_serie || d.direccion_mac)) inputNumeroSerie.value = d.numero_serie || d.direccion_mac;
+                    if (inputSistemaOperativo && d.sistema_operativo) inputSistemaOperativo.value = d.sistema_operativo;
+                    if (selectTipoEquipo && d.tipo_equipo) {
+                        selectTipoEquipo.value = d.tipo_equipo.toUpperCase().includes('LAPTOP') ? 'Laptop / Portátil' : 'PC de Escritorio';
+                    }
+                    clienteApi.mostrarToast(`¡Tu equipo ha sido identificado: ${d.hostname || 'PC'}!`, 'exito');
+                } else {
+                    clienteApi.mostrarToast('No se encontró registro de tu PC en la red. Continúa con los campos del formulario.', 'advertencia');
+                }
+            } catch (err) {
+                clienteApi.mostrarToast('Error al auto-detectar el equipo.', 'error');
+            } finally {
+                btnAutoDetectarPC_Usuario.disabled = false;
+                btnAutoDetectarPC_Usuario.innerHTML = '<i class="bi bi-cpu"></i> Auto-detectar Mi PC';
+            }
+        });
+    }
+
     // ==========================================================
     // 2. LIENZOS DE FIRMA DIGITAL (SOLICITANTE Y SISTEMAS)
     // ==========================================================

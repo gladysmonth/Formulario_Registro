@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../../configuracion/conexion_bd.php';
 require_once __DIR__ . '/../../configuracion/respuestas_api.php';
+require_once __DIR__ . '/../../configuracion/seguridad_api.php';
 
 configurar_cors();
 
@@ -14,12 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     responder_error('Método HTTP no permitido. Debe utilizar POST.', 405);
 }
 
-$cuerpo = file_get_contents('php://input');
-$datos = json_decode($cuerpo, true);
-
-if (json_last_error() !== JSON_ERROR_NONE || !is_array($datos)) {
-    responder_error('El cuerpo de la petición no contiene un formato JSON válido.', 400);
-}
+$datos = obtener_cuerpo_json();
 
 $id = !empty($datos['id']) ? intval($datos['id']) : 0;
 if ($id <= 0) {
@@ -44,7 +40,7 @@ if (!$conexion) {
 
 try {
     // 1. Verificar existencia de la solicitud
-    $stmt_check = $conexion->prepare("SELECT id, firma_sistemas FROM solicitudes_accesos WHERE id = :id");
+    $stmt_check = $conexion->prepare("SELECT id, nro_solicitud, estado, firma_sistemas FROM solicitudes_accesos WHERE id = :id");
     $stmt_check->bindValue(':id', $id, PDO::PARAM_INT);
     $stmt_check->execute();
     $actual = $stmt_check->fetch(PDO::FETCH_ASSOC);
@@ -77,6 +73,27 @@ try {
     $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 
     $stmt->execute();
+
+    // Auditoría
+    $usuario_actor = obtener_usuario_actor_api($conexion, $datos);
+    $actor_id = $usuario_actor ? $usuario_actor['id'] : null;
+    $actor_nombre = $usuario_actor ? $usuario_actor['nombre_completo'] : ($atendido_por ? $atendido_por : 'Técnico de Accesos');
+
+    registrar_auditoria_operacion(
+        $conexion,
+        'asignacion_accesos',
+        $id,
+        $actual['nro_solicitud'],
+        'actualizacion_solicitud',
+        $actual['estado'],
+        $estado,
+        $actor_id,
+        $actor_nombre,
+        array(
+            'atendido_por'    => $atendido_por,
+            'estado_cambiado' => ($actual['estado'] !== $estado)
+        )
+    );
 
     responder_exito('Atención de solicitud actualizada correctamente', array(
         'id'                  => $id,

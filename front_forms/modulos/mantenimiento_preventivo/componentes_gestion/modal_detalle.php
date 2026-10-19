@@ -125,13 +125,82 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 8. Panel de Edición y Actualización de Ficha (Solo para Técnicos/Admin) -->
+                <div id="panelEdicionMP" class="d-none border-top pt-3 mt-4">
+                    <div class="alert alert-primary py-2 d-flex align-items-center gap-2 small mb-3">
+                        <i class="bi bi-pencil-square fs-5 text-primary"></i>
+                        <div>
+                            <strong>Modo de Actualización Técnica:</strong> Modifique los datos generales, observaciones o actualice la firma de Sistemas para esta ficha.
+                        </div>
+                    </div>
+
+                    <form id="formActualizarMP" novalidate>
+                        <input type="hidden" id="editIdMP" value="">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="editTecnicoMP" class="form-label small fw-semibold text-secondary mb-1">
+                                    <i class="bi bi-person me-1"></i> Técnico Responsable:
+                                </label>
+                                <input type="text" class="form-control form-control-sm" id="editTecnicoMP" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editUbicacionMP" class="form-label small fw-semibold text-secondary mb-1">
+                                    <i class="bi bi-geo-alt me-1"></i> Ubicación del Equipo:
+                                </label>
+                                <input type="text" class="form-control form-control-sm" id="editUbicacionMP" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="editObservacionesMP" class="form-label small fw-semibold text-secondary mb-1">
+                                    <i class="bi bi-chat-left-text me-1"></i> Observaciones / Incidencias Detectadas:
+                                </label>
+                                <textarea class="form-control form-control-sm" id="editObservacionesMP" rows="3" placeholder="Detalle observaciones preventivas, trabajos adicionales realizados..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Firma Digital de Sistemas en Edición -->
+                        <div class="bg-light p-3 rounded-3 border mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                <label class="form-label small fw-bold text-dark mb-0">
+                                    <i class="bi bi-pen me-1 text-primary"></i> Firma Digital del Dpto. de Sistemas:
+                                </label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span id="badgeFirmaEditSistemasMP" class="badge bg-secondary-subtle text-secondary border">Firma Actual Conservada</span>
+                                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" id="btnLimpiarFirmaEditSistemasMP" style="font-size: 0.75rem;">
+                                        <i class="bi bi-eraser me-1"></i> Nueva Firma
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="border rounded bg-white p-1 text-center">
+                                <canvas id="canvasFirmaEditSistemasMP" width="450" height="110" class="w-100" style="touch-action: none; cursor: crosshair; max-height: 110px;"></canvas>
+                            </div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
+                                * Si no dibuja un nuevo trazo, se mantendrá la firma previa registrada en el sistema.
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnCancelarEdicionMP">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success btn-sm px-3 shadow-sm" id="btnGuardarEdicionMP">
+                                <i class="bi bi-check-circle me-1"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-outline-primary" id="btnImprimirFichaMP">
-                    <i class="bi bi-printer me-1"></i> Imprimir Ficha
+            <div class="modal-footer bg-light justify-content-between">
+                <button type="button" class="btn btn-outline-primary" id="btnToggleEditarMP">
+                    <i class="bi bi-pencil-square me-1"></i> <span id="textoBtnEditarMP">Editar / Actualizar Ficha</span>
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="btnImprimirFichaMP">
+                        <i class="bi bi-printer me-1"></i> Imprimir Ficha
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>

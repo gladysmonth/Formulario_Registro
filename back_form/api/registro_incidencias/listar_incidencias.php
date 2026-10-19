@@ -52,9 +52,25 @@ try {
         }
     }
 
+    $limite      = isset($_GET['limite']) ? (int)$_GET['limite'] : 50;
+    $offset      = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+
+    if ($limite <= 0 || $limite > 200) {
+        $limite = 50;
+    }
+    if ($offset < 0) {
+        $offset = 0;
+    }
+
     $where = !empty($condiciones) ? 'WHERE ' . implode(' AND ', $condiciones) : '';
 
-    // Consulta de lista
+    // Conteo total para paginación
+    $sql_conteo = "SELECT COUNT(*) FROM incidencias_sistemas {$where}";
+    $stmt_conteo = $conexion->prepare($sql_conteo);
+    $stmt_conteo->execute($params);
+    $total_registros = (int)$stmt_conteo->fetchColumn();
+
+    // Consulta de lista paginada
     $sql = "
         SELECT 
             id,
@@ -87,10 +103,16 @@ try {
         FROM incidencias_sistemas
         {$where}
         ORDER BY id DESC
+        LIMIT :limite OFFSET :offset
     ";
 
     $stmt = $conexion->prepare($sql);
-    $stmt->execute($params);
+    foreach ($params as $clave_param => $valor_param) {
+        $stmt->bindValue($clave_param, $valor_param);
+    }
+    $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
     $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Métricas globales KPI
@@ -107,14 +129,17 @@ try {
     $kpi = $kpi_stmt->fetch(PDO::FETCH_ASSOC);
 
     responder_exito('Listado de incidencias obtenido correctamente', array(
-        'metricas' => array(
-            'total'             => intval($kpi['total_incidencias'] ?? 0),
-            'criticas_nivel_1'  => intval($kpi['criticas_nivel_1'] ?? 0),
-            'altas_nivel_2'     => intval($kpi['altas_nivel_2'] ?? 0),
-            'abiertas_atencion' => intval($kpi['abiertas_atencion'] ?? 0),
-            'resueltas_cerradas'=> intval($kpi['resueltas_cerradas'] ?? 0)
+        'total'           => $total_registros,
+        'total_registros' => $total_registros,
+        'limite'          => $limite,
+        'offset'          => $offset,
+        'metricas'        => array(
+            'total'              => isset($kpi['total_incidencias']) ? (int)$kpi['total_incidencias'] : 0,
+            'criticas_nivel_1'   => isset($kpi['criticas_nivel_1']) ? (int)$kpi['criticas_nivel_1'] : 0,
+            'altas_nivel_2'      => isset($kpi['altas_nivel_2']) ? (int)$kpi['altas_nivel_2'] : 0,
+            'abiertas_atencion'  => isset($kpi['abiertas_atencion']) ? (int)$kpi['abiertas_atencion'] : 0,
+            'resueltas_cerradas' => isset($kpi['resueltas_cerradas']) ? (int)$kpi['resueltas_cerradas'] : 0
         ),
-        'total_registros' => count($registros),
         'registros'       => $registros
     ));
 

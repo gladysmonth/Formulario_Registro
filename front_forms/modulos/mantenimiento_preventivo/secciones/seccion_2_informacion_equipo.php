@@ -25,8 +25,11 @@
                        list="listaEquiposMP" placeholder="Escriba código de activo o marca/modelo para autocompletar...">
                 <datalist id="listaEquiposMP"></datalist>
             </div>
-            <div class="col-md-5 d-flex align-items-end justify-content-md-end gap-2 pt-2 pt-md-0">
-                <span id="badgeEstadoEquipoMP" class="badge bg-secondary-subtle text-secondary border">
+            <div class="col-md-5 d-flex align-items-end justify-content-md-end gap-2 pt-2 pt-md-0 flex-wrap">
+                <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm" id="btnAutoDetectarPC_MP" title="Detectar automáticamente las especificaciones de esta PC">
+                    <i class="bi bi-cpu"></i> Auto-detectar PC
+                </button>
+                <span id="badgeEstadoEquipoMP" class="badge bg-secondary-subtle text-secondary border py-2">
                     Nuevo / No vinculado
                 </span>
                 <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="btnLimpiarEquipoMP">

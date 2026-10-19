@@ -8,6 +8,7 @@
 
 require_once __DIR__ . '/../../configuracion/respuestas_api.php';
 require_once __DIR__ . '/../../configuracion/conexion_bd.php';
+require_once __DIR__ . '/../../configuracion/seguridad_api.php';
 require_once __DIR__ . '/servicios/servicio_firmas_ri.php';
 
 configurar_cors();
@@ -85,6 +86,27 @@ try {
         ':firma_sistemas'   => $firma_sistemas,
         ':id'               => $id
     ));
+
+    // Auditoría
+    $usuario_actor = obtener_usuario_actor_api($conexion, $datos);
+    $actor_id = $usuario_actor ? $usuario_actor['id'] : null;
+    $actor_nombre = $usuario_actor ? $usuario_actor['nombre_completo'] : 'Técnico de Sistemas';
+
+    registrar_auditoria_operacion(
+        $conexion,
+        'registro_incidencias',
+        $id,
+        $actual['nro_incidencia'],
+        'actualizacion_incidencia',
+        $actual['estado'],
+        $estado,
+        $actor_id,
+        $actor_nombre,
+        array(
+            'accion_realizada' => $accion_realizada,
+            'estado_cambiado'  => ($actual['estado'] !== $estado)
+        )
+    );
 
     responder_exito('Incidencia actualizada correctamente', array(
         'id'     => $id,

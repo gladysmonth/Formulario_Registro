@@ -229,11 +229,212 @@ document.addEventListener('DOMContentLoaded', () => {
             if (imgResp) imgResp.src = mp.firma_responsable_equipo || '';
             if (imgSis) imgSis.src = mp.firma_sistemas || '';
 
+            // Guardar referencia actual y resetear panel de edición si estaba abierto
+            mpActualCargado = mp;
+            cerrarPanelEdicion();
+
             modalDetalle.show();
 
         } catch (e) {
-            Swal.fire('Error', 'No se pudo cargar el detalle del mantenimiento.', 'error');
+            clienteApi.mostrarToast('No se pudo cargar el detalle del mantenimiento.', 'error');
         }
+    }
+
+    // ==========================================================
+    // 3. EDICIÓN Y ACTUALIZACIÓN TÉCNICA DE FICHA (PASO 2)
+    // ==========================================================
+    let mpActualCargado = null;
+    const panelEdicionMP = document.getElementById('panelEdicionMP');
+    const btnToggleEditarMP = document.getElementById('btnToggleEditarMP');
+    const textoBtnEditarMP = document.getElementById('textoBtnEditarMP');
+    const btnCancelarEdicionMP = document.getElementById('btnCancelarEdicionMP');
+    const formActualizarMP = document.getElementById('formActualizarMP');
+    const btnGuardarEdicionMP = document.getElementById('btnGuardarEdicionMP');
+
+    // Inicializar lienzo de firma de edición
+    const canvasEditSis = document.getElementById('canvasFirmaEditSistemasMP');
+    const badgeEditSis = document.getElementById('badgeFirmaEditSistemasMP');
+    const btnLimpiarEditSis = document.getElementById('btnLimpiarFirmaEditSistemasMP');
+    let tieneFirmaEdit = false;
+    let ctxEdit = null;
+    let dibujandoEdit = false;
+
+    if (canvasEditSis) {
+        ctxEdit = canvasEditSis.getContext('2d');
+        ctxEdit.lineWidth = 2.5;
+        ctxEdit.lineCap = 'round';
+        ctxEdit.strokeStyle = '#002B49';
+
+        function posCanvas(e) {
+            const rect = canvasEditSis.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * (canvasEditSis.width / rect.width),
+                y: (clientY - rect.top) * (canvasEditSis.height / rect.height)
+            };
+        }
+
+        function iniciarTrazo(e) {
+            dibujandoEdit = true;
+            const p = posCanvas(e);
+            ctxEdit.beginPath();
+            ctxEdit.moveTo(p.x, p.y);
+            if (e.touches) e.preventDefault();
+        }
+
+        function trazar(e) {
+            if (!dibujandoEdit) return;
+            const p = posCanvas(e);
+            ctxEdit.lineTo(p.x, p.y);
+            ctxEdit.stroke();
+            tieneFirmaEdit = true;
+            if (badgeEditSis) {
+                badgeEditSis.className = 'badge bg-success-subtle text-success border';
+                badgeEditSis.textContent = 'Nueva Firma Dibujada';
+            }
+            if (e.touches) e.preventDefault();
+        }
+
+        function terminarTrazo() {
+            dibujandoEdit = false;
+        }
+
+        canvasEditSis.addEventListener('mousedown', iniciarTrazo);
+        canvasEditSis.addEventListener('mousemove', trazar);
+        window.addEventListener('mouseup', terminarTrazo);
+
+        canvasEditSis.addEventListener('touchstart', iniciarTrazo, { passive: false });
+        canvasEditSis.addEventListener('touchmove', trazar, { passive: false });
+        canvasEditSis.addEventListener('touchend', terminarTrazo);
+
+        if (btnLimpiarEditSis) {
+            btnLimpiarEditSis.addEventListener('click', limpiarLienzoEdicion);
+        }
+    }
+
+    function limpiarLienzoEdicion() {
+        if (ctxEdit && canvasEditSis) {
+            ctxEdit.clearRect(0, 0, canvasEditSis.width, canvasEditSis.height);
+            tieneFirmaEdit = false;
+            if (badgeEditSis) {
+                badgeEditSis.className = 'badge bg-warning-subtle text-dark border';
+                badgeEditSis.textContent = 'Lienzo Limpio';
+            }
+        }
+    }
+
+    function abrirPanelEdicion() {
+        if (!mpActualCargado || !panelEdicionMP) return;
+
+        document.getElementById('editIdMP').value = mpActualCargado.id;
+        document.getElementById('editTecnicoMP').value = mpActualCargado.tecnico_responsable || '';
+        document.getElementById('editUbicacionMP').value = mpActualCargado.ubicacion_equipo || '';
+        document.getElementById('editObservacionesMP').value = mpActualCargado.observaciones_incidencias || '';
+
+        limpiarLienzoEdicion();
+        if (badgeEditSis) {
+            if (mpActualCargado.firma_sistemas) {
+                badgeEditSis.className = 'badge bg-secondary-subtle text-secondary border';
+                badgeEditSis.textContent = 'Firma Actual Conservada';
+            } else {
+                badgeEditSis.className = 'badge bg-danger-subtle text-danger border';
+                badgeEditSis.textContent = 'Sin Firma Previa';
+            }
+        }
+
+        panelEdicionMP.classList.remove('d-none');
+        if (textoBtnEditarMP) textoBtnEditarMP.textContent = 'Ocultar Edición';
+        panelEdicionMP.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function cerrarPanelEdicion() {
+        if (panelEdicionMP) panelEdicionMP.classList.add('d-none');
+        if (textoBtnEditarMP) textoBtnEditarMP.textContent = 'Editar / Actualizar Ficha';
+    }
+
+    if (btnToggleEditarMP) {
+        btnToggleEditarMP.addEventListener('click', () => {
+            if (panelEdicionMP && panelEdicionMP.classList.contains('d-none')) {
+                abrirPanelEdicion();
+            } else {
+                cerrarPanelEdicion();
+            }
+        });
+    }
+
+    if (btnCancelarEdicionMP) {
+        btnCancelarEdicionMP.addEventListener('click', cerrarPanelEdicion);
+    }
+
+    // Envío del formulario de actualización
+    if (formActualizarMP) {
+        formActualizarMP.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('editIdMP').value;
+            const tecnico = document.getElementById('editTecnicoMP').value.trim();
+            const ubicacion = document.getElementById('editUbicacionMP').value.trim();
+            const observaciones = document.getElementById('editObservacionesMP').value.trim();
+
+            if (!tecnico || !ubicacion) {
+                clienteApi.mostrarToast('El Técnico Responsable y la Ubicación son obligatorios.', 'error');
+                return;
+            }
+
+            const datosActualizar = {
+                id: parseInt(id, 10),
+                tecnico_responsable: tecnico,
+                ubicacion_equipo: ubicacion,
+                observaciones_incidencias: observaciones
+            };
+
+            if (tieneFirmaEdit && canvasEditSis) {
+                datosActualizar.firma_sistemas = canvasEditSis.toDataURL('image/png');
+            }
+
+            if (btnGuardarEdicionMP) {
+                btnGuardarEdicionMP.disabled = true;
+                btnGuardarEdicionMP.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+            }
+
+            try {
+                const res = await clienteApi.actualizarMantenimientoPreventivo(datosActualizar);
+                if (res.exito) {
+                    clienteApi.mostrarToast('¡Ficha de mantenimiento actualizada correctamente!', 'exito');
+
+                    // Actualizar vista del modal inmediatamente
+                    if (mpActualCargado) {
+                        mpActualCargado.tecnico_responsable = tecnico;
+                        mpActualCargado.ubicacion_equipo = ubicacion;
+                        mpActualCargado.observaciones_incidencias = observaciones;
+                        if (datosActualizar.firma_sistemas) {
+                            mpActualCargado.firma_sistemas = datosActualizar.firma_sistemas;
+                            const imgSis = document.getElementById('mdlFirmaSistemas');
+                            if (imgSis) imgSis.src = datosActualizar.firma_sistemas;
+                        }
+                    }
+
+                    document.getElementById('mdlTecnico').textContent = tecnico;
+                    document.getElementById('mdlUbicacion').textContent = ubicacion;
+                    document.getElementById('mdlObservaciones').innerHTML = observaciones
+                        ? escapeHtml(observaciones).replace(/\n/g, '<br>')
+                        : '<em>Sin observaciones registradas.</em>';
+
+                    cerrarPanelEdicion();
+                    cargarMantenimientos(); // Recargar tabla en segundo plano
+                } else {
+                    clienteApi.mostrarToast(res.mensaje || 'Error al actualizar la ficha.', 'error');
+                }
+            } catch (err) {
+                clienteApi.mostrarToast(err.message || 'Error de conexión con el servidor.', 'error');
+            } finally {
+                if (btnGuardarEdicionMP) {
+                    btnGuardarEdicionMP.disabled = false;
+                    btnGuardarEdicionMP.innerHTML = '<i class="bi bi-check-circle me-1"></i> Guardar Cambios';
+                }
+            }
+        });
     }
 
     function renderCheckItem(label, estado) {

@@ -51,7 +51,8 @@ responder_exito('Servicio Backend de Formularios y Auditoría Activo', array(
         'mantenimiento_preventivo' => array(
             'crear_mantenimiento' => 'POST /api/mantenimiento_preventivo/crear_mantenimiento.php',
             'listar_mantenimientos' => 'GET /api/mantenimiento_preventivo/listar_mantenimientos.php',
-            'obtener_mantenimiento' => 'GET /api/mantenimiento_preventivo/obtener_mantenimiento.php?id={id}'
+            'obtener_mantenimiento' => 'GET /api/mantenimiento_preventivo/obtener_mantenimiento.php?id={id}',
+            'actualizar_mantenimiento' => 'POST /api/mantenimiento_preventivo/actualizar_mantenimiento.php'
         ),
         'registro_incidencias' => array(
             'crear_incidencia' => 'POST /api/registro_incidencias/crear_incidencia.php',
@@ -70,6 +71,12 @@ responder_exito('Servicio Backend de Formularios y Auditoría Activo', array(
             'listar_equipos'     => 'GET /api/diagnostico/listar.php',
             'detalle_equipo'     => 'GET /api/diagnostico/detalle.php?mac={mac}',
             'detectar_mi_pc'     => 'GET /api/diagnostico/detectar_mi_pc.php'
+        ),
+        'metricas_dashboard' => array(
+            'dashboard_consolidado' => 'GET /api/metricas/dashboard.php?mes={mes}&anio={anio}'
+        ),
+        'auditoria' => array(
+            'listar_historial' => 'GET /api/auditoria/listar.php?modulo={modulo}&registro_id={id}'
         )
     ),
     'fecha_hora_servidor' => date('Y-m-d H:i:s')

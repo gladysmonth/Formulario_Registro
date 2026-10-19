@@ -56,9 +56,10 @@ try {
         }
     }
 
-    // Filtro por Búsqueda de Texto
-    if (!empty($_GET['busqueda'])) {
-        $busqueda = '%' . trim($_GET['busqueda']) . '%';
+    // Filtro por Búsqueda de Texto (soporta ?buscar o ?busqueda)
+    $texto_busqueda = !empty($_GET['busqueda']) ? trim($_GET['busqueda']) : (!empty($_GET['buscar']) ? trim($_GET['buscar']) : '');
+    if (!empty($texto_busqueda)) {
+        $busqueda = '%' . $texto_busqueda . '%';
         $condiciones[] = "(
             nro_solicitud ILIKE :busqueda OR 
             nombre_solicitante ILIKE :busqueda OR 
@@ -68,9 +69,25 @@ try {
         $parametros[':busqueda'] = $busqueda;
     }
 
+    $limite = isset($_GET['limite']) ? (int)$_GET['limite'] : 50;
+    $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+
+    if ($limite <= 0 || $limite > 200) {
+        $limite = 50;
+    }
+    if ($offset < 0) {
+        $offset = 0;
+    }
+
     $where = !empty($condiciones) ? 'WHERE ' . implode(' AND ', $condiciones) : '';
 
-    // 3. Consulta de Registros
+    // Conteo total para paginación
+    $sql_conteo = "SELECT COUNT(*) FROM solicitudes_accesos {$where}";
+    $stmt_conteo = $conexion->prepare($sql_conteo);
+    $stmt_conteo->execute($parametros);
+    $total_registros = (int)$stmt_conteo->fetchColumn();
+
+    // 3. Consulta de Registros Paginada
     $sql_registros = "
         SELECT 
             id,
@@ -95,22 +112,31 @@ try {
         FROM solicitudes_accesos
         $where
         ORDER BY fecha_solicitud DESC, id DESC
+        LIMIT :limite OFFSET :offset
     ";
 
     $stmt_reg = $conexion->prepare($sql_registros);
-    $stmt_reg->execute($parametros);
+    foreach ($parametros as $clave_param => $valor_param) {
+        $stmt_reg->bindValue($clave_param, $valor_param);
+    }
+    $stmt_reg->bindValue(':limite', $limite, PDO::PARAM_INT);
+    $stmt_reg->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt_reg->execute();
     $registros = $stmt_reg->fetchAll(PDO::FETCH_ASSOC);
 
     responder_exito('Listado de solicitudes obtenido correctamente', array(
-        'metricas'  => array(
-            'total'       => intval($metricas['total']),
-            'pendientes'  => intval($metricas['pendientes']),
-            'en_proceso'  => intval($metricas['en_proceso']),
-            'atendidas'   => intval($metricas['atendidas']),
-            'rechazadas'  => intval($metricas['rechazadas'])
+        'total'           => $total_registros,
+        'total_registros' => $total_registros,
+        'limite'          => $limite,
+        'offset'          => $offset,
+        'metricas'        => array(
+            'total'       => isset($metricas['total']) ? (int)$metricas['total'] : 0,
+            'pendientes'  => isset($metricas['pendientes']) ? (int)$metricas['pendientes'] : 0,
+            'en_proceso'  => isset($metricas['en_proceso']) ? (int)$metricas['en_proceso'] : 0,
+            'atendidas'   => isset($metricas['atendidas']) ? (int)$metricas['atendidas'] : 0,
+            'rechazadas'  => isset($metricas['rechazadas']) ? (int)$metricas['rechazadas'] : 0
         ),
-        'total'     => count($registros),
-        'registros' => $registros
+        'registros'       => $registros
     ));
 
 } catch (PDOException $e) {

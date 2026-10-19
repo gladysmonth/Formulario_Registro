@@ -143,7 +143,7 @@ try {
                 'espacio_libre_c_gb' => $equipo_detectado['espacio_libre_c_gb'] !== null ? (float)$equipo_detectado['espacio_libre_c_gb'] : null,
                 'salud_disco_smart'  => $equipo_detectado['salud_disco_smart'] ? $equipo_detectado['salud_disco_smart'] : 'OK',
                 'antivirus_activo'   => ($equipo_detectado['antivirus_activo'] === true || $equipo_detectado['antivirus_activo'] === 't'),
-                'amenazas_activas'   => (int)($equipo_detectado['amenazas_activas'] ?? 0)
+                'amenazas_activas'   => isset($equipo_detectado['amenazas_activas']) ? (int)$equipo_detectado['amenazas_activas'] : 0
             ),
             'fecha_ultimo_diagnostico' => $equipo_detectado['fecha_diagnostico']
         );
