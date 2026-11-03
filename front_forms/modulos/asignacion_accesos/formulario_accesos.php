@@ -15,7 +15,7 @@ require_once __DIR__ . '/../../componentes/barra_navegacion.php';
 $es_tecnico_o_admin = es_personal_tecnico();
 ?>
 
-<main class="container my-4 my-lg-5">
+<main class="container-fluid px-2 px-sm-3 px-md-4 my-2 my-md-4" style="max-width: 1200px;">
     <!-- Migas de Pan (Breadcrumbs) -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
@@ -26,7 +26,7 @@ $es_tecnico_o_admin = es_personal_tecnico();
     </nav>
 
     <!-- Encabezado del Formulario -->
-    <div class="tarjeta-formulario p-4 mb-4 border-start border-4 border-primary">
+    <div class="tarjeta-formulario p-3 p-md-4 mb-3 mb-md-4 border-start border-4 border-primary">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold mb-2 d-inline-block">

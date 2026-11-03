@@ -19,6 +19,10 @@ const clienteApi = {
             'Accept': 'application/json'
         };
 
+        if (window.USUARIO_SESION && window.USUARIO_SESION.id) {
+            cabecerasPorDefecto['X-Usuario-Id'] = window.USUARIO_SESION.id;
+        }
+
         const config = {
             ...opciones,
             headers: {
@@ -777,6 +781,27 @@ const clienteApi = {
                 contenedorAlertasHw.innerHTML = htmlHw;
             }
         }
+    },
+
+    // --- Módulo: Gestión de Usuarios y Roles ---
+    async listarUsuarios() {
+        return await this.peticion('/api/usuarios/listar_usuarios.php', {
+            method: 'GET'
+        });
+    },
+
+    async guardarUsuario(datos) {
+        return await this.peticion('/api/usuarios/guardar_usuario.php', {
+            method: 'POST',
+            body: JSON.stringify(datos)
+        });
+    },
+
+    async cambiarEstadoUsuario(id, activo) {
+        return await this.peticion('/api/usuarios/cambiar_estado.php', {
+            method: 'POST',
+            body: JSON.stringify({ id: id, activo: activo })
+        });
     }
 };
 

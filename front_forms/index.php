@@ -26,7 +26,7 @@ $es_tecnico_o_admin = es_personal_tecnico();
 $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
 ?>
 
-<main class="container my-5">
+<main class="container-fluid px-2 px-sm-3 px-md-4 my-2 my-md-4" style="max-width: 1300px;">
     <?php if ($mensaje_error === 'acceso_denegado'): ?>
     <div class="alert alert-warning alert-dismissible fade show shadow-sm border-warning mb-4" role="alert">
         <div class="d-flex align-items-center">
@@ -41,13 +41,13 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
     <?php endif; ?>
 
     <!-- Hero / Banner de Bienvenida -->
-    <div class="p-5 mb-4 bg-white rounded-4 shadow-sm border">
+    <div class="p-3 p-sm-4 p-md-5 mb-4 bg-white rounded-3 rounded-md-4 shadow-sm border">
         <div class="row align-items-center">
             <div class="col-lg-8">
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold mb-2">
                     <i class="bi bi-layers-fill me-1"></i> Plataforma Modular de Registro
                 </span>
-                <h1 class="display-6 fw-bold text-dark mt-2 mb-3">
+                <h1 class="h3 fw-bold text-dark mt-2 mb-2">
                     <?php if ($usuario_actual_sesion): ?>
                         ¡Hola, <?php echo htmlspecialchars(!empty($usuario_actual_sesion['nombre_completo']) ? $usuario_actual_sesion['nombre_completo'] : $usuario_actual_sesion['usuario']); ?>!
                     <?php else: ?>
@@ -57,6 +57,14 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
                 <p class="lead text-muted fs-6 mb-0">
                     Bienvenido al sistema unificado de gestión de solicitudes y registros. Selecciona el formulario correspondiente para iniciar tu requerimiento<?php echo $es_tecnico_o_admin ? ' o acceder a las bandejas técnicas de atención.' : '.'; ?>
                 </p>
+                <?php if (!$es_tecnico_o_admin): ?>
+                <div class="mt-3">
+                    <a href="modulos/mis_solicitudes/mis_solicitudes.php" class="btn btn-outline-primary btn-sm px-3 py-2 fw-semibold rounded-pill d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history fs-6"></i>
+                        <span>Ver Historial de Mis Solicitudes</span>
+                    </a>
+                </div>
+                <?php endif; ?>
             </div>
             <div class="col-lg-4 text-center d-none d-lg-block">
                 <div class="p-4 bg-light rounded-circle d-inline-flex shadow-sm border">
@@ -79,7 +87,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
         <!-- FORMULARIO 1: ACTIVO (SOPORTE TÉCNICO) -->
         <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-primary shadow-sm bg-white">
-                <div class="card-body p-4 d-flex flex-column">
+                <div class="card-body p-3 p-md-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-primary-subtle text-primary rounded-3">
                             <i class="bi bi-headset fs-2"></i>
@@ -96,10 +104,10 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Datos del Solicitante</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Catálogo de Equipos</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Diagnóstico Técnico</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Doble Firma Digital</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Datos del Solicitante</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Catálogo de Equipos</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Diagnóstico Técnico</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Doble Firma Digital</div>
                         </div>
                     </div>
 
@@ -122,7 +130,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
         <!-- FORMULARIO 2: ACTIVO (MANTENIMIENTO PREVENTIVO PC / LAPTOP - SOLO TÉCNICO/ADMIN) -->
         <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-success shadow-sm bg-white">
-                <div class="card-body p-4 d-flex flex-column">
+                <div class="card-body p-3 p-md-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-success-subtle text-success rounded-3">
                             <i class="bi bi-tools fs-2"></i>
@@ -139,10 +147,10 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Ficha Técnica PC/Laptop</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Limpieza Física y Lógica</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Test de Rendimiento</div>
-                            <div class="col-6"><i class="bi bi-check2 text-success me-1"></i> Doble Firma Digital</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-success me-1"></i> Ficha Técnica PC/Laptop</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-success me-1"></i> Limpieza Física y Lógica</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-success me-1"></i> Test de Rendimiento</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-success me-1"></i> Doble Firma Digital</div>
                         </div>
                     </div>
 
@@ -159,7 +167,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
         <!-- FORMULARIO 3 (O 2 PARA EL PERSONAL): REGISTRO DE INCIDENCIAS DE SISTEMAS -->
         <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-danger shadow-sm bg-white">
-                <div class="card-body p-4 d-flex flex-column">
+                <div class="card-body p-3 p-md-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-danger-subtle text-danger rounded-3">
                             <i class="bi bi-shield-exclamation fs-2"></i>
@@ -176,10 +184,10 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Control de Fallas</div>
-                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Marcar y rellenar fallo</div>
-                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Criticidad en 3 Niveles</div>
-                            <div class="col-6"><i class="bi bi-check2 text-danger me-1"></i> Ficha Técnica Oficial</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-danger me-1"></i> Control de Fallas</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-danger me-1"></i> Marcar y rellenar fallo</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-danger me-1"></i> Criticidad en 3 Niveles</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-danger me-1"></i> Ficha Técnica Oficial</div>
                         </div>
                     </div>
 
@@ -201,7 +209,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
         <!-- FORMULARIO 4 (O 3 PARA EL PERSONAL): ASIGNACIÓN DE ACCESOS -->
         <div class="<?php echo $clase_columna; ?>">
             <div class="card h-100 tarjeta-modulo border-primary shadow-sm bg-white">
-                <div class="card-body p-4 d-flex flex-column">
+                <div class="card-body p-3 p-md-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-primary-subtle text-primary rounded-3">
                             <i class="bi bi-shield-lock fs-2"></i>
@@ -218,10 +226,10 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> ERP SAI y NETCOB</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Cuentas Nuevas / Existentes</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Perfiles Extendidos</div>
-                            <div class="col-6"><i class="bi bi-check2 text-primary me-1"></i> Triple Firma Digital</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> ERP SAI y NETCOB</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Cuentas Nuevas / Existentes</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Perfiles Extendidos</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-primary me-1"></i> Triple Firma Digital</div>
                         </div>
                     </div>
 
@@ -244,7 +252,7 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
         <!-- MÓDULO EXCLUSIVO TÉCNICO: TELEMETRÍA Y DIAGNÓSTICO DE PCS -->
         <div class="col-md-6 col-lg-6">
             <div class="card h-100 tarjeta-modulo border-warning shadow-sm bg-white">
-                <div class="card-body p-4 d-flex flex-column">
+                <div class="card-body p-3 p-md-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="p-3 bg-warning-subtle text-dark rounded-3">
                             <i class="bi bi-cpu fs-2"></i>
@@ -261,10 +269,10 @@ $mensaje_error = isset($_GET['error']) ? $_GET['error'] : '';
 
                     <div class="bg-light p-3 rounded-3 mb-3 small border">
                         <div class="row g-2 text-secondary">
-                            <div class="col-6"><i class="bi bi-check2 text-warning me-1"></i> Telemetría en Vivo</div>
-                            <div class="col-6"><i class="bi bi-check2 text-warning me-1"></i> Estado SMART Discos</div>
-                            <div class="col-6"><i class="bi bi-check2 text-warning me-1"></i> Alertas de Hardware</div>
-                            <div class="col-6"><i class="bi bi-check2 text-warning me-1"></i> Historial Forense</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-warning me-1"></i> Telemetría en Vivo</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-warning me-1"></i> Estado SMART Discos</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-warning me-1"></i> Alertas de Hardware</div>
+                            <div class="col-12 col-sm-6 text-truncate"><i class="bi bi-check2 text-warning me-1"></i> Historial Forense</div>
                         </div>
                     </div>
 

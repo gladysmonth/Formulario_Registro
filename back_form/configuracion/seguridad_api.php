@@ -107,6 +107,38 @@ function verificar_permiso_tecnico($conexion, $datos_peticion = array()) {
 }
 
 /**
+ * Verifica si la petición tiene rol exclusivo de Administrador
+ * @param PDO $conexion
+ * @param array $datos_peticion
+ * @return array array('autorizado' => bool, 'usuario' => array|null, 'mensaje' => string)
+ */
+function verificar_permiso_admin($conexion, $datos_peticion = array()) {
+    $usuario = obtener_usuario_actor_api($conexion, $datos_peticion);
+
+    if (!$usuario) {
+        return array(
+            'autorizado' => false,
+            'usuario'    => null,
+            'mensaje'    => 'Usuario no identificado o inactivo en el sistema'
+        );
+    }
+
+    if ($usuario['rol'] !== 'admin') {
+        return array(
+            'autorizado' => false,
+            'usuario'    => $usuario,
+            'mensaje'    => 'Acceso denegado: se requieren privilegios exclusivos de Administrador'
+        );
+    }
+
+    return array(
+        'autorizado' => true,
+        'usuario'    => $usuario,
+        'mensaje'    => 'Acceso autorizado'
+    );
+}
+
+/**
  * Registra una acción en la tabla de auditoría de operaciones de forma segura
  * @param PDO $conexion
  * @param string $modulo

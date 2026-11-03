@@ -244,6 +244,20 @@ $inicial_usuario = !empty($nombre_usuario_mostrar) ? strtoupper(substr(trim($nom
                     </span>
                 </a>
             <?php endforeach; ?>
+
+            <?php if (es_admin()): ?>
+            <div class="sidebar-categoria-header mt-3">
+                ADMINISTRACIÓN
+            </div>
+            <a href="<?php echo $ruta_base; ?>modulos/usuarios/gestion_usuarios.php" class="sidebar-item-link <?php echo ($pagina_activa === 'gestion_usuarios') ? 'activo' : ''; ?>" title="Gestión de Usuarios y Roles">
+                <span class="sidebar-item-icono text-danger">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </span>
+                <span class="fw-semibold text-white text-truncate link-nombre-formulario">
+                    Usuarios y Roles
+                </span>
+            </a>
+            <?php endif; ?>
         </nav>
     </div>
 

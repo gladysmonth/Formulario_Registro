@@ -11,6 +11,11 @@
     --sombra-tarjeta: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--color-fondo-suave);
@@ -1051,5 +1056,117 @@ body.con-sidebar-cosmol {
     .barra-lateral-cosmol.expandida ~ .sidebar-backdrop,
     body.sidebar-expandida .sidebar-backdrop {
         display: block !important;
+    }
+}
+
+
+/* ==========================================================
+ * MEJORAS RESPONSIVAS PARA DISPOSITIVOS MÓVILES (< 768px)
+ * ========================================================== */
+.caja-icono-kpi {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.25rem;
+}
+
+@media (max-width: 767.98px) {
+    :root {
+        --cosmol-sidebar-ancho-colapsado: 54px;
+    }
+
+    body.con-sidebar-cosmol {
+        padding-left: 54px !important;
+    }
+
+    .barra-lateral-cosmol {
+        width: 54px !important;
+    }
+
+    .sidebar-item-link {
+        padding: 0.6rem 0.4rem !important;
+        justify-content: center !important;
+    }
+
+    .sidebar-item-icono {
+        font-size: 1.15rem !important;
+        margin: 0 !important;
+    }
+
+    .btn-dashboard-sidebar {
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+    /* Tarjetas y Contenedores */
+    .tarjeta-formulario {
+        padding: 0.85rem !important;
+        border-radius: 10px !important;
+    }
+
+    .encabezado-seccion {
+        padding-bottom: 0.45rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .numero-seccion {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px !important;
+        margin-right: 0.35rem !important;
+    }
+
+    /* Tipografía y Títulos Proporcionales */
+    h1, .h1 { font-size: 1.35rem !important; }
+    h2, .h2 { font-size: 1.15rem !important; }
+    h3, .h3 { font-size: 1.05rem !important; }
+    .display-6 { font-size: 1.35rem !important; }
+
+    /* Campos de Formulario para Touch */
+    .form-label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+
+    .form-control, .form-select {
+        font-size: 0.85rem !important;
+        padding: 0.45rem 0.65rem !important;
+    }
+
+    .input-group-text {
+        font-size: 0.85rem !important;
+        padding: 0.45rem 0.65rem !important;
+    }
+
+    /* Opciones de Prioridad */
+    .opcion-prioridad {
+        padding: 8px 10px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Lienzo de Firma Digital Adaptable */
+    .contenedor-lienzo {
+        width: 100% !important;
+        overflow: hidden;
+    }
+
+    .lienzo-firma {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 140px !important;
+    }
+
+    /* Tarjetas KPI compactas para evitar desbordes */
+    .caja-icono-kpi {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
     }
 }

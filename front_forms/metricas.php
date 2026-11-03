@@ -46,6 +46,12 @@ $rol_actual = obtener_rol_actual();
             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill small d-none d-sm-inline-flex align-items-center">
                 <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Conexión en Vivo
             </span>
+            <?php if (es_admin()): ?>
+            <a href="modulos/usuarios/gestion_usuarios.php" class="btn btn-outline-danger btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm" title="Gestión de Usuarios y Roles">
+                <i class="bi bi-shield-lock-fill fs-6"></i>
+                <span class="fw-semibold">Usuarios</span>
+            </a>
+            <?php endif; ?>
             <button type="button" class="btn btn-outline-primary btn-sm px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm" onclick="actualizarDashboardMetricas()" id="btnRefrescarMetricas" title="Actualizar datos desde la base de datos">
                 <i class="bi bi-arrow-clockwise fs-6" id="iconoRefrescarMetricas"></i>
                 <span class="fw-semibold">Actualizar Datos</span>
