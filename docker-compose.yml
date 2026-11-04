@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres_usuario}
       POSTGRES_PASSWORD: ${DB_PASS:-postgres_clave_secreta}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_HOST_PORT:-5433}:5432"
     volumes:
       - ./database/formularios_inicial.sql:/docker-entrypoint-initdb.d/01_formularios_inicial.sql:ro
       - ./database/diagnostico.sql:/docker-entrypoint-initdb.d/02_diagnostico.sql:ro
@@ -32,7 +32,7 @@ services:
       - "${BACK_PORT:-83}:80"
     environment:
       DB_HOST: ${DB_HOST:-db}
-      DB_PORT: "${DB_PORT:-5432}"
+      DB_PORT: "5432"
       DB_NAME: ${DB_NAME:-formularios_db}
       DB_USER: ${DB_USER:-postgres_usuario}
       DB_PASS: ${DB_PASS:-postgres_clave_secreta}

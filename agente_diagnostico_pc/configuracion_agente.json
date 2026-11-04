@@ -1,0 +1,9 @@
+{
+  "url_backend": "http://192.168.11.22:83/api/diagnostico/recibir.php",
+  "ruta_cache_local": "C:\\ProgramData\\Cosmol",
+  "archivo_cache": "ultimo_diagnostico.json",
+  "tiempo_espera_segundos": 15,
+  "tipo_evento_defecto": "programado",
+  "max_apps_prefetch": 20,
+  "max_descargas_recientes": 10
+}
