@@ -75,7 +75,7 @@ if (!empty($errores)) {
 
 // 3. Extraer y sanear valores
 $fecha_solicitud        = !empty($datos['fecha_solicitud']) ? $datos['fecha_solicitud'] : date('Y-m-d');
-$usuario_solicitante_id = !empty($datos['usuario_solicitante_id']) ? (int)$datos['usuario_solicitante_id'] : (!empty($datos['usuario_id']) ? (int)$datos['usuario_id'] : null);
+$usuario_solicitante_id = !empty($datos['usuario_solicitante_id']) ? (int)$datos['usuario_solicitante_id'] : (!empty($datos['usuario_id']) ? (int)$datos['usuario_id'] : (!empty($_SERVER['HTTP_X_USUARIO_ID']) ? (int)$_SERVER['HTTP_X_USUARIO_ID'] : null));
 $tecnico_asignado_id    = !empty($datos['tecnico_asignado_id']) ? (int)$datos['tecnico_asignado_id'] : null;
 
 $prioridades_validas  = array('urgente', 'alta', 'media', 'baja');

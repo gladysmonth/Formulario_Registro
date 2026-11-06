@@ -38,7 +38,15 @@ if (!$resultado_firmas['valido']) {
     responder_error('Existen errores en las firmas registradas.', 422, $resultado_firmas['errores']);
 }
 
-// 4. Conexión a Base de Datos
+// 4. Identificación del usuario en sesión
+$usuario_creador_id = null;
+if (!empty($_SERVER['HTTP_X_USUARIO_ID'])) {
+    $usuario_creador_id = (int)$_SERVER['HTTP_X_USUARIO_ID'];
+} elseif (!empty($datos['usuario_id'])) {
+    $usuario_creador_id = (int)$datos['usuario_id'];
+}
+
+// 5. Conexión a Base de Datos
 $conexion = obtener_conexion_bd();
 if (!$conexion) {
     responder_error('No se pudo establecer conexión con el servidor de base de datos.', 500);
@@ -47,10 +55,10 @@ if (!$conexion) {
 try {
     $conexion->beginTransaction();
 
-    // 5. Asignación del código de solicitud (ACC-YYYY-XXXX)
+    // 6. Asignación del código de solicitud (ACC-YYYY-XXXX)
     $nro_solicitud = generar_codigo_accesos($conexion, $limpios['nro_solicitud']);
 
-    // 6. Inserción en la tabla solicitudes_accesos
+    // 7. Inserción en la tabla solicitudes_accesos
     $sql = "
         INSERT INTO solicitudes_accesos (
             nro_solicitud,
@@ -72,7 +80,8 @@ try {
             firma_solicitante,
             nombre_autoriza,
             firma_autoriza,
-            firma_sistemas
+            firma_sistemas,
+            usuario_id
         ) VALUES (
             :nro_solicitud,
             :fecha_solicitud,
@@ -93,7 +102,8 @@ try {
             :firma_solicitante,
             :nombre_autoriza,
             :firma_autoriza,
-            :firma_sistemas
+            :firma_sistemas,
+            :usuario_id
         ) RETURNING id
     ";
 
@@ -118,6 +128,7 @@ try {
     $stmt->bindValue(':nombre_autoriza', $limpios['nombre_autoriza'], $limpios['nombre_autoriza'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
     $stmt->bindValue(':firma_autoriza', $resultado_firmas['firma_autoriza'], $resultado_firmas['firma_autoriza'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
     $stmt->bindValue(':firma_sistemas', $resultado_firmas['firma_sistemas'], $resultado_firmas['firma_sistemas'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+    $stmt->bindValue(':usuario_id', $usuario_creador_id, $usuario_creador_id ? PDO::PARAM_INT : PDO::PARAM_NULL);
 
     $stmt->execute();
     $fila = $stmt->fetch(PDO::FETCH_ASSOC);

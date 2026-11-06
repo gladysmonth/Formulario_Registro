@@ -19,6 +19,16 @@
         <!-- 1. SOLICITANTE -->
         <div class="<?php echo $es_tecnico_o_admin ? 'col-lg-4 col-md-6' : 'col-md-6'; ?>">
             <div class="tarjeta-firma h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                            <i class="bi bi-person-check-fill me-1"></i> SOLICITANTE (OBLIGATORIA)
+                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary border" id="badgeFirmaSolicitanteAcc">
+                            Sin firmar
+                        </span>
+                    </div>
+                </div>
                 <div class="contenedor-lienzo flex-grow-1">
                     <canvas id="canvasFirmaSolicitanteAcc" class="lienzo-firma"></canvas>
                     <div class="linea-guia-firma">Firme aquí (Solicitante)</div>

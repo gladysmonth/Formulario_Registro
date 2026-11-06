@@ -44,7 +44,7 @@ try {
                'Departamento de Sistemas' AS tecnico,
                creado_en AS fecha_orden
         FROM incidencias_sistemas
-        WHERE LOWER(responsable_reporte) = LOWER(:nombre_i) OR LOWER(responsable_reporte) = LOWER(:login_i)
+        WHERE usuario_id = :id_s OR LOWER(responsable_reporte) = LOWER(:nombre_i) OR LOWER(responsable_reporte) = LOWER(:login_i)
 
         UNION ALL
 
@@ -54,7 +54,7 @@ try {
                COALESCE(atendido_por, 'Pendiente de atención') AS tecnico,
                creado_en AS fecha_orden
         FROM solicitudes_accesos
-        WHERE LOWER(nombre_solicitante) = LOWER(:nombre_a) OR LOWER(nombre_solicitante) = LOWER(:login_a)
+        WHERE usuario_id = :id_s OR LOWER(nombre_solicitante) = LOWER(:nombre_a) OR LOWER(nombre_solicitante) = LOWER(:login_a)
 
         ORDER BY fecha_orden DESC
     ";

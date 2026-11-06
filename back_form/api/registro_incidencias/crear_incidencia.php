@@ -54,6 +54,13 @@ try {
     }
 
     // 4. Inserción en la base de datos
+    $usuario_creador_id = null;
+    if (!empty($_SERVER['HTTP_X_USUARIO_ID'])) {
+        $usuario_creador_id = (int)$_SERVER['HTTP_X_USUARIO_ID'];
+    } elseif (!empty($datos['usuario_id'])) {
+        $usuario_creador_id = (int)$datos['usuario_id'];
+    }
+
     $sql = "
         INSERT INTO incidencias_sistemas (
             codigo_documento,
@@ -79,7 +86,8 @@ try {
             fecha_hora_cierre,
             observaciones_recomendaciones,
             firma_responsable_reporte,
-            firma_sistemas
+            firma_sistemas,
+            usuario_id
         ) VALUES (
             'FOR_RIS_001',
             'V-1',
@@ -104,7 +112,8 @@ try {
             :fecha_hora_cierre,
             :observaciones_recomendaciones,
             :firma_responsable_reporte,
-            :firma_sistemas
+            :firma_sistemas,
+            :usuario_id
         ) RETURNING id, nro_incidencia, creado_en
     ";
 
@@ -131,7 +140,8 @@ try {
         ':fecha_hora_cierre'                => $p['fecha_hora_cierre'],
         ':observaciones_recomendaciones'    => $p['observaciones_recomendaciones'],
         ':firma_responsable_reporte'        => $res_firmas['firma_responsable'],
-        ':firma_sistemas'                   => $res_firmas['firma_sistemas']
+        ':firma_sistemas'                   => $res_firmas['firma_sistemas'],
+        ':usuario_id'                       => $usuario_creador_id
     ));
 
     $nuevo_registro = $stmt->fetch(PDO::FETCH_ASSOC);

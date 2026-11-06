@@ -234,6 +234,12 @@ const clienteApi = {
         });
     },
 
+    async listarMisSolicitudes() {
+        return await this.peticion('/api/solicitudes_usuario/listar_mis_solicitudes.php', {
+            method: 'GET'
+        });
+    },
+
     // ==========================================================
     // 6. MÓDULO: AUDITORÍA Y TRAZABILIDAD
     // ==========================================================

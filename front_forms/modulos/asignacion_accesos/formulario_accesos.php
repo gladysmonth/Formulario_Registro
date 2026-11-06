@@ -77,13 +77,16 @@ $es_tecnico_o_admin = es_personal_tecnico();
             <button type="reset" class="btn btn-light border px-4 py-2 text-secondary" id="btnLimpiarFormAccesos">
                 <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar Campos
             </button>
-            <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" id="btnEnviarSolicitudAccesos">
+            <button type="button" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" id="btnEnviarSolicitudAccesos">
                 <i class="bi bi-send-fill me-1"></i> Registrar Solicitud de Acceso
             </button>
         </div>
     </form>
 </main>
 
-<script src="<?php echo $nivel_ruta; ?>recursos/js/formulario_accesos.js"></script>
-
-<?php require_once __DIR__ . '/../../componentes/pie_pagina.php'; ?>
+<?php 
+$scripts_adicionales = array(
+    'recursos/js/formulario_accesos.js'
+);
+require_once __DIR__ . '/../../componentes/pie_pagina.php'; 
+?>
